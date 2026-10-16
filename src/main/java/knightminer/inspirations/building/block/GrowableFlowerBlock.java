@@ -15,7 +15,10 @@ import net.minecraft.world.level.block.FlowerBlock;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.storage.loot.LootPool;
 import net.minecraft.world.level.storage.loot.LootTable;
-import net.minecraft.world.level.storage.loot.entries.LootTableReference;
+import net.minecraft.world.level.storage.loot.entries.NestedLootTable;
+import net.minecraft.core.Holder;
+import net.minecraft.core.registries.Registries;
+import net.minecraft.resources.ResourceKey;
 import net.minecraft.world.level.storage.loot.providers.number.ConstantValue;
 import net.neoforged.neoforge.event.LootTableLoadEvent;
 
@@ -24,7 +27,7 @@ import javax.annotation.Nullable;
 public class GrowableFlowerBlock extends FlowerBlock implements BonemealableBlock {
   private final DoublePlantBlock largePlant;
 
-  public GrowableFlowerBlock(MobEffect effect, int duration, @Nullable DoublePlantBlock largePlant, Properties props) {
+  public GrowableFlowerBlock(Holder<MobEffect> effect, float duration, @Nullable DoublePlantBlock largePlant, Properties props) {
     super(effect, duration, props);
     this.largePlant = largePlant;
   }
@@ -33,7 +36,7 @@ public class GrowableFlowerBlock extends FlowerBlock implements BonemealableBloc
   /* Doubling up */
 
   @Override
-  public boolean isValidBonemealTarget(LevelReader pLevel, BlockPos pPos, BlockState pState, boolean pIsClient) {
+  public boolean isValidBonemealTarget(LevelReader pLevel, BlockPos pPos, BlockState pState) {
     return largePlant != null;
   }
 
@@ -57,7 +60,6 @@ public class GrowableFlowerBlock extends FlowerBlock implements BonemealableBloc
   /** Injects the ability to drop this flower into the loot table for the large version. */
   @SuppressWarnings("deprecation")
   public void injectLoot(LootTableLoadEvent event) {
-    // TODO: migrate to mantle loot injectors or GLMs?
     if (largePlant == null ||
         !event.getName().getNamespace().equals("minecraft") ||
         !event.getName().getPath().equals("blocks/" + BuiltInRegistries.BLOCK.getKey(largePlant).getPath())
@@ -75,7 +77,7 @@ public class GrowableFlowerBlock extends FlowerBlock implements BonemealableBloc
     table.addPool(new LootPool.Builder()
                       .name(location.toString())
                       .setRolls(ConstantValue.exactly(1))
-                      .add(LootTableReference.lootTableReference(location))
+                      .add(NestedLootTable.lootTableReference(ResourceKey.create(Registries.LOOT_TABLE, location)))
                       .build()
                  );
   }

@@ -37,12 +37,11 @@ import net.neoforged.bus.api.Event;
 import net.neoforged.bus.api.EventPriority;
 import net.neoforged.bus.api.SubscribeEvent;
 import net.neoforged.fml.common.EventBusSubscriber;
-import net.neoforged.fml.common.EventBusSubscriber.Bus;
 import net.neoforged.neoforge.items.ItemHandlerHelper;
 import slimeknights.mantle.util.RegistryHelper;
 
 @SuppressWarnings({"unused"})
-@EventBusSubscriber(modid = Inspirations.modID, bus = Bus.FORGE)
+@EventBusSubscriber(modid = Inspirations.modID)
 public class TweaksEvents {
   public static final String TAG_MILKCOOLDOWN = "milk_cooldown";
 

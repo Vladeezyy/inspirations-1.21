@@ -6,6 +6,7 @@ import net.minecraft.client.color.block.BlockColors;
 import net.minecraft.client.color.item.ItemColor;
 import net.minecraft.client.color.item.ItemColors;
 import net.minecraft.client.gui.screens.MenuScreens;
+import net.neoforged.neoforge.client.event.RegisterMenuScreensEvent;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.client.gui.screens.inventory.MenuAccess;
 import net.minecraft.client.renderer.item.ItemProperties;
@@ -70,9 +71,9 @@ public abstract class AbstractClientEvents {
    * @param <M>     Container type
    * @param <U>     Screen type
    */
-  protected static <M extends AbstractContainerMenu, U extends Screen & MenuAccess<M>> void registerScreenFactory(@Nullable MenuType<? extends M> type, MenuScreens.ScreenConstructor<M,U> factory) {
+  protected static <M extends AbstractContainerMenu, U extends Screen & MenuAccess<M>> void registerScreenFactory(RegisterMenuScreensEvent event, @Nullable MenuType<? extends M> type, MenuScreens.ScreenConstructor<M,U> factory) {
     if (type != null) {
-      MenuScreens.register(type, factory);
+      event.register(type, factory);
     }
   }
 }

@@ -5,12 +5,13 @@ import net.minecraft.core.NonNullList;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.ListTag;
 import net.minecraft.world.item.ItemStack;
-import net.neoforged.neoforge.common.util.INBTSerializable;
+import dev.vladeezyy.kilnwork.util.LegacyItemStacks;
+import net.minecraft.core.HolderLookup;
 import net.neoforged.neoforge.items.IItemHandler;
 import net.neoforged.neoforge.items.IItemHandlerModifiable;
 import net.neoforged.neoforge.items.ItemHandlerHelper;
 
-public class ShelfInventory implements IItemHandler, IItemHandlerModifiable, INBTSerializable<ListTag> {
+public class ShelfInventory implements IItemHandler, IItemHandlerModifiable {
 	/** Max size of the shelf */
 	public static final int MAX_ITEMS = 16;
 
@@ -116,9 +117,9 @@ public class ShelfInventory implements IItemHandler, IItemHandlerModifiable, INB
 			return stack;
 		}
 		// decrease input by 1, update slot contents
-		ItemStack result = ItemHandlerHelper.copyStackWithSize(stack, stack.getCount() - 1);
+		ItemStack result = stack.copyWithCount(stack.getCount() - 1);
 		if (!simulate) {
-			setStackInSlot(slot, ItemHandlerHelper.copyStackWithSize(stack, 1));
+			setStackInSlot(slot, stack.copyWithCount(1));
 		}
 		return result;
 	}
@@ -134,7 +135,7 @@ public class ShelfInventory implements IItemHandler, IItemHandlerModifiable, INB
 			return ItemStack.EMPTY;
 		}
 		// make a copy of the item to return, update if needed
-		ItemStack result = ItemHandlerHelper.copyStackWithSize(current, 1);
+		ItemStack result = current.copyWithCount(1);
 		if (!simulate) {
 			setStackInSlot(slot, ItemStack.EMPTY);
 		}
@@ -145,28 +146,29 @@ public class ShelfInventory implements IItemHandler, IItemHandlerModifiable, INB
 	/* NBT */
 	private static final String SLOT_TAG = "Slot";
 
-	@Override
-	public ListTag serializeNBT() {
+	/** Writes the items, as {@code [{Slot: n, ...}]} */
+	public ListTag serialize(HolderLookup.Provider registries) {
 		ListTag list = new ListTag();
 		for (int i = 0; i < MAX_ITEMS; i++) {
 			ItemStack stack = stacks.get(i);
 			if (!stack.isEmpty()) {
 				CompoundTag itemTag = new CompoundTag();
 				itemTag.putByte(SLOT_TAG, (byte)i);
-				stack.save(itemTag);
-				list.add(itemTag);
+				list.add(stack.save(registries, itemTag));
 			}
 		}
 		return list;
 	}
 
-	@Override
-	public void deserializeNBT(ListTag list) {
+	/** Reads the items, also the format of 1.20 worlds */
+	public void deserialize(HolderLookup.Provider registries, ListTag list) {
+		// slots missing from the list are empty, 1.20 kept what was there before
+		java.util.Collections.fill(stacks, ItemStack.EMPTY);
 		for (int i = 0; i < list.size(); i++) {
 			CompoundTag itemNBT = list.getCompound(i);
 			int slot = itemNBT.getByte(SLOT_TAG) & 0xFF;
 			if (isSlotValid(slot)) {
-				stacks.set(slot, ItemStack.of(itemNBT));
+				stacks.set(slot, LegacyItemStacks.parse(registries, itemNBT));
 			}
 		}
 	}

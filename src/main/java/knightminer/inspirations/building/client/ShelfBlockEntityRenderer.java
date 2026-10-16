@@ -10,7 +10,6 @@ import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.block.state.BlockState;
 import net.neoforged.neoforge.items.IItemHandlerModifiable;
 import dev.vladeezyy.kilnwork.client.render.RenderItem;
-import slimeknights.mantle.client.render.RenderingHelper;
 
 import java.util.List;
 
@@ -21,18 +20,18 @@ public class ShelfBlockEntityRenderer implements BlockEntityRenderer<ShelfBlockE
 	public void render(ShelfBlockEntity shelf, float partialTicks, PoseStack matrices, MultiBufferSource buffer, int light, int combinedOverlay) {
 		// first, find the model for item display locations
 		BlockState state = shelf.getBlockState();
-		List<RenderItem> renderItems = RenderItem.STATE_REGISTRY.get(state, List.of());
+		List<RenderItem> renderItems = RenderItem.ITEM_LISTS.get(state, List.of());
 		IItemHandlerModifiable inventory = shelf.getInventory();
 		if (!renderItems.isEmpty()) {
 			// if the block is rotatable, rotate item display
-			boolean isRotated = RenderingHelper.applyRotation(matrices, state);
+			boolean isRotated = RenderItem.applyRotation(matrices, state);
 
 			// render items
 			for (int i = 0; i < renderItems.size(); i++) {
 				ItemStack stack = inventory.getStackInSlot(i);
 				// only render non-books, books are rendered in the model
 				if (!stack.isEmpty() && !InspirationsRegistry.isBook(stack)) {
-					RenderingHelper.renderItem(matrices, buffer, stack, renderItems.get(i), light);
+					renderItems.get(i).render(matrices, buffer, stack, light);
 				}
 			}
 

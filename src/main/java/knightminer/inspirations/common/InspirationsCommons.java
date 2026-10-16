@@ -4,6 +4,7 @@ import knightminer.inspirations.Inspirations;
 import knightminer.inspirations.building.InspirationsBuilding;
 import knightminer.inspirations.cauldrons.InspirationsCaudrons;
 import knightminer.inspirations.common.data.ConfigEnabledCondition;
+import knightminer.inspirations.common.data.ReplaceItemLootModifier;
 import knightminer.inspirations.library.recipe.crafting.ShapelessNoContainerRecipe;
 import knightminer.inspirations.tools.InspirationsTools;
 import knightminer.inspirations.tweaks.InspirationsTweaks;
@@ -70,6 +71,7 @@ public class InspirationsCommons extends ModuleBase {
     });
     // config condition, for recipes and loot tables
     event.register(NeoForgeRegistries.Keys.CONDITION_CODECS, helper -> helper.register(Inspirations.getResource("config"), ConfigEnabledCondition.CODEC));
+    event.register(NeoForgeRegistries.Keys.GLOBAL_LOOT_MODIFIER_SERIALIZERS, helper -> helper.register(Inspirations.getResource("replace_item"), ReplaceItemLootModifier.CODEC));
     event.register(Registries.LOOT_CONDITION_TYPE, helper -> {
       lootConfig = new LootItemConditionType(ConfigEnabledCondition.CODEC);
       helper.register(Inspirations.getResource("config"), lootConfig);

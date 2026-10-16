@@ -18,7 +18,8 @@ import java.util.function.Consumer;
  * SlimeKnights), which Inspirations was written against.
  */
 public class EnumObject<K extends Enum<K>, V> {
-  private static final EnumObject<?, ?> EMPTY = new EnumObject<>(Collections.emptyMap());
+  @SuppressWarnings({"rawtypes", "unchecked"})
+  private static final EnumObject EMPTY = new EnumObject(Collections.emptyMap());
 
   private final Map<K, V> map;
 

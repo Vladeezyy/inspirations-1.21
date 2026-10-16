@@ -16,10 +16,10 @@ import net.minecraft.world.phys.shapes.Shapes;
 import net.minecraft.world.phys.shapes.VoxelShape;
 
 public class GlassDoorBlock extends DoorBlock {
-  public static final BlockSetType GLASS_TYPE = BlockSetType.register(new BlockSetType("inspirations:glass", true, SoundType.GLASS, SoundEvents.WOODEN_DOOR_CLOSE, SoundEvents.WOODEN_DOOR_OPEN, SoundEvents.WOODEN_TRAPDOOR_CLOSE, SoundEvents.WOODEN_TRAPDOOR_OPEN, SoundEvents.WOODEN_PRESSURE_PLATE_CLICK_OFF, SoundEvents.WOODEN_PRESSURE_PLATE_CLICK_ON, SoundEvents.WOODEN_BUTTON_CLICK_OFF, SoundEvents.WOODEN_BUTTON_CLICK_ON));
+  public static final BlockSetType GLASS_TYPE = BlockSetType.register(new BlockSetType("inspirations:glass", true, true, true, BlockSetType.PressurePlateSensitivity.EVERYTHING, SoundType.GLASS, SoundEvents.WOODEN_DOOR_CLOSE, SoundEvents.WOODEN_DOOR_OPEN, SoundEvents.WOODEN_TRAPDOOR_CLOSE, SoundEvents.WOODEN_TRAPDOOR_OPEN, SoundEvents.WOODEN_PRESSURE_PLATE_CLICK_OFF, SoundEvents.WOODEN_PRESSURE_PLATE_CLICK_ON, SoundEvents.WOODEN_BUTTON_CLICK_OFF, SoundEvents.WOODEN_BUTTON_CLICK_ON));
 
   public GlassDoorBlock(Properties props) {
-    super(props, GLASS_TYPE);
+    super(GLASS_TYPE, props);
   }
 
   // Custom shape to include the protruding handle.
@@ -42,14 +42,13 @@ public class GlassDoorBlock extends DoorBlock {
     }
   }
 
-  @Deprecated
   @Override
-  public VoxelShape getCollisionShape(BlockState state, BlockGetter worldIn, BlockPos pos, CollisionContext context) {
+  protected VoxelShape getCollisionShape(BlockState state, BlockGetter worldIn, BlockPos pos, CollisionContext context) {
     return super.getShape(state, worldIn, pos, context);
   }
 
   @Override
-  public VoxelShape getShape(BlockState state, BlockGetter worldIn, BlockPos pos, CollisionContext context) {
+  protected VoxelShape getShape(BlockState state, BlockGetter worldIn, BlockPos pos, CollisionContext context) {
     Direction direction = state.getValue(FACING);
     boolean flipped = state.getValue(HINGE) == DoorHingeSide.RIGHT;
     // If open, rotate and flip to replicate the hinge swap.

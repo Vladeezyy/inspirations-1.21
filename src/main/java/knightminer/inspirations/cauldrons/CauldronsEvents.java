@@ -14,9 +14,8 @@ import net.neoforged.neoforge.event.entity.player.PlayerInteractEvent.RightClick
 import net.neoforged.bus.api.EventPriority;
 import net.neoforged.bus.api.SubscribeEvent;
 import net.neoforged.fml.common.EventBusSubscriber;
-import net.neoforged.fml.common.EventBusSubscriber.Bus;
 
-@EventBusSubscriber(modid = Inspirations.modID, bus = Bus.FORGE)
+@EventBusSubscriber(modid = Inspirations.modID)
 public class CauldronsEvents {
   /*
    * Event to handle cauldron clicking.

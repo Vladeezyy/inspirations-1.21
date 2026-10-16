@@ -1,6 +1,5 @@
 package knightminer.inspirations.building;
 
-import knightminer.inspirations.building.block.ClimbablePaneBlock;
 import knightminer.inspirations.building.block.EnlightenedBushBlock;
 import knightminer.inspirations.building.block.GlassDoorBlock;
 import knightminer.inspirations.building.block.GrowableFlowerBlock;
@@ -49,6 +48,9 @@ import net.neoforged.neoforge.event.LootTableLoadEvent;
 import net.neoforged.bus.api.SubscribeEvent;
 import net.neoforged.fml.event.lifecycle.FMLCommonSetupEvent;
 import net.neoforged.neoforge.registries.RegisterEvent;
+import net.neoforged.neoforge.capabilities.Capabilities;
+import net.neoforged.neoforge.capabilities.RegisterCapabilitiesEvent;
+import net.neoforged.neoforge.common.NeoForge;
 import knightminer.inspirations.common.registration.BlockEntityTypeRegistryAdapter;
 import knightminer.inspirations.common.registration.BlockRegistryAdapter;
 import knightminer.inspirations.common.registration.ContainerTypeRegistryAdapter;
@@ -74,8 +76,6 @@ public class InspirationsBuilding extends ModuleBase {
   // flowers
   public static EnumObject<FlowerType,GrowableFlowerBlock> flower = EnumObject.empty();
   public static EnumObject<FlowerType,FlowerPotBlock> flowerPot = EnumObject.empty();
-  // overrides
-  public static Block ironBars;
 
   // items
   public static Item glassDoorItem;
@@ -90,22 +90,10 @@ public class InspirationsBuilding extends ModuleBase {
   // Container Types
   public static MenuType<ShelfContainerMenu> shelfContainer;
 
-  @SuppressWarnings("deprecation")
   @SubscribeEvent
   void register(RegisterEvent event) {
-    ResourceKey<? extends Registry<?>> registryKey = event.getRegistryKey();
-    if (registryKey == Registries.BLOCK_ENTITY_TYPE) {
-      BlockEntityTypeRegistryAdapter registry = new BlockEntityTypeRegistryAdapter(BuiltInRegistries.BLOCK_ENTITY_TYPE);
-
-      shelfTileEntity = registry.register(ShelfBlockEntity::new, shelf, "bookshelf");
-      enlightenedBushTileEntity = registry.register(EnlightenedBushBlockEntity::new, enlightenedBush, "enlightened_bush");
-    }
-    else if (registryKey == Registries.MENU) {
-      ContainerTypeRegistryAdapter registry = new ContainerTypeRegistryAdapter(BuiltInRegistries.MENU);
-      shelfContainer = registry.registerType(ShelfContainerMenu::new, "shelf");
-    }
-    else if (registryKey == Registries.BLOCK) {
-      BlockRegistryAdapter registry = new BlockRegistryAdapter(BuiltInRegistries.BLOCK);
+    event.register(Registries.BLOCK, helper -> {
+      BlockRegistryAdapter registry = new BlockRegistryAdapter(helper);
 
       // normal shelf uses a less regular naming
       BlockBehaviour.Properties shelfProps = Block.Properties.of().mapColor(MapColor.WOOD).ignitedByLava().instrument(NoteBlockInstrument.BASS).strength(2.0F, 5.0F).sound(SoundType.WOOD).noOcclusion();
@@ -119,14 +107,11 @@ public class InspirationsBuilding extends ModuleBase {
       vine = registry.register(new RopeBlock(Items.BAMBOO,
               Block.Properties.of().mapColor(MapColor.PLANT).ignitedByLava().sound(SoundType.GRASS).strength(0.5F)
       ), "vine");
-      // iron bars override
-      if (Config.climbableIronBars.get()) {
-        ironBars = registry.register(new ClimbablePaneBlock(Block.Properties.copy(Blocks.IRON_BARS)), Blocks.IRON_BARS);
-      }
+      // iron bars are climbable through a mixin (ClimbableIronBarsMixin), NeoForge cannot replace vanilla blocks
 
       BlockBehaviour.Properties glassDoorProps = Block.Properties.of().mapColor(MapColor.NONE).instrument(NoteBlockInstrument.HAT).strength(0.3F).sound(SoundType.GLASS).noOcclusion();
       glassDoor = registry.register(new GlassDoorBlock(glassDoorProps), "glass_door");
-      glassTrapdoor = registry.register(new TrapDoorBlock(glassDoorProps, GlassDoorBlock.GLASS_TYPE), "glass_trapdoor");
+      glassTrapdoor = registry.register(new TrapDoorBlock(GlassDoorBlock.GLASS_TYPE, glassDoorProps), "glass_trapdoor");
 
       mulch = registry.registerEnum(type -> new MulchBlock(
               Properties.of().mapColor(type.getColor()).ignitedByLava().instrument(NoteBlockInstrument.BASS).sound(SoundType.WET_GRASS).strength(0.6F)
@@ -150,7 +135,7 @@ public class InspirationsBuilding extends ModuleBase {
       // flower pots
       Supplier<FlowerPotBlock> emptyPot = () -> (FlowerPotBlock)Blocks.FLOWER_POT;
       FlowerPotBlock vanillaPot = (FlowerPotBlock)Blocks.FLOWER_POT;
-      Block.Properties props = Block.Properties.copy(Blocks.FLOWER_POT);
+      Block.Properties props = Block.Properties.ofFullCopy(Blocks.FLOWER_POT);
       flowerPot = registry.registerEnum(type -> {
         // create pot and register it with the vanilla pot.
         Block plant = flower.get(type);
@@ -158,9 +143,19 @@ public class InspirationsBuilding extends ModuleBase {
         vanillaPot.addPlant(BuiltInRegistries.BLOCK.getKey(plant), () -> pot);
         return pot;
       }, "potted", FlowerType.values());
-    }
-    else if (registryKey == Registries.ITEM) {
-      ItemRegistryAdapter registry = new ItemRegistryAdapter(BuiltInRegistries.ITEM);
+    });
+    event.register(Registries.BLOCK_ENTITY_TYPE, helper -> {
+      BlockEntityTypeRegistryAdapter registry = new BlockEntityTypeRegistryAdapter(helper);
+
+      shelfTileEntity = registry.register(ShelfBlockEntity::new, shelf, "bookshelf");
+      enlightenedBushTileEntity = registry.register(EnlightenedBushBlockEntity::new, enlightenedBush, "enlightened_bush");
+    });
+    event.register(Registries.MENU, helper -> {
+      ContainerTypeRegistryAdapter registry = new ContainerTypeRegistryAdapter(helper);
+      shelfContainer = registry.registerType(ShelfContainerMenu::new, "shelf");
+    });
+    event.register(Registries.ITEM, helper -> {
+      ItemRegistryAdapter registry = new ItemRegistryAdapter(helper);
       // common props
       Item.Properties props = new Item.Properties();
 
@@ -171,9 +166,6 @@ public class InspirationsBuilding extends ModuleBase {
       registry.registerBlockItem(shelf, block -> new ShelfItem(block, props));
       registry.registerBlockItem(rope, props);
       registry.registerBlockItem(vine, props);
-      if (ironBars != null) {
-        registry.registerBlockItem(ironBars, props);
-      }
 
       registry.registerBlockItem(mulch, props);
       registry.registerBlockItem(path, props);
@@ -182,7 +174,12 @@ public class InspirationsBuilding extends ModuleBase {
 
       glassDoorItem = registry.register(new DoubleHighBlockItem(glassDoor, props), BuiltInRegistries.BLOCK.getKey(glassDoor));
       registry.registerBlockItem(glassTrapdoor, props);
-    }
+    });
+  }
+
+  @SubscribeEvent
+  void registerCapabilities(RegisterCapabilitiesEvent event) {
+    event.registerBlockEntity(Capabilities.ItemHandler.BLOCK, shelfTileEntity, (shelf, side) -> shelf.getInventory());
   }
 
   @SubscribeEvent
@@ -194,10 +191,11 @@ public class InspirationsBuilding extends ModuleBase {
   @SubscribeEvent
   void init(FMLCommonSetupEvent event) {
     event.enqueueWork(InspirationsBuilding::registerCompostables);
+    // 1.20 had this listener static on the module, which is registered as an instance on the mod bus, so it never ran
+    NeoForge.EVENT_BUS.addListener(InspirationsBuilding::loadLoot);
   }
 
-  @SubscribeEvent
-  public static void loadLoad(LootTableLoadEvent event) {
+  private static void loadLoot(LootTableLoadEvent event) {
     // Add the drops for the small flowers.
     flower.forEach((type, plant) -> {
       if (type != FlowerType.CYAN) {
@@ -208,11 +206,11 @@ public class InspirationsBuilding extends ModuleBase {
 
   private static void registerCompostables() {
     for (Block bush : enlightenedBush.values()) {
-      ComposterBlock.add(0.3F, bush);
+      ComposterBlock.COMPOSTABLES.put(bush, 0.3F);
     }
-    ComposterBlock.add(0.5F, vine);
+    ComposterBlock.COMPOSTABLES.put(vine, 0.5F);
     for (Block plant : flower.values()) {
-      ComposterBlock.add(0.65F, plant);
+      ComposterBlock.COMPOSTABLES.put(plant, 0.65F);
     }
   }
 }

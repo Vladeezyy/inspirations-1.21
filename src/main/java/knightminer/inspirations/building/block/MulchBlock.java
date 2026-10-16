@@ -9,27 +9,41 @@ import net.minecraft.world.level.block.SaplingBlock;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.shapes.CollisionContext;
 import net.minecraft.world.phys.shapes.VoxelShape;
-import net.neoforged.neoforge.common.IPlantable;
-import net.neoforged.neoforge.common.PlantType;
+import net.minecraft.world.level.block.BushBlock;
+import net.minecraft.world.level.block.CropBlock;
+import net.minecraft.world.level.block.MushroomBlock;
+import net.minecraft.world.level.block.StemBlock;
+import net.neoforged.neoforge.common.util.TriState;
+import com.mojang.serialization.MapCodec;
 
 public class MulchBlock extends FallingBlock {
   private static final VoxelShape SHAPE = Block.box(0.0D, 0.0D, 0.0D, 16.0D, 15.0D, 16.0D);
+
+  public static final MapCodec<MulchBlock> CODEC = simpleCodec(MulchBlock::new);
 
   public MulchBlock(Properties properties) {
     super(properties);
   }
 
-  @SuppressWarnings("deprecation")
-  @Deprecated
   @Override
-  public VoxelShape getCollisionShape(BlockState state, BlockGetter worldIn, BlockPos pos, CollisionContext context) {
+  protected MapCodec<? extends FallingBlock> codec() {
+    return CODEC;
+  }
+
+  @Override
+  protected VoxelShape getCollisionShape(BlockState state, BlockGetter worldIn, BlockPos pos, CollisionContext context) {
     return SHAPE;
   }
 
   @Override
-  public boolean canSustainPlant(BlockState state, BlockGetter world, BlockPos pos, Direction direction, IPlantable plantable) {
+  public TriState canSustainPlant(BlockState state, BlockGetter world, BlockPos pos, Direction direction, BlockState plant) {
     // we are fine with most plants, but saplings are a bit much
     // this is mostly cop out since I have no way of stopping sapling growth
-    return plantable.getPlantType(world, pos.relative(direction)) == PlantType.PLAINS && !(plantable instanceof SaplingBlock);
+    // 1.20 allowed the plains plant type: flowers, grass and other bushes growing on dirt, not crops or mushrooms
+    Block block = plant.getBlock();
+    if (block instanceof BushBlock && !(block instanceof SaplingBlock) && !(block instanceof CropBlock) && !(block instanceof MushroomBlock) && !(block instanceof StemBlock)) {
+      return TriState.TRUE;
+    }
+    return TriState.DEFAULT;
   }
 }

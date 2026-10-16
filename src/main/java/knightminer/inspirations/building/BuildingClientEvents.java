@@ -16,7 +16,6 @@ import net.minecraft.client.color.item.ItemColors;
 import net.minecraft.client.renderer.BiomeColors;
 import net.minecraft.client.renderer.ItemBlockRenderTypes;
 import net.minecraft.client.renderer.RenderType;
-import net.minecraft.world.item.DyeableLeatherItem;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.FoliageColor;
 import net.minecraft.world.level.block.Block;
@@ -26,6 +25,9 @@ import net.neoforged.api.distmarker.Dist;
 import net.neoforged.neoforge.client.event.EntityRenderersEvent;
 import net.neoforged.neoforge.client.event.ModelEvent.RegisterGeometryLoaders;
 import net.neoforged.neoforge.client.event.RegisterColorHandlersEvent;
+import net.neoforged.neoforge.client.event.RegisterMenuScreensEvent;
+import net.minecraft.util.FastColor;
+import net.minecraft.world.item.component.DyedItemColor;
 import net.neoforged.bus.api.SubscribeEvent;
 import net.neoforged.fml.common.EventBusSubscriber;
 import net.neoforged.fml.common.EventBusSubscriber.Bus;
@@ -41,15 +43,6 @@ import java.util.Optional;
 public class BuildingClientEvents extends AbstractClientEvents {
   private static final Minecraft mc = Minecraft.getInstance();
 
-  @SuppressWarnings("removal")  // not my block model, can't change easily
-  @SubscribeEvent
-  static void clientSetup(FMLClientSetupEvent event) {
-    // ropes
-    if (InspirationsBuilding.ironBars != null) {
-      ItemBlockRenderTypes.setRenderLayer(InspirationsBuilding.ironBars, RenderType.cutoutMipped());
-    }
-  }
-
   @SubscribeEvent
   static void registerRenderers(EntityRenderersEvent.RegisterRenderers event) {
     event.registerBlockEntityRenderer(InspirationsBuilding.shelfTileEntity, ShelfBlockEntityRenderer::new);
@@ -57,13 +50,13 @@ public class BuildingClientEvents extends AbstractClientEvents {
 
   @SubscribeEvent
   static void registerModelLoaders(RegisterGeometryLoaders event) {
-    event.register("shelf", ShelfModel.LOADER);
+    event.register(Inspirations.getResource("shelf"), ShelfModel.LOADER);
   }
 
   @SubscribeEvent
-  static void commonSetup(FMLCommonSetupEvent event) {
+  static void registerScreens(RegisterMenuScreensEvent event) {
     // Register GUIs.
-    registerScreenFactory(InspirationsBuilding.shelfContainer, ShelfContainerScreen::new);
+    registerScreenFactory(event, InspirationsBuilding.shelfContainer, ShelfContainerScreen::new);
   }
 
   @SubscribeEvent
@@ -103,7 +96,7 @@ public class BuildingClientEvents extends AbstractClientEvents {
     // First the three which never change tint.
     InspirationsBuilding.enlightenedBush.forEach((type, bush) -> {
       if (type != BushType.WHITE) {
-        int color = type.getColor(); // Make closure capture just the int.
+        int color = FastColor.ARGB32.opaque(type.getColor()); // Make closure capture just the int.
         event.register((state, world, pos, tintIndex) -> tintIndex == 0 ? color : -1, bush);
       }
     });
@@ -113,10 +106,8 @@ public class BuildingClientEvents extends AbstractClientEvents {
       if (tintIndex != 0 || world == null || pos == null) {
         return -1;
       }
-      // TODO: should probably pass block directly here
-      Optional<IRetexturedBlockEntity> te = BlockEntityHelper.get(IRetexturedBlockEntity.class, world, pos);
-      if (te.isPresent()) {
-        Block block = te.get().getTexture();
+      if (world.getBlockEntity(pos) instanceof IRetexturedBlockEntity te) {
+        Block block = te.getTexture();
         if (block != Blocks.AIR) {
           return ClientUtil.getStackBlockColorsSafe(new ItemStack(block), world, pos, 0);
         }
@@ -132,19 +123,20 @@ public class BuildingClientEvents extends AbstractClientEvents {
     // coloring of books for normal bookshelf
     registerItemColors(itemColors, (stack, tintIndex) -> {
       if (tintIndex > 0 && tintIndex <= 16) {
-        return 0x654B17;
+        return FastColor.ARGB32.opaque(0x654B17);
       }
       return -1;
     }, InspirationsBuilding.shelf.getOrNull(ShelfType.NORMAL));
 
     // book covers, too lazy to make 16 cover textures
-    event.register((stack, index) -> index == 0 ? ((DyeableLeatherItem)stack.getItem()).getColor(stack) : -1, InspirationsBuilding.coloredBook);
+    // 1.21 item colors are ARGB; an uncolored book keeps the leather default color it had in 1.20
+    event.register((stack, index) -> index == 0 ? FastColor.ARGB32.opaque(DyedItemColor.getOrDefault(stack, DyedItemColor.LEATHER_COLOR)) : -1, InspirationsBuilding.coloredBook);
 
     // bush block colors
     // First the three blocks which never change tint.
     InspirationsBuilding.enlightenedBush.forEach((type, bush) -> {
       if (type != BushType.WHITE) {
-        int color = type.getColor();
+        int color = FastColor.ARGB32.opaque(type.getColor());
         event.register((stack, tintIndex) -> tintIndex == 0 ? color : -1, bush);
       }
     });

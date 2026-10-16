@@ -7,6 +7,12 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
+import net.minecraft.world.ItemInteractionResult;
+import net.minecraft.world.item.Item;
+import net.minecraft.world.item.TooltipFlag;
+import net.minecraft.network.chat.Component;
+import dev.vladeezyy.kilnwork.retexture.RetexturedHelper;
+import java.util.List;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
@@ -62,48 +68,47 @@ public class ShelfBlock extends InventoryBlock {
   }
 
   @Override
-  public void setPlacedBy(Level world, BlockPos pos, BlockState state, @Nullable LivingEntity placer, ItemStack stack) {
-    super.setPlacedBy(world, pos, state, placer, stack);
-    RetexturedBlock.updateTextureBlock(world, pos, stack);
+  public void appendHoverText(ItemStack stack, Item.TooltipContext context, List<Component> tooltip, TooltipFlag flag) {
+    RetexturedHelper.addTooltip(stack, tooltip, flag);
   }
 
 
   /* Activation */
 
-  @SuppressWarnings("deprecation")
-  @Deprecated
   @Override
-  public InteractionResult use(BlockState state, Level world, BlockPos pos, Player player, InteractionHand hand, BlockHitResult trace) {
+  protected ItemInteractionResult useItemOn(ItemStack stack, BlockState state, Level world, BlockPos pos, Player player, InteractionHand hand, BlockHitResult trace) {
     Direction facing = state.getValue(FACING);
 
     // skip opposite, not needed as the back is never clicked for books
     if (facing.getOpposite() == trace.getDirection()) {
-      return InteractionResult.PASS;
+      return ItemInteractionResult.SKIP_DEFAULT_BLOCK_INTERACTION;
     }
 
     // if sneaking, just do the GUI
     if (player.isCrouching()) {
-      return (world.isClientSide || openGui(player, world, pos)) ? InteractionResult.SUCCESS : InteractionResult.PASS;
+      return openGui(state, world, pos, player).consumesAction() ? ItemInteractionResult.sidedSuccess(world.isClientSide) : ItemInteractionResult.SKIP_DEFAULT_BLOCK_INTERACTION;
     }
 
     // if we did not click a book, just do the GUI as well
     Vec3 hitWorld = trace.getLocation();
     Vec3 click = new Vec3(hitWorld.x - pos.getX(), hitWorld.y - pos.getY(), hitWorld.z - pos.getZ());
     if (!isBookClicked(facing, click)) {
-      return (world.isClientSide || openGui(player, world, pos)) ? InteractionResult.SUCCESS : InteractionResult.PASS;
+      return openGui(state, world, pos, player).consumesAction() ? ItemInteractionResult.sidedSuccess(world.isClientSide) : ItemInteractionResult.SKIP_DEFAULT_BLOCK_INTERACTION;
     }
     BlockEntity te = world.getBlockEntity(pos);
     if (te instanceof ShelfBlockEntity) {
       // try interacting
       if (((ShelfBlockEntity)te).interact(player, hand, click)) {
-        return InteractionResult.SUCCESS;
-      }
-      // if we failed to place an item on the shelf, pass if the offhand might try
-      if (hand != InteractionHand.OFF_HAND && !player.getOffhandItem().isEmpty()) {
-        return InteractionResult.CONSUME;
+        return ItemInteractionResult.sidedSuccess(world.isClientSide);
       }
     }
-    return InteractionResult.CONSUME;
+    return ItemInteractionResult.CONSUME;
+  }
+
+  @Override
+  protected InteractionResult useWithoutItem(BlockState state, Level level, BlockPos pos, Player player, BlockHitResult hit) {
+    // all handled in useItemOn, which also runs for an empty hand
+    return InteractionResult.PASS;
   }
 
   /**
@@ -217,7 +222,7 @@ public class ShelfBlock extends InventoryBlock {
   /* Drops */
 
   @Override
-  public ItemStack getCloneItemStack(BlockState state, HitResult target, BlockGetter level, BlockPos pos, Player player) {
+  public ItemStack getCloneItemStack(BlockState state, HitResult target, LevelReader level, BlockPos pos, Player player) {
     return RetexturedBlock.getPickBlock(level, pos, state);
   }
 

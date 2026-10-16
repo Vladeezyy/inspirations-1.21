@@ -5,7 +5,7 @@ import net.minecraft.core.Direction;
 import net.minecraft.tags.BlockTags;
 import net.minecraft.util.StringRepresentable;
 import net.minecraft.world.InteractionHand;
-import net.minecraft.world.InteractionResult;
+import net.minecraft.world.ItemInteractionResult;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.BlockItem;
 import net.minecraft.world.item.Item;
@@ -112,7 +112,7 @@ public class RopeBlock extends Block implements SimpleWaterloggedBlock {
     // Check if the bottom of the block is able to attach to the rope - the center 4x4 must
     // all be present.
     return !state.is(BlockTags.LEAVES) && !Shapes.joinIsNotEmpty(
-        state.getCollisionShape(world, pos).getFaceShape(Direction.DOWN), ATTACH_BOTTOM, BooleanOp.ONLY_SECOND
+        state.getCollisionShape(world, up).getFaceShape(Direction.DOWN), ATTACH_BOTTOM, BooleanOp.ONLY_SECOND
                                                                 );
   }
 
@@ -131,20 +131,17 @@ public class RopeBlock extends Block implements SimpleWaterloggedBlock {
     return state;
   }
 
-  @SuppressWarnings("deprecation")
-  @Deprecated
   @Override
-  public InteractionResult use(BlockState state, Level world, BlockPos pos, Player player, InteractionHand hand, BlockHitResult hit) {
+  protected ItemInteractionResult useItemOn(ItemStack stack, BlockState state, Level world, BlockPos pos, Player player, InteractionHand hand, BlockHitResult hit) {
     // no need to check verticals, one is not possible and the other normal block placement
     if (hit.getDirection().getAxis().isVertical()) {
-      return InteractionResult.PASS;
+      return ItemInteractionResult.PASS_TO_DEFAULT_BLOCK_INTERACTION;
     }
 
     // right click with a rope to extend downwards
-    ItemStack stack = player.getItemInHand(hand);
     // check if the item is the same type as us
     if (Block.byItem(stack.getItem()) != this) {
-      return InteractionResult.PASS;
+      return ItemInteractionResult.PASS_TO_DEFAULT_BLOCK_INTERACTION;
     }
 
     // find the first block at the bottom of the rope
@@ -156,11 +153,11 @@ public class RopeBlock extends Block implements SimpleWaterloggedBlock {
       ((BlockItem)stack.getItem()).place(new BlockPlaceContext(player, hand, stack, new BlockHitResult(Vec3.atBottomCenterOf(next), Direction.UP, next, false)));
     }
 
-    return InteractionResult.SUCCESS;
+    return ItemInteractionResult.sidedSuccess(world.isClientSide);
   }
 
   @Override
-  public void playerWillDestroy(Level world, BlockPos pos, BlockState state, Player player) {
+  public BlockState playerWillDestroy(Level world, BlockPos pos, BlockState state, Player player) {
     // when breaking, place all items from ropes below at the position of this rope
     // break all blocks below that are ropes
     BlockPos next = pos.below();
@@ -189,7 +186,7 @@ public class RopeBlock extends Block implements SimpleWaterloggedBlock {
       popResource(world, pos, new ItemStack(rungsItem, rungs * RUNG_ITEM_COUNT));
     }
 
-    super.playerWillDestroy(world, pos, state, player);
+    return super.playerWillDestroy(world, pos, state, player);
   }
 
 

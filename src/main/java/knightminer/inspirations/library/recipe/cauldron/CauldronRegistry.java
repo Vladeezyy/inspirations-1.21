@@ -54,7 +54,7 @@ public class CauldronRegistry {
 
 	/** Creates an entry for a fluid tag */
 	public static Predicate<Item> fluidTag(TagKey<Fluid> fluid) {
-		return item -> item instanceof BucketItem bucket && bucket.getFluid().is(fluid);
+		return item -> item instanceof BucketItem bucket && bucket.content.is(fluid);
 	}
 
 	/** Creates an entry for a item tag */

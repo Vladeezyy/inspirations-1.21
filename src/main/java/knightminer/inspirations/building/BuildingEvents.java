@@ -15,13 +15,12 @@ import net.minecraft.world.level.block.state.BlockState;
 import net.neoforged.neoforge.event.entity.player.PlayerInteractEvent;
 import net.neoforged.bus.api.SubscribeEvent;
 import net.neoforged.fml.common.EventBusSubscriber;
-import net.neoforged.fml.common.EventBusSubscriber.Bus;
 import net.neoforged.neoforge.items.ItemHandlerHelper;
 
 import javax.annotation.Nullable;
 
 @SuppressWarnings({"unused"})
-@EventBusSubscriber(modid = Inspirations.modID, bus = Bus.FORGE)
+@EventBusSubscriber(modid = Inspirations.modID)
 public class BuildingEvents {
   /**
    * Rope ladder event is used to allow sneak right click interaction to have special logic, as opposed to the standard interaction method

@@ -7,7 +7,6 @@ import knightminer.inspirations.common.network.InspirationsNetwork;
 import knightminer.inspirations.common.network.InventorySlotSyncPacket;
 import knightminer.inspirations.library.InspirationsRegistry;
 import net.minecraft.core.BlockPos;
-import net.minecraft.core.Direction;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.Tag;
 import net.minecraft.network.chat.Component;
@@ -25,13 +24,16 @@ import net.minecraft.world.phys.Vec3;
 import net.neoforged.neoforge.client.model.data.ModelData;
 import net.neoforged.neoforge.client.model.data.ModelProperty;
 
-import net.neoforged.neoforge.capabilities.Capabilities;
 
-import net.neoforged.neoforge.items.IItemHandler;
 import net.neoforged.neoforge.items.ItemHandlerHelper;
 import dev.vladeezyy.kilnwork.retexture.IRetexturedBlockEntity;
 import dev.vladeezyy.kilnwork.block.NameableBlockEntity;
 import dev.vladeezyy.kilnwork.retexture.RetexturedHelper;
+import dev.vladeezyy.kilnwork.retexture.RetexturedBlockEntity;
+import dev.vladeezyy.kilnwork.KilnworkRegistries;
+import net.minecraft.core.Direction;
+import net.minecraft.core.HolderLookup;
+import net.minecraft.core.component.DataComponentMap;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
@@ -49,7 +51,6 @@ public class ShelfBlockEntity extends NameableBlockEntity implements IRetextured
 
   // inventory
   private final ShelfInventory inventory = new ShelfInventory(this);
-  private final LazyOptional<IItemHandler> itemCapability = LazyOptional.of(() -> inventory);
 
   // display
   private Block texture = Blocks.AIR;
@@ -203,20 +204,6 @@ public class ShelfBlockEntity extends NameableBlockEntity implements IRetextured
     return inventory;
   }
 
-  @Nonnull
-  @Override
-  public <T> LazyOptional<T> getCapability(Capability<T> cap, @Nullable Direction side) {
-    if (cap == Capabilities.ITEM_HANDLER) {
-      return itemCapability.cast();
-    }
-    return super.getCapability(cap, side);
-  }
-
-  @Override
-  public void invalidateCaps() {
-    super.invalidateCaps();
-    itemCapability.invalidate();
-  }
 
 
   /*
@@ -269,6 +256,28 @@ public class ShelfBlockEntity extends NameableBlockEntity implements IRetextured
   }
 
 
+  /* Item stack components: the texture moves between the block and its item */
+
+  @Override
+  protected void applyImplicitComponents(DataComponentInput input) {
+    super.applyImplicitComponents(input);
+    Block block = input.get(KilnworkRegistries.TEXTURE);
+    this.texture = block != null ? block : Blocks.AIR;
+  }
+
+  @Override
+  protected void collectImplicitComponents(DataComponentMap.Builder components) {
+    super.collectImplicitComponents(components);
+    IRetexturedBlockEntity.collectImplicitComponents(this, components);
+  }
+
+  @SuppressWarnings("deprecation")
+  @Override
+  public void removeComponentsFromTag(CompoundTag tag) {
+    super.removeComponentsFromTag(tag);
+    tag.remove(TAG_TEXTURE);
+  }
+
   /*
    * Rendering
    */
@@ -284,9 +293,9 @@ public class ShelfBlockEntity extends NameableBlockEntity implements IRetextured
   }
 
   @Override
-  public void updateTexture(String name) {
-    Block oldTexture = texture;
-    texture = RetexturedHelper.getBlock(name);
+  public void updateTexture(Block texture) {
+    Block oldTexture = this.texture;
+    this.texture = texture;
     if (oldTexture != texture) {
       setChangedFast();
       RetexturedHelper.onTextureUpdated(this);
@@ -326,25 +335,26 @@ public class ShelfBlockEntity extends NameableBlockEntity implements IRetextured
   private static final String TAG_ITEMS = "Items";
 
   @Override
-  public void saveSynced(CompoundTag tags) {
-    super.saveSynced(tags);
-    tags.put(TAG_ITEMS, inventory.serializeNBT());
+  public void saveSynced(CompoundTag tags, HolderLookup.Provider registries) {
+    super.saveSynced(tags, registries);
+    tags.put(TAG_ITEMS, inventory.serialize(registries));
     if (texture != Blocks.AIR) {
       tags.putString(TAG_TEXTURE, getTextureName());
     }
   }
 
   @Override
-  public void load(CompoundTag tags) {
-    super.load(tags);
+  protected void loadAdditional(CompoundTag tags, HolderLookup.Provider registries) {
+    super.loadAdditional(tags, registries);
     boolean needsUpdate = false;
     if (tags.contains(TAG_ITEMS, Tag.TAG_LIST)) {
-      inventory.deserializeNBT(tags.getList(TAG_ITEMS, Tag.TAG_COMPOUND));
+      inventory.deserialize(registries, tags.getList(TAG_ITEMS, Tag.TAG_COMPOUND));
       refreshBooks();
       needsUpdate = true;
     }
-    if (tags.contains(TAG_TEXTURE, Tag.TAG_STRING)) {
-      texture = RetexturedHelper.getBlock(tags.getString(TAG_TEXTURE));
+    String textureName = RetexturedBlockEntity.readTextureName(tags);
+    if (textureName != null) {
+      texture = RetexturedHelper.getBlock(textureName);
       needsUpdate = true;
     }
     if (needsUpdate) {
