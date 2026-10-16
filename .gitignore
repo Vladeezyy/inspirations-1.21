@@ -1,27 +1,18 @@
-# eclipse
-bin
-*.launch
-.settings
-.metadata
-.classpath
-.project
-
-# idea
-out
-*.ipr
-*.iws
-*.iml
-.idea
-
-# gradle
-build
 .gradle
-
-# other
-eclipse
-run
-libs
-classes/
-logs/debug.log
-logs/latest.log
+build/
+.idea/
+*.iml
+out/
+.vscode/
+.DS_Store
+run/
+run-*/
+*.jar
+!gradle/wrapper/gradle-wrapper.jar
+*.log
+prodtest/*/
 src/generated/resources/.cache/
+build-*.txt
+prodtest/result-*.txt
+build-*.out
+prodtest/*.out
