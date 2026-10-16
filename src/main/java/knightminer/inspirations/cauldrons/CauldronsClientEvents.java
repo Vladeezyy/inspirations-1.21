@@ -14,7 +14,10 @@ import net.minecraft.client.color.item.ItemColors;
 import net.minecraft.client.renderer.ItemBlockRenderTypes;
 import net.minecraft.client.renderer.RenderType;
 import net.minecraft.world.item.alchemy.Potion;
-import net.minecraft.world.item.alchemy.PotionUtils;
+import net.minecraft.util.FastColor;
+import net.minecraft.resources.ResourceLocation;
+import net.neoforged.neoforge.client.extensions.common.RegisterClientExtensionsEvent;
+import knightminer.inspirations.Inspirations;
 import net.minecraft.world.item.alchemy.Potions;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.neoforged.api.distmarker.Dist;
@@ -42,7 +45,7 @@ public class CauldronsClientEvents extends AbstractClientEvents {
       if (index == 0 && level != null && pos != null) {
         BlockEntity be = level.getBlockEntity(pos);
         if (be != null && be.getType() == InspirationsCaudrons.dyeCauldronEntity) {
-          return ((DyeCauldronBlockEntity) be).getColor();
+          return FastColor.ARGB32.opaque(((DyeCauldronBlockEntity) be).getColor());
         }
       }
       return -1;
@@ -51,8 +54,8 @@ public class CauldronsClientEvents extends AbstractClientEvents {
       if (index == 0 && level != null && pos != null) {
         BlockEntity be = level.getBlockEntity(pos);
         if (be != null && be.getType() == InspirationsCaudrons.potionCauldronEntity) {
-          Potion potion = ((PotionCauldronBlockEntity) be).getPotion();
-          return potion == Potions.EMPTY ? -1 : PotionUtils.getColor(potion);
+          PotionCauldronBlockEntity cauldron = (PotionCauldronBlockEntity) be;
+          return cauldron.getPotion() == null ? -1 : FastColor.ARGB32.opaque(cauldron.getPotionContents().getColor());
         }
       }
       return -1;
@@ -61,7 +64,7 @@ public class CauldronsClientEvents extends AbstractClientEvents {
 
   @SubscribeEvent
   static void registerParticleFactories(RegisterParticleProvidersEvent event) {
-    Minecraft.getInstance().particleEngine.register(InspirationsCaudrons.boilingParticle, BoilingParticle.Factory::new);
+    event.registerSpriteSet(InspirationsCaudrons.boilingParticle, BoilingParticle.Factory::new);
   }
 
   @SubscribeEvent
@@ -69,8 +72,8 @@ public class CauldronsClientEvents extends AbstractClientEvents {
     ItemColors itemColors = event.getItemColors();
 
     // dyed water bottles
-    InspirationsCaudrons.simpleDyedWaterBottle.forEach((color, bottle) -> itemColors.register((stack, index) -> index == 0 ? MiscUtil.getColor(color) : -1, bottle));
-    registerItemColors(itemColors, (stack, index) -> index == 0 ? MixedDyedBottleItem.dyeFromBottle(stack) : -1, InspirationsCaudrons.mixedDyedWaterBottle);
+    InspirationsCaudrons.simpleDyedWaterBottle.forEach((color, bottle) -> itemColors.register((stack, index) -> index == 0 ? FastColor.ARGB32.opaque(MiscUtil.getColor(color)) : -1, bottle));
+    registerItemColors(itemColors, (stack, index) -> index == 0 ? FastColor.ARGB32.opaque(MixedDyedBottleItem.dyeFromBottle(stack)) : -1, InspirationsCaudrons.mixedDyedWaterBottle);
     event.register(fluidColor(InspirationsCaudrons.mushroomStewType), InspirationsCaudrons.mushroomStewBucket);
     event.register(fluidColor(InspirationsCaudrons.potatoSoupType), InspirationsCaudrons.potatoSoupBucket);
     event.register(fluidColor(InspirationsCaudrons.rabbitStewType), InspirationsCaudrons.rabbitStewBucket);
@@ -82,5 +85,36 @@ public class CauldronsClientEvents extends AbstractClientEvents {
   private static ItemColor fluidColor(FluidType type) {
     IClientFluidTypeExtensions extensions = IClientFluidTypeExtensions.of(type);
     return (stack, index) -> index == 1 ? extensions.getTintColor() : -1;
+  }
+
+  /** Still and flowing textures and tint of a fluid, from the fluid texture JSON Mantle read in 1.20 */
+  private static IClientFluidTypeExtensions fluidTexture(String texture, int color) {
+    ResourceLocation still = Inspirations.getResource("fluid/" + texture + "_still");
+    ResourceLocation flowing = Inspirations.getResource("fluid/" + texture + "_flowing");
+    return new IClientFluidTypeExtensions() {
+      @Override
+      public ResourceLocation getStillTexture() {
+        return still;
+      }
+
+      @Override
+      public ResourceLocation getFlowingTexture() {
+        return flowing;
+      }
+
+      @Override
+      public int getTintColor() {
+        return color;
+      }
+    };
+  }
+
+  @SubscribeEvent
+  static void registerClientExtensions(RegisterClientExtensionsEvent event) {
+    event.registerFluidType(fluidTexture("colorless", 0xFFCD8C6F), InspirationsCaudrons.mushroomStewType);
+    event.registerFluidType(fluidTexture("colorless", 0xFF84160D), InspirationsCaudrons.beetrootSoupType);
+    event.registerFluidType(fluidTexture("colorless", 0xFF984A2C), InspirationsCaudrons.rabbitStewType);
+    event.registerFluidType(fluidTexture("colorless", 0xFFF2DA9F), InspirationsCaudrons.potatoSoupType);
+    event.registerFluidType(fluidTexture("transparent", 0xFFFF9116), InspirationsCaudrons.honeyType);
   }
 }

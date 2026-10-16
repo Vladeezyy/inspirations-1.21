@@ -7,7 +7,6 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.stats.Stats;
 import net.minecraft.world.item.ItemStack;
-import net.minecraft.world.item.alchemy.PotionUtils;
 import net.minecraft.world.level.ItemLike;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.state.BlockState;
@@ -28,7 +27,7 @@ public class PotionIntoPotionCauldron extends AbstractModifyCauldronInteraction 
 		int potionLevel = oldState.getValue(LEVEL);
 		if (potionLevel < 3) {
 			PotionCauldronBlockEntity cauldron = InspirationsCaudrons.potionCauldronEntity.getBlockEntity(level, pos);
-			if (cauldron != null && cauldron.getPotion() == PotionUtils.getPotion(filledStack)) {
+			if (cauldron != null && cauldron.getPotion() != null && cauldron.getPotion().equals(PotionCauldronBlockEntity.potionOf(filledStack))) {
 				return oldState.setValue(LEVEL, potionLevel + 1);
 			}
 		}

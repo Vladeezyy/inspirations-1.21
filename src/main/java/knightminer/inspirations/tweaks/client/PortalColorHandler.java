@@ -40,8 +40,8 @@ public class PortalColorHandler implements BlockColor {
     }
 
     // Get the real world, not the fake one so we can look at the blocks far enough below us.
-    if (world instanceof RenderChunkRegion) {
-      world = ((RenderChunkRegion)world).level;
+    if (world instanceof RenderChunkRegion && Minecraft.getInstance().level != null) {
+      world = Minecraft.getInstance().level;
     }
 
     // if we are at the top of the chunk, notify the portal above that it needs to update

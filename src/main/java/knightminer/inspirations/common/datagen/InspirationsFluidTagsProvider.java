@@ -7,7 +7,6 @@ import net.minecraft.core.HolderLookup.Provider;
 import net.minecraft.data.PackOutput;
 import net.minecraft.data.tags.FluidTagsProvider;
 import net.neoforged.neoforge.common.data.ExistingFileHelper;
-import slimeknights.mantle.datagen.MantleTags;
 
 import java.util.concurrent.CompletableFuture;
 
@@ -30,11 +29,11 @@ public class InspirationsFluidTagsProvider extends FluidTagsProvider {
     tag(InspirationsTags.Fluids.RABBIT_STEW  ).add(InspirationsCaudrons.rabbitStew, InspirationsCaudrons.rabbitStew.getFlowing());
     tag(InspirationsTags.Fluids.POTATO_SOUP  ).add(InspirationsCaudrons.potatoSoup, InspirationsCaudrons.potatoSoup.getFlowing());
     // common tags
-    tag(MantleTags.Fluids.HONEY).addTag(InspirationsTags.Fluids.HONEY);
-    tag(MantleTags.Fluids.BEETROOT_SOUP).addTag(InspirationsTags.Fluids.BEETROOT_SOUP);
-    tag(MantleTags.Fluids.MUSHROOM_STEW).addTag(InspirationsTags.Fluids.MUSHROOM_STEW);
-    tag(MantleTags.Fluids.RABBIT_STEW).addTag(InspirationsTags.Fluids.RABBIT_STEW);
+    tag(InspirationsTags.Common.HONEY).addTag(InspirationsTags.Fluids.HONEY);
+    tag(InspirationsTags.Common.BEETROOT_SOUP).addTag(InspirationsTags.Fluids.BEETROOT_SOUP);
+    tag(InspirationsTags.Common.MUSHROOM_STEW).addTag(InspirationsTags.Fluids.MUSHROOM_STEW);
+    tag(InspirationsTags.Common.RABBIT_STEW).addTag(InspirationsTags.Fluids.RABBIT_STEW);
     // manntle adds the rest to soup, but potato is our own invention
-    tag(MantleTags.Fluids.SOUP).addTag(InspirationsTags.Fluids.POTATO_SOUP);
+    tag(InspirationsTags.Common.SOUP).addTag(InspirationsTags.Fluids.POTATO_SOUP);
   }
 }

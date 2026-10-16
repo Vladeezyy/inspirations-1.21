@@ -6,6 +6,7 @@ import knightminer.inspirations.common.network.InspirationsNetwork;
 import knightminer.inspirations.library.MiscUtil;
 import net.minecraft.core.BlockPos;
 import net.minecraft.nbt.CompoundTag;
+import net.minecraft.core.HolderLookup;
 import net.minecraft.world.item.DyeColor;
 import net.minecraft.world.level.block.state.BlockState;
 import dev.vladeezyy.kilnwork.block.SyncedBlockEntity;
@@ -62,15 +63,15 @@ public class DyeCauldronBlockEntity extends SyncedBlockEntity {
 	}
 
 	@Override
-	protected void saveSynced(CompoundTag nbt) {
-		super.saveSynced(nbt);
+	protected void saveSynced(CompoundTag nbt, HolderLookup.Provider registries) {
+		super.saveSynced(nbt, registries);
 
 		nbt.putInt(TAG_COLOR, color);
 	}
 
 	@Override
-	public void load(CompoundTag nbt) {
-		super.load(nbt);
+	protected void loadAdditional(CompoundTag nbt, HolderLookup.Provider registries) {
+		super.loadAdditional(nbt, registries);
 
 		color = nbt.getInt(TAG_COLOR);
 		if (level != null && level.isClientSide) {

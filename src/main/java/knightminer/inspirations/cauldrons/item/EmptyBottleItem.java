@@ -10,7 +10,7 @@ import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.BottleItem;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
-import net.minecraft.world.item.alchemy.PotionUtils;
+import net.minecraft.world.item.alchemy.PotionContents;
 import net.minecraft.world.item.alchemy.Potions;
 import net.minecraft.world.level.ClipContext;
 import net.minecraft.world.level.Level;
@@ -50,7 +50,7 @@ public class EmptyBottleItem extends BottleItem {
       // if the block contains water, give filled stack
       if (world.getFluidState(pos).is(FluidTags.WATER)) {
         world.playSound(player, player.getX(), player.getY(), player.getZ(), SoundEvents.BOTTLE_FILL, SoundSource.NEUTRAL, 1.0F, 1.0F);
-        return InteractionResultHolder.sidedSuccess(this.turnBottleIntoItem(stack, player, PotionUtils.setPotion(new ItemStack(filled.get()), Potions.WATER)), world.isClientSide());
+        return InteractionResultHolder.sidedSuccess(this.turnBottleIntoItem(stack, player, PotionContents.createItemStack(filled.get(), Potions.WATER)), world.isClientSide());
       }
     }
 

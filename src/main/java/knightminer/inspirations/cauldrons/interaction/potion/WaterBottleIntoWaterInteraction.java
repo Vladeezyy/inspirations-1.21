@@ -1,11 +1,11 @@
 package knightminer.inspirations.cauldrons.interaction.potion;
 
+import knightminer.inspirations.cauldrons.block.entity.PotionCauldronBlockEntity;
 import knightminer.inspirations.cauldrons.interaction.AbstractModifyCauldronInteraction;
 import net.minecraft.core.BlockPos;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.stats.Stats;
 import net.minecraft.world.item.ItemStack;
-import net.minecraft.world.item.alchemy.PotionUtils;
 import net.minecraft.world.item.alchemy.Potions;
 import net.minecraft.world.level.ItemLike;
 import net.minecraft.world.level.Level;
@@ -24,7 +24,7 @@ public class WaterBottleIntoWaterInteraction extends AbstractModifyCauldronInter
 	@Override
 	protected BlockState getNewState(BlockState state, Level level, BlockPos pos, ItemStack filledStack) {
 		int waterLevel = state.getValue(LayeredCauldronBlock.LEVEL);
-		if (waterLevel < 3 && PotionUtils.getPotion(filledStack) == Potions.WATER) {
+		if (waterLevel < 3 && PotionCauldronBlockEntity.isWater(filledStack)) {
 			return state.setValue(LayeredCauldronBlock.LEVEL, waterLevel + 1);
 		}
 		return null;

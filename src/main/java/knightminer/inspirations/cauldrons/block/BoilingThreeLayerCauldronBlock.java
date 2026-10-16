@@ -19,23 +19,17 @@ import static knightminer.inspirations.cauldrons.block.BoilingFourLayerCauldronB
 
 /** Cauldron block that has four layers and emits boiling particles when over fire */
 public class BoilingThreeLayerCauldronBlock extends LayeredCauldronBlock {
-	public BoilingThreeLayerCauldronBlock(Properties props, Predicate<Precipitation> fillPredicate, Map<Item,CauldronInteraction> interactions) {
-		super(props, fillPredicate, interactions);
+	public BoilingThreeLayerCauldronBlock(Properties props, Precipitation precipitation, CauldronInteraction.InteractionMap interactions) {
+		super(precipitation, interactions, props);
 	}
 
 	@Override
 	public void entityInside(BlockState state, Level world, BlockPos pos, Entity entity) {
-		if (!world.isClientSide && isEntityInsideContent(state, pos, entity)) {
-			if (isBoiling(world, pos)) {
-				BoilingFourLayerCauldronBlock.boil(entity);
-			}
-			if (entity.isOnFire()) {
-				entity.clearFire();
-				if (entity.mayInteract(world, pos)) {
-					this.handleEntityOnFireInside(state, world, pos);
-				}
-			}
+		if (!world.isClientSide && isEntityInsideContent(state, pos, entity) && isBoiling(world, pos)) {
+			BoilingFourLayerCauldronBlock.boil(entity);
 		}
+		// puts out burning entities like vanilla
+		super.entityInside(state, world, pos, entity);
 	}
 
 	@Override

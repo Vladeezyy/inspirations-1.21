@@ -1,106 +1,125 @@
 package knightminer.inspirations.cauldrons.block.entity;
 
+import dev.vladeezyy.kilnwork.block.SyncedBlockEntity;
+import knightminer.inspirations.Inspirations;
 import knightminer.inspirations.cauldrons.InspirationsCaudrons;
 import net.minecraft.core.BlockPos;
+import net.minecraft.core.Holder;
+import net.minecraft.core.HolderLookup;
+import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.ListTag;
+import net.minecraft.nbt.NbtOps;
 import net.minecraft.nbt.Tag;
+import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.effect.MobEffect;
-import net.minecraft.world.item.SuspiciousStewItem;
+import net.minecraft.world.item.component.SuspiciousStewEffects;
 import net.minecraft.world.level.block.state.BlockState;
-import net.neoforged.neoforge.common.CommonHooks;
-import dev.vladeezyy.kilnwork.block.SyncedBlockEntity;
 
-import javax.annotation.Nullable;
-import java.util.HashMap;
+import java.util.ArrayList;
+import java.util.LinkedHashMap;
+import java.util.List;
 import java.util.Map;
-
-import static net.minecraft.world.item.SuspiciousStewItem.EFFECT_DURATION_TAG;
-import static net.minecraft.world.item.SuspiciousStewItem.EFFECT_ID_TAG;
 
 /** Block entity for cauldron suspicious stew contents */
 public class SuspiciousStewCauldronBlockEntity extends SyncedBlockEntity {
-	/** Effect name */
-	private static final String EFFECT_NAME = "forge:effect_id";
+	/** Effects in 1.21, the codec of the suspicious stew component */
+	private static final String TAG_EFFECTS = "effects";
+	/** Keys of 1.20 worlds, the stew NBT of 1.20: {Effects: [{EffectId: byte, forge:effect_id: string, EffectDuration: int}]} */
+	private static final String LEGACY_EFFECTS = "Effects";
+	private static final String LEGACY_EFFECT_ID = "EffectId";
+	private static final String LEGACY_EFFECT_NAME = "forge:effect_id";
+	private static final String LEGACY_DURATION = "EffectDuration";
 
-	private ListTag effects = new ListTag();
+	private List<SuspiciousStewEffects.Entry> effects = List.of();
+
 	public SuspiciousStewCauldronBlockEntity(BlockPos pos, BlockState state) {
 		super(InspirationsCaudrons.suspiciousStewCauldronEntity, pos, state);
 	}
 
-	/** Gets the stew contents */
-	public ListTag getEffects() {
-		return effects;
+	/** Gets the effects in the cauldron, as the stew component */
+	public SuspiciousStewEffects getEffects() {
+		return new SuspiciousStewEffects(effects);
 	}
 
 	/** Sets the effects in the cauldron */
-	public void setEffects(ListTag effects) {
-		this.effects = effects.copy();
+	public void setEffects(SuspiciousStewEffects effects) {
+		this.effects = List.copyOf(effects.effects());
 		this.setChangedFast();
 	}
 
-	/** Updates the effects in this cauldron */
-	public void addEffect(MobEffect effect, int duration) {
-		CompoundTag effectTag = new CompoundTag();
-		effectTag.putByte(EFFECT_ID_TAG, (byte)MobEffect.getId(effect));
-		CommonHooks.saveMobEffect(effectTag, "forge:effect_id", effect);
-		effectTag.putInt(EFFECT_DURATION_TAG, duration);
-		effects.add(effectTag);
+	/** Adds a new effect to the cauldron */
+	public void addEffect(Holder<MobEffect> effect, int duration) {
+		List<SuspiciousStewEffects.Entry> list = new ArrayList<>(effects);
+		list.add(new SuspiciousStewEffects.Entry(effect, duration));
+		this.effects = List.copyOf(list);
 		this.setChangedFast();
 	}
 
-	/** Gets the effect stored in the tag */
-	@Nullable
-	private static MobEffect getEffect(CompoundTag tag) {
-		MobEffect effect = MobEffect.byId(tag.getByte(EFFECT_ID_TAG));
-		return CommonHooks.loadMobEffect(tag, EFFECT_NAME, effect);
+	/** Adds the durations of the list, times the size, into the map */
+	private static void scaleList(Map<Holder<MobEffect>, Integer> existingEffects, List<SuspiciousStewEffects.Entry> list, int size) {
+		for (SuspiciousStewEffects.Entry entry : list) {
+			existingEffects.merge(entry.effect(), entry.duration() * size, Integer::sum);
+		}
 	}
 
-	/** Scale the effect down */
-	private static void scaleList(Map<MobEffect,CompoundTag> existingEffects, ListTag list, int size) {
+	/**
+	 * Merges the given effects into the existing ones, averaging the durations by the stew amounts
+	 * @param existingSize  Amount of stew in the cauldron
+	 * @param mergeEffects  Effects to add
+	 * @param mergeSize     Amount of stew added
+	 */
+	public void mergeEffects(int existingSize, SuspiciousStewEffects mergeEffects, int mergeSize) {
+		Map<Holder<MobEffect>, Integer> existingEffects = new LinkedHashMap<>();
+		scaleList(existingEffects, effects, existingSize);
+		scaleList(existingEffects, mergeEffects.effects(), mergeSize);
+		int totalSize = mergeSize + existingSize;
+		List<SuspiciousStewEffects.Entry> list = new ArrayList<>();
+		existingEffects.forEach((effect, duration) -> list.add(new SuspiciousStewEffects.Entry(effect, duration / totalSize)));
+		this.effects = List.copyOf(list);
+		this.setChangedFast();
+	}
+
+	@Override
+	protected void loadAdditional(CompoundTag nbt, HolderLookup.Provider registries) {
+		super.loadAdditional(nbt, registries);
+		if (nbt.contains(TAG_EFFECTS, Tag.TAG_LIST)) {
+			this.effects = SuspiciousStewEffects.CODEC.parse(registries.createSerializationContext(NbtOps.INSTANCE), nbt.get(TAG_EFFECTS))
+				.resultOrPartial(error -> Inspirations.log.error("Failed to read suspicious stew effects: {}", error))
+				.map(SuspiciousStewEffects::effects).orElse(List.of());
+		} else if (nbt.contains(LEGACY_EFFECTS, Tag.TAG_LIST)) {
+			this.effects = readLegacy(nbt.getList(LEGACY_EFFECTS, Tag.TAG_COMPOUND));
+		}
+	}
+
+	/** Reads the effects of a 1.20 world */
+	private static List<SuspiciousStewEffects.Entry> readLegacy(ListTag list) {
+		List<SuspiciousStewEffects.Entry> entries = new ArrayList<>();
 		for (int i = 0; i < list.size(); i++) {
-			CompoundTag effectTag = list.getCompound(i);
-			MobEffect effect = getEffect(effectTag);
-			if (effect != null) {
-				int duration = effectTag.getInt(EFFECT_DURATION_TAG) * size;
-				// if the effect already existed, merge it in
-				CompoundTag existing = existingEffects.get(effect);
-				if (existing != null) {
-					existing.putInt(EFFECT_DURATION_TAG, duration + existing.getInt(EFFECT_DURATION_TAG));
-				} else {
-					effectTag = effectTag.copy();
-					effectTag.putInt(EFFECT_DURATION_TAG, duration);
-					existingEffects.put(effect, effectTag);
+			CompoundTag tag = list.getCompound(i);
+			Holder<MobEffect> effect = null;
+			if (tag.contains(LEGACY_EFFECT_NAME, Tag.TAG_STRING)) {
+				ResourceLocation id = ResourceLocation.tryParse(tag.getString(LEGACY_EFFECT_NAME));
+				if (id != null) {
+					effect = BuiltInRegistries.MOB_EFFECT.getHolder(id).orElse(null);
 				}
 			}
+			if (effect == null && tag.contains(LEGACY_EFFECT_ID, Tag.TAG_ANY_NUMERIC)) {
+				// 1.20 numeric ids are the vanilla registration order, ids start at 1
+				effect = BuiltInRegistries.MOB_EFFECT.getHolder(tag.getByte(LEGACY_EFFECT_ID) - 1).orElse(null);
+			}
+			if (effect != null) {
+				entries.add(new SuspiciousStewEffects.Entry(effect, tag.getInt(LEGACY_DURATION)));
+			}
 		}
-	}
-
-	/** Merges the list of effects into the internal list */
-	public void mergeEffects(int existingSize, ListTag mergeEffects, int mergeSize) {
-		// start by boosting all existing durations
-		Map<MobEffect,CompoundTag> existingEffects = new HashMap<>();
-		scaleList(existingEffects, effects, existingSize);
-		scaleList(existingEffects, mergeEffects, mergeSize);
-
-		effects = new ListTag();
-		int totalSize = mergeSize + existingSize;
-		for (CompoundTag effect : existingEffects.values()) {
-			effect.putInt(EFFECT_DURATION_TAG, effect.getInt(EFFECT_DURATION_TAG) / totalSize);
-			effects.add(effect);
-		}
-		this.setChangedFast();
+		return List.copyOf(entries);
 	}
 
 	@Override
-	public void load(CompoundTag nbt) {
-		super.load(nbt);
-		this.effects = nbt.getList(SuspiciousStewItem.EFFECTS_TAG, Tag.TAG_COMPOUND).copy();
-	}
-
-	@Override
-	public void saveAdditional(CompoundTag nbt) {
-		super.saveAdditional(nbt);
-		nbt.put(SuspiciousStewItem.EFFECTS_TAG, this.effects.copy());
+	protected void saveAdditional(CompoundTag nbt, HolderLookup.Provider registries) {
+		super.saveAdditional(nbt, registries);
+		SuspiciousStewEffects.CODEC.encodeStart(registries.createSerializationContext(NbtOps.INSTANCE), getEffects())
+			.resultOrPartial(error -> Inspirations.log.error("Failed to save suspicious stew effects: {}", error))
+			.ifPresent(tag -> nbt.put(TAG_EFFECTS, tag));
 	}
 }

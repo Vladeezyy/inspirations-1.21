@@ -3,6 +3,7 @@ package knightminer.inspirations.cauldrons.block;
 import knightminer.inspirations.cauldrons.InspirationsCaudrons;
 import knightminer.inspirations.cauldrons.block.entity.PotionCauldronBlockEntity;
 import net.minecraft.core.BlockPos;
+import net.minecraft.world.level.biome.Biome;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.tags.BlockTags;
@@ -17,6 +18,7 @@ import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
 
 import javax.annotation.Nullable;
+import java.util.ArrayList;
 import java.util.List;
 
 import static knightminer.inspirations.cauldrons.block.BoilingFourLayerCauldronBlock.isBoiling;
@@ -24,7 +26,7 @@ import static knightminer.inspirations.cauldrons.block.BoilingFourLayerCauldronB
 /** Cauldron that contains a data instance for the potion */
 public class PotionCauldronBlock extends BoilingThreeLayerCauldronBlock implements EntityBlock {
 	public PotionCauldronBlock(Properties props) {
-		super(props, precipitation -> false, InspirationsCaudrons.POTION_CAULDRON_INTERACTIONS);
+		super(props, Biome.Precipitation.NONE, InspirationsCaudrons.POTION_CAULDRON_INTERACTIONS);
 	}
 
 	@Override
@@ -36,11 +38,12 @@ public class PotionCauldronBlock extends BoilingThreeLayerCauldronBlock implemen
 			if (entity instanceof LivingEntity living) {
 				PotionCauldronBlockEntity be = InspirationsCaudrons.potionCauldronEntity.getBlockEntity(world, pos);
 				if (be != null) {
-					List<MobEffectInstance> effects = be.getPotion().getEffects();
+					List<MobEffectInstance> effects = new ArrayList<>();
+					be.getPotionContents().forEachEffect(effects::add);
 					if (effects.stream().anyMatch(effect -> !living.hasEffect(effect.getEffect()))) {
 						for (MobEffectInstance effect : effects) {
-							if (effect.getEffect().isInstantenous()) {
-								effect.getEffect().applyInstantenousEffect(null, null, living, effect.getAmplifier(), 1.0D);
+							if (effect.getEffect().value().isInstantenous()) {
+								effect.getEffect().value().applyInstantenousEffect(null, null, living, effect.getAmplifier(), 1.0D);
 							} else {
 								living.addEffect(new MobEffectInstance(effect));
 							}
@@ -65,8 +68,7 @@ public class PotionCauldronBlock extends BoilingThreeLayerCauldronBlock implemen
 			// if broken, potion!
 			if (!isMoving && !newState.is(BlockTags.CAULDRONS)) {
 				PotionCauldronBlockEntity be = InspirationsCaudrons.potionCauldronEntity.getBlockEntity(level, pos);
-				if (be != null) {
-					Potion potion = be.getPotion();
+				if (be != null && be.getPotion() != null) {
 					int waterLevel = state.getValue(LEVEL);
 					AreaEffectCloud cloud = new AreaEffectCloud(level, pos.getX() + 0.5F, pos.getY() + 0.5F, pos.getZ() + 0.5F);
 					cloud.setRadius(0.5F * waterLevel + 0.5F);
@@ -74,10 +76,8 @@ public class PotionCauldronBlock extends BoilingThreeLayerCauldronBlock implemen
 					cloud.setRadiusOnUse(-0.5F);
 					cloud.setWaitTime(10);
 					cloud.setRadiusPerTick(-cloud.getRadius() / cloud.getDuration());
-					cloud.setPotion(potion);
-					for (MobEffectInstance effect : potion.getEffects()) {
-						cloud.addEffect(new MobEffectInstance(effect));
-					}
+					// 1.20 set the potion and added its effects again, so the cloud had every effect twice
+					cloud.setPotionContents(be.getPotionContents());
 					level.addFreshEntity(cloud);
 					level.playSound(null, pos, SoundEvents.SPLASH_POTION_BREAK, SoundSource.BLOCKS, 1.0f, 1.0f);
 				}

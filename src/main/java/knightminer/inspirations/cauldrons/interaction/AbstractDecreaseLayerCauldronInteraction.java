@@ -7,7 +7,7 @@ import net.minecraft.sounds.SoundEvent;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.stats.Stats;
 import net.minecraft.world.InteractionHand;
-import net.minecraft.world.InteractionResult;
+import net.minecraft.world.ItemInteractionResult;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.ItemUtils;
@@ -33,10 +33,10 @@ public abstract class AbstractDecreaseLayerCauldronInteraction implements Cauldr
 	protected abstract ItemStack getResult(BlockState state, Level level, BlockPos pos, ItemStack stack);
 
 	@Override
-	public InteractionResult interact(BlockState state, Level level, BlockPos pos, Player player, InteractionHand hand, ItemStack stack) {
+	public ItemInteractionResult interact(BlockState state, Level level, BlockPos pos, Player player, InteractionHand hand, ItemStack stack) {
 		ItemStack result = getResult(state, level, pos, stack);
 		if (result.isEmpty()) {
-			return InteractionResult.PASS;
+			return ItemInteractionResult.PASS_TO_DEFAULT_BLOCK_INTERACTION;
 		}
 
 		if (!level.isClientSide) {
@@ -58,6 +58,6 @@ public abstract class AbstractDecreaseLayerCauldronInteraction implements Cauldr
 			level.playSound(null, pos, sound, SoundSource.BLOCKS, 1.0F, 1.0F);
 			level.gameEvent(null, GameEvent.FLUID_PICKUP, pos);
 		}
-		return InteractionResult.sidedSuccess(level.isClientSide);
+		return ItemInteractionResult.sidedSuccess(level.isClientSide);
 	}
 }

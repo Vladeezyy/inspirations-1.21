@@ -20,7 +20,6 @@ import net.minecraft.world.item.Items;
 import net.minecraft.world.level.block.Block;
 import net.neoforged.neoforge.common.Tags;
 import net.neoforged.neoforge.common.data.ExistingFileHelper;
-import slimeknights.mantle.datagen.MantleTags;
 
 import java.util.concurrent.CompletableFuture;
 
@@ -79,8 +78,8 @@ public class InspirationsItemTagsProvider extends ItemTagsProvider {
   private void registerForgeTags() {
     this.tag(Tags.Items.BOOKSHELVES).addTag(InspirationsTags.Items.BOOKSHELVES);
 
-    this.tag(MantleTags.Items.SPLASH_BOTTLE).add(InspirationsCaudrons.splashBottle);
-    this.tag(MantleTags.Items.LINGERING_BOTTLE).add(InspirationsCaudrons.lingeringBottle);
+    this.tag(InspirationsTags.Common.SPLASH_BOTTLE).add(InspirationsCaudrons.splashBottle);
+    this.tag(InspirationsTags.Common.LINGERING_BOTTLE).add(InspirationsCaudrons.lingeringBottle);
 
     // add dyed bottles to dye tag, forge tag are always INamedTag
     InspirationsCaudrons.simpleDyedWaterBottle.forEach((color, bottle) -> this.tag(color.getTag()).add(bottle));

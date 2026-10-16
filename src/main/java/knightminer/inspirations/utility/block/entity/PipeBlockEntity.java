@@ -18,7 +18,6 @@ import net.minecraft.world.level.block.entity.HopperBlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
 import net.neoforged.neoforge.capabilities.Capabilities;
 
-import net.neoforged.neoforge.common.util.NonNullConsumer;
 import net.neoforged.neoforge.items.IItemHandler;
 import net.neoforged.neoforge.items.ItemHandlerHelper;
 import dev.vladeezyy.kilnwork.block.InventoryBlockEntity;

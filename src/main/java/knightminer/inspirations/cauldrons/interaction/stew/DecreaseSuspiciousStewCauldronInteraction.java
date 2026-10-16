@@ -8,7 +8,7 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
-import net.minecraft.world.item.SuspiciousStewItem;
+import net.minecraft.core.component.DataComponents;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.state.BlockState;
 
@@ -24,7 +24,7 @@ public class DecreaseSuspiciousStewCauldronInteraction extends AbstractDecreaseL
 		SuspiciousStewCauldronBlockEntity cauldron = InspirationsCaudrons.suspiciousStewCauldronEntity.getBlockEntity(level, pos);
 		if (cauldron != null) {
 			ItemStack result = new ItemStack(Items.SUSPICIOUS_STEW);
-			result.getOrCreateTag().put(SuspiciousStewItem.EFFECTS_TAG, cauldron.getEffects().copy());
+			result.set(DataComponents.SUSPICIOUS_STEW_EFFECTS, cauldron.getEffects());
 			return result;
 		}
 		return ItemStack.EMPTY;

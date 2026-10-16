@@ -73,6 +73,11 @@ public class MiscUtil {
     }
   }
 
+  /** RGB of an ARGB color, the format of 1.21 colors */
+  public static int rgb(int argb) {
+    return argb & 0xFFFFFF;
+  }
+
   /** Gets the color for the given dye */
   public static int getColor(DyeColor color) {
     return DYE_COLORS[color.getId()];

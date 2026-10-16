@@ -7,8 +7,8 @@ import net.minecraft.world.level.LevelAccessor;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.state.BlockState;
 import net.neoforged.neoforge.common.CommonHooks;
-import net.neoforged.neoforge.event.level.BlockEvent;
-import net.neoforged.neoforge.event.level.BlockEvent.CropGrowEvent.Pre;
+import net.neoforged.neoforge.event.level.block.CropGrowEvent;
+import net.neoforged.neoforge.event.level.block.CropGrowEvent.Pre;
 
 import java.util.function.Consumer;
 
@@ -27,7 +27,7 @@ public class SmoothGrowthListener implements Consumer<Pre> {
   }
 
   @Override
-  public void accept(BlockEvent.CropGrowEvent.Pre event) {
+  public void accept(CropGrowEvent.Pre event) {
     if (!Config.smoothBlockCropGrowth.getAsBoolean()) {
       return;
     }
@@ -61,11 +61,11 @@ public class SmoothGrowthListener implements Consumer<Pre> {
     }
 
     // prevent normal growth logic
-    event.setResult(Pre.Result.DO_NOT_GROW);
+    event.setResult(CropGrowEvent.Pre.Result.DO_NOT_GROW);
 
     // update the block above and fire relevant events
     if (world instanceof Level casted) {
-      state.neighborChanged(casted, dest, seed, source, false);
+      state.handleNeighborChanged(casted, dest, seed, source, false);
       CommonHooks.fireCropGrowPost(casted, source, state);
     }
   }

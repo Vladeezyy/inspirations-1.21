@@ -52,11 +52,7 @@ public abstract class BlockCropBlock extends CropBlock {
     return super.getStateForAge(age);
   }
 
-  @Override
-  public boolean isMaxAge(BlockState state) {
-    // never get to max age, our max is the block
-    return false;
-  }
+  // never at max age: the age property ends at 14, age 15 is the block itself (CropBlock.isMaxAge is final in 1.21)
 
   @Override
   public void randomTick(BlockState state, ServerLevel world, BlockPos pos, RandomSource random) {
@@ -88,7 +84,7 @@ public abstract class BlockCropBlock extends CropBlock {
   @Deprecated
   @Override
   public boolean canSurvive(BlockState state, LevelReader world, BlockPos pos) {
-    return block.get().canSurvive(block.get().defaultBlockState(), world, pos);
+    return block.get().defaultBlockState().canSurvive(world, pos);
   }
 
 

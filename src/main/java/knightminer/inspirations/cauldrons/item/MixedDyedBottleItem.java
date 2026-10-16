@@ -38,14 +38,8 @@ public class MixedDyedBottleItem extends Item {
     if (item instanceof SimpleDyedBottleItem bottleItem) {
       return MiscUtil.getColor(bottleItem.getDyeColor());
     } else if (item == InspirationsCaudrons.mixedDyedWaterBottle) {
-      CompoundTag tags = bottle.getTag();
-
-      if (tags != null) {
-        CompoundTag display = tags.getCompound("display");
-        if (display.contains(TAG_COLOR, Tag.TAG_INT)) {
-          return display.getInt(TAG_COLOR);
-        }
-      }
+      // color in minecraft:dyed_color, 1.20 kept it in display.color (the world upgrade moves it there)
+      return MiscUtil.getColor(bottle);
     }
 
     return -1;

@@ -1,12 +1,13 @@
 package knightminer.inspirations.cauldrons.item;
 
 import net.minecraft.advancements.CriteriaTriggers;
-import net.minecraft.nbt.CompoundTag;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.stats.Stats;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResultHolder;
 import net.minecraft.world.effect.MobEffect;
+import net.minecraft.core.Holder;
+import net.neoforged.neoforge.common.EffectCures;
 import net.minecraft.world.effect.MobEffectInstance;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.player.Player;
@@ -16,11 +17,7 @@ import net.minecraft.world.item.ItemUtils;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.item.UseAnim;
 import net.minecraft.world.level.Level;
-import net.neoforged.neoforge.common.NeoForgeMod;
-import net.neoforged.neoforge.common.capabilities.ICapabilityProvider;
-import net.neoforged.neoforge.fluids.FluidStack;
 import org.jetbrains.annotations.Nullable;
-import slimeknights.mantle.item.ConstantFluidContainerWrapper;
 
 import java.util.List;
 import java.util.Random;
@@ -41,10 +38,10 @@ public class MilkBottleItem extends Item {
 
 		// remove random effect
 		if (!level.isClientSide) {
-			ItemStack milkBucket = new ItemStack(Items.MILK_BUCKET);
-			List<MobEffect> effects = living.getActiveEffects()
+			// one random effect that milk cures
+			List<Holder<MobEffect>> effects = living.getActiveEffects()
 																			.stream()
-																			.filter(effect -> effect.isCurativeItem(milkBucket))
+																			.filter(effect -> effect.getCures().contains(EffectCures.MILK))
 																			.map(MobEffectInstance::getEffect)
 																			.toList();
 			if (!effects.isEmpty()) {
@@ -68,7 +65,7 @@ public class MilkBottleItem extends Item {
 	}
 
 	@Override
-	public int getUseDuration(ItemStack pStack) {
+	public int getUseDuration(ItemStack pStack, LivingEntity entity) {
 		return DRINK_DURATION;
 	}
 
@@ -82,12 +79,4 @@ public class MilkBottleItem extends Item {
 		return ItemUtils.startUsingInstantly(pLevel, pPlayer, pHand);
 	}
 
-	@Nullable
-	@Override
-	public ICapabilityProvider initCapabilities(ItemStack stack, @Nullable CompoundTag nbt) {
-		if (NeoForgeMod.MILK.isPresent()) {
-			return new ConstantFluidContainerWrapper(new FluidStack(NeoForgeMod.MILK.get(), 250), stack);
-		}
-		return null;
-	}
 }

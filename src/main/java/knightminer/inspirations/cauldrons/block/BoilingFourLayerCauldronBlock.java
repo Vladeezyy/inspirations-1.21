@@ -18,7 +18,7 @@ import java.util.Map;
 
 /** Cauldron block that has four layers and emits boiling particles when over fire */
 public class BoilingFourLayerCauldronBlock extends FourLayerCauldronBlock {
-	public BoilingFourLayerCauldronBlock(Properties props, Map<Item,CauldronInteraction> interactions) {
+	public BoilingFourLayerCauldronBlock(Properties props, CauldronInteraction.InteractionMap interactions) {
 		super(props, interactions);
 	}
 

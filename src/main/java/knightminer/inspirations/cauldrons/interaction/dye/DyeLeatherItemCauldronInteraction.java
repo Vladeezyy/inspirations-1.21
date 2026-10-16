@@ -5,7 +5,8 @@ import knightminer.inspirations.cauldrons.block.entity.DyeCauldronBlockEntity;
 import knightminer.inspirations.cauldrons.interaction.AbstractDecreaseLayerCauldronInteraction;
 import net.minecraft.core.BlockPos;
 import net.minecraft.sounds.SoundEvents;
-import net.minecraft.world.item.DyeableLeatherItem;
+import net.minecraft.tags.ItemTags;
+import knightminer.inspirations.library.MiscUtil;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.LayeredCauldronBlock;
@@ -21,11 +22,10 @@ public class DyeLeatherItemCauldronInteraction extends AbstractDecreaseLayerCaul
 
 	@Override
 	protected ItemStack getResult(BlockState state, Level level, BlockPos pos, ItemStack stack) {
-		if (stack.getItem() instanceof DyeableLeatherItem dyeable) {
+		if (stack.is(ItemTags.DYEABLE)) {
 			DyeCauldronBlockEntity cauldron = InspirationsCaudrons.dyeCauldronEntity.getBlockEntity(level, pos);
 			if (cauldron != null) {
-				ItemStack result = ItemHandlerHelper.copyStackWithSize(stack, 1);
-				dyeable.setColor(result, cauldron.getColor());
+				ItemStack result = MiscUtil.setColor(stack.copyWithCount(1), cauldron.getColor());
 				return result;
 			}
 		}

@@ -6,7 +6,6 @@ import knightminer.inspirations.common.InspirationsCommons;
 import knightminer.inspirations.common.ModuleBase;
 import knightminer.inspirations.tweaks.block.BlockCropBlock;
 import knightminer.inspirations.tweaks.block.CactusCropBlock;
-import knightminer.inspirations.tweaks.block.DryHopperBlock;
 import knightminer.inspirations.tweaks.block.FittedCarpetBlock;
 import knightminer.inspirations.tweaks.block.FlatCarpetBlock;
 import knightminer.inspirations.tweaks.block.SugarCaneCropBlock;

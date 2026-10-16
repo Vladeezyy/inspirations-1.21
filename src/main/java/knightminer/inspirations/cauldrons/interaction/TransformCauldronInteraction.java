@@ -9,7 +9,7 @@ import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.stats.Stats;
 import net.minecraft.world.InteractionHand;
-import net.minecraft.world.InteractionResult;
+import net.minecraft.world.ItemInteractionResult;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
@@ -32,9 +32,9 @@ public record TransformCauldronInteraction(boolean requireFire, int needed, Inte
 	}
 
 	@Override
-	public InteractionResult interact(BlockState state, Level level, BlockPos pos, Player player, InteractionHand pHand, ItemStack stack) {
+	public ItemInteractionResult interact(BlockState state, Level level, BlockPos pos, Player player, InteractionHand pHand, ItemStack stack) {
 		if (requireFire && !isBoiling(level, pos)) {
-			return InteractionResult.PASS;
+			return ItemInteractionResult.PASS_TO_DEFAULT_BLOCK_INTERACTION;
 		}
 		if (!level.isClientSide) {
 			int contentLevel = state.getValue(oldProp);
@@ -55,6 +55,6 @@ public record TransformCauldronInteraction(boolean requireFire, int needed, Inte
 				level.playSound(null, pos, sound, SoundSource.BLOCKS, 1.0F, 1.0F);
 			}
 		}
-		return InteractionResult.sidedSuccess(level.isClientSide);
+		return ItemInteractionResult.sidedSuccess(level.isClientSide);
 	}
 }

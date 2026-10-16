@@ -8,7 +8,7 @@ import net.minecraft.sounds.SoundEvent;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.stats.Stats;
 import net.minecraft.world.InteractionHand;
-import net.minecraft.world.InteractionResult;
+import net.minecraft.world.ItemInteractionResult;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.ItemUtils;
@@ -39,10 +39,10 @@ public abstract class AbstractModifyCauldronInteraction implements CauldronInter
 	protected abstract BlockState getNewState(BlockState oldState, Level level, BlockPos pos, ItemStack filledStack);
 
 	@Override
-	public InteractionResult interact(BlockState oldState, Level level, BlockPos pos, Player player, InteractionHand hand, ItemStack filledStack) {
+	public ItemInteractionResult interact(BlockState oldState, Level level, BlockPos pos, Player player, InteractionHand hand, ItemStack filledStack) {
 		BlockState newState = getNewState(oldState, level, pos, filledStack);
 		if (newState == null) {
-			return InteractionResult.PASS;
+			return ItemInteractionResult.PASS_TO_DEFAULT_BLOCK_INTERACTION;
 		}
 		if (!level.isClientSide) {
 			if (newState != oldState) {
@@ -61,6 +61,6 @@ public abstract class AbstractModifyCauldronInteraction implements CauldronInter
 			level.playSound(null, pos, sound, SoundSource.BLOCKS, 1.0F, 1.0F);
 			level.gameEvent(null, GameEvent.FLUID_PLACE, pos);
 		}
-		return InteractionResult.sidedSuccess(level.isClientSide);
+		return ItemInteractionResult.sidedSuccess(level.isClientSide);
 	}
 }

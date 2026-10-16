@@ -11,7 +11,8 @@ import net.minecraft.sounds.SoundEvents;
 import net.minecraft.stats.Stats;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
-import net.minecraft.world.item.SuspiciousStewItem;
+import net.minecraft.core.component.DataComponents;
+import net.minecraft.world.item.component.SuspiciousStewEffects;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.state.BlockState;
 
@@ -39,14 +40,11 @@ public class MixSuspiciousStewCauldronInteraction extends AbstractModifyCauldron
 
 	@Override
 	protected void afterSetBlock(BlockState oldState, Level level, BlockPos pos, ItemStack stack) {
-		CompoundTag tag = stack.getTag();
-		if (tag != null) {
-			ListTag effects = tag.getList(SuspiciousStewItem.EFFECTS_TAG, Tag.TAG_COMPOUND);
-			if (!effects.isEmpty()) {
-				SuspiciousStewCauldronBlockEntity cauldron = InspirationsCaudrons.suspiciousStewCauldronEntity.getBlockEntity(level, pos);
-				if (cauldron != null) {
-					cauldron.mergeEffects(oldState.getValue(LEVEL), effects, 1);
-				}
+		SuspiciousStewEffects effects = stack.getOrDefault(DataComponents.SUSPICIOUS_STEW_EFFECTS, SuspiciousStewEffects.EMPTY);
+		if (!effects.effects().isEmpty()) {
+			SuspiciousStewCauldronBlockEntity cauldron = InspirationsCaudrons.suspiciousStewCauldronEntity.getBlockEntity(level, pos);
+			if (cauldron != null) {
+				cauldron.mergeEffects(oldState.getValue(LEVEL), effects, 1);
 			}
 		}
 	}

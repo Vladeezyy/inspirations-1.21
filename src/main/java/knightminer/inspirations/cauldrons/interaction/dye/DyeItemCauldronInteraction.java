@@ -35,14 +35,8 @@ public class DyeItemCauldronInteraction extends AbstractDecreaseLayerCauldronInt
 		if (cauldron != null) {
 			DyeColor dye = cauldron.getDye();
 			if (dye != null) {
-				ItemStack result = new ItemStack(mapper.apply(dye));
-				if (copyNBT) {
-					CompoundTag nbt = stack.getTag();
-					if (nbt != null) {
-						result.setTag(nbt.copy());
-					}
-				}
-				return result;
+				// copying keeps the components, such as the contents of a shulker box
+				return copyNBT ? stack.transmuteCopy(mapper.apply(dye), 1) : new ItemStack(mapper.apply(dye));
 			}
 		}
 		return ItemStack.EMPTY;
