@@ -7,13 +7,100 @@ repository is that code unchanged, so `git diff` against it shows the port.
 ## Scope (decided 2026-10-16)
 
 - Everything of the `1.20` branch is ported. Features the author removed before 1.20 (anvil smashing, milking squids,
-  ice, grass drops, faster rain and others) are not brought back.
+  ice, grass drops, faster rain and others) are not brought back; language keys left over from them are removed.
 - Mantle is replaced by our library [Kilnwork](https://github.com/Vladeezyy/kilnwork) 1.1.0 (the parts Inspirations
-  needs: retextured blocks, models, recipes and loot functions, inventory blocks and menus, fluid types), as in our
-  Ceramics port.
+  needs: retextured blocks, models, recipes and loot functions, inventory blocks and menus, item lists, colored block
+  models, 1.20 item stacks in block entities), as in our Ceramics port. It ships inside the jar (Jar-in-Jar).
 - The five registry substitutions of the original (water cauldron, 16 carpets, hopper, iron bars, shield item) are not
   possible on NeoForge 1.21; they are done with mixins into the vanilla classes. Each can still be turned off in the
   config.
+
+## Method
+
+- Java kept file by file with the original packages and class names. Code that only moved between APIs is changed in
+  place; behavior changes are commented in the code.
+- Resources: assets of the original kept (model loaders renamed to Kilnwork's), datagen of the original ported and run
+  (`./gradlew runData`): 205 recipes, 205 advancements, 94 loot tables, the same counts as the 1.20 output.
+- Tests are in a separate source set `src/selftest`, loaded only in dev runs, never in the jar.
+
+## API changes (1.20.1 Forge → 1.21.1 NeoForge)
+
+| 1.20.1 | 1.21.1 |
+|---|---|
+| registry substitution of `water_cauldron`, carpets, `hopper`, `iron_bars`, `shield` | mixins: `LayeredCauldronBlockMixin` (boiling), `WoolCarpetBlockMixin` (fit to stairs), `HopperBlockMixin` (waterlogging), `IronBarsBlockMixin` (ladder over rope), `ShieldItemMixin` (enchantable) |
+| enchantment classes replaced (protection, thorns, knockback, fire aspect, looting) | data driven enchantments: `supportsEnchantment` / `isPrimaryItemFor` on shields and axes, `EnchantmentMixin` and `EnchantmentHelperMixin` (protection only while blocking, thorns from the shield event) |
+| Mantle `NetworkWrapper` packets | `CustomPacketPayload` records with `StreamCodec` |
+| capabilities (`LazyOptional`) for shelves, collectors, pipes, dimension compass | `RegisterCapabilitiesEvent`, `BlockCapabilityCache`, a data attachment for the compass |
+| `CauldronInteraction` maps | `CauldronInteraction.newInteractionMap`, `ItemInteractionResult` |
+| potion NBT, `PotionUtils` | `PotionContents`, `Holder<Potion>`, brewing through `RegisterBrewingRecipesEvent` |
+| item NBT (`texture`, colors, compass target, suspicious stew effects) | components: `kilnwork:texture`, `DYED_COLOR`, `LODESTONE_TRACKER`, `SUSPICIOUS_STEW_EFFECTS` |
+| Forge conditions and loot modifiers | `neoforge:conditions` with `inspirations:config`, GLM `inspirations:replace_item` |
+| `Block.use` | `useItemOn` / `useWithoutItem` |
+| `forge:` tags | `c:` tags (`c:honey`, `c:bottles/splash`, soups) |
+| common config | `ModConfig.Type.STARTUP` (registration reads it) |
+
+**Worlds from 1.20.** The world upgrade keeps unknown item NBT as `minecraft:custom_data` and block entity data as is.
+Shelves, bushes and cauldrons read the old `texture` keys (also from `ForgeData`), old item stacks in their inventories
+(`LegacyItemStacks`, through the vanilla data fixers), old suspicious stew `Effects` and the potion `minecraft:empty`.
+The dimension compass position of 1.20 players (a Forge capability) is not read.
+
+## Bugs fixed (of the original or found during the port)
+
+| Bug | Where it came from |
+|---|---|
+| Creative shelves textured with planks, the recipe takes slabs, JEI shows no recipe ([#247](https://github.com/KnightMiner/Inspirations/issues/247)) | `InspirationsCommons` creative tab used `ItemTags.PLANKS` |
+| Two collectors duplicate one dropped item ([#227](https://github.com/KnightMiner/Inspirations/issues/227)) | the stack was inserted without a copy |
+| Crashes with mods that change cauldrons or iron bars ([#245](https://github.com/KnightMiner/Inspirations/issues/245), [#250](https://github.com/KnightMiner/Inspirations/issues/250)) | registry substitutions, replaced by mixins |
+| Crash while chunks build: `ConcurrentModificationException` in block colors and shelf models | `ClientUtil.COLOR_CACHE` and `ShelfModel.texturedCache` were `HashMap`s used by the chunk builder threads (found by the stress scene) |
+| Shelf cannot be turned off | config keys `building.bookshelf.enable` and `building.bookshelf` collide, the file keeps one; now `building.shelf` |
+| Skeleton skulls, cave spider webs and flowers never drop | loot table listeners were never registered |
+| Shearing vines: the check was inverted | `ToolsEvents` |
+| Dispensers placing anvils also dispense them, missing return | `InspirationsTweaks` dispenser behavior |
+| Lectern book requests answered for any position | `RequestLecternBookPacket` had no distance check |
+| Potion clouds apply effects twice | lingering bottle interaction |
+| Client menus created with a null block entity | menu factories |
+| Shelf inventory not cleared before loading | `ShelfInventory.deserialize` |
+| Wrong hue in `ClientUtil` color mixing | HSB arguments swapped |
+| Rope shape uses the wrong position | `RopeBlock` |
+| Book power cache never cleared | `InspirationsRegistry.clearBookCache` is now called on tag reload |
+| A potion with only custom effects poured into an empty cauldron made a cauldron of the empty potion | `PotionIntoEmptyInteraction` |
+| Missing names: potted flowers, rabbit stew cauldron (`block.inspirations.rabbit_stew` typo); fitted carpets and wet hopper now use the vanilla names (as carpeted pressure plates do) | `en_us.json` |
+| Dead non-static client event handler; `NeoForge.EVENT_BUS.register(Inspirations.class)` with a non-static method crashes on 1.21 | `CommonsClientEvents`, `Inspirations` |
+| Dyeable items tag missing colored books and dimension compass; `mantle:soup` incomplete | tag providers |
+
+Open issues of the original checked and not changed: #251 (ModernFix reload listener: the listener is registered
+through `RegisterClientReloadListenersEvent`, no error in the run with ModernFix), #244 and #237 (1.19 crashes, fixed
+upstream), #231 (the dimension compass recipe has the config condition), #236 (not reproducible upstream either), #240
+(documentation), feature requests #242, #241, #221 (French translation posted as text in an issue, not added), #202,
+#158, #126, #99, #96, #50, #48, #18, #14. #226 is done (`c:honey`).
+
+## Languages
+
+`en_us` cleaned: 101 keys of removed features (TAN juices, brick buttons, 1.16 cauldron and JEI texts, potions the
+mod no longer registers) dropped, 5 missing names added; 123 keys, all used (the client scene checks both directions).
+`ru_ru`, `de_de`, `zh_cn` completed (the original's translations kept where they fit), `uk_ua`, `es_es`, `pt_br` new.
+All from `tools/lang/en_us_order.py` and `tools/lang/gen_lang.py`, terms from the vanilla 1.21.1 translations.
+Checked with `modding-kb/scripts/langcheck.py`; the client scene passes in `ru_ru` and `de_de`.
+
+## Verification
+
+- `tools/selftest.sh`: dev server, fresh world, 55 checks — registries, recipes and conditions, cauldron interactions
+  (dye, potions, soups, honey, milk, boiling damage, brewing, tipped arrows), shelves (books, enchanting power,
+  comparator), collectors (#227), pipes, rope, locks and keys, enchantments on shields and axes, loot injections,
+  bonemeal, smooth growth, 1.20 data conversion, save/load.
+- `tools/scenetest.sh` (client): showcase of every block with 11 screenshots, 40 checks — models and textures (no missing
+  sprites, no magenta pixels on screen), retextured shelves and bushes, tints, fluid sprites, lectern book sync, block
+  entity client data, boiling particles, item properties, screens, JEI (#247), config resource pack, translations.
+  Passes in `en_us`, `ru_ru`, `de_de`; with Sodium, Iris, Lithium, FerriteCore, ModernFix and Jade (`-Pwith_compat`,
+  40/40); on NeoForge 21.1.197 without JEI (37/37).
+- `tools/scenetest.sh -Pscene=stress`: broken common config, 1024 shelves full of books and 96 cauldrons (235 FPS against
+  253 on an empty floor), 200 ticks of 64 shelves and 32 cauldrons changing per tick (198 FPS; this found the chunk
+  builder crash), 2000 lectern requests for random positions, enchanting power and milk cooldown at their limits,
+  leaving and rejoining the world — 10/10.
+- `tools/nettest.sh`: dev client on a dev dedicated server, using blocks as a player — 11/11 (shelf, dye and potion
+  cauldrons, lectern, collector screen, milk cooldown packet, dimension compass across dimensions).
+- Release jar on real NeoForge 21.1.197 and 21.1.259 dedicated servers (`prodtest/serve.sh`): starts, Kilnwork loaded
+  from the jar, no errors. The jar has the license texts and no test classes.
 
 ## License
 
