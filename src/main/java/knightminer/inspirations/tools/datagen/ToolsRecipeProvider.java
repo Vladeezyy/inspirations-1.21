@@ -3,39 +3,35 @@ package knightminer.inspirations.tools.datagen;
 import knightminer.inspirations.common.data.ConfigEnabledCondition;
 import knightminer.inspirations.common.datagen.IInspirationsRecipeBuilder;
 import knightminer.inspirations.tools.InspirationsTools;
-import net.minecraft.advancements.critereon.EnchantmentPredicate;
 import net.minecraft.advancements.critereon.ItemPredicate;
-import net.minecraft.advancements.critereon.MinMaxBounds;
-import net.minecraft.advancements.critereon.NbtPredicate;
+import net.minecraft.advancements.critereon.ItemPotionsPredicate;
+import net.minecraft.advancements.critereon.ItemSubPredicates;
+import net.minecraft.core.HolderSet;
+import net.minecraft.world.item.alchemy.PotionContents;
+import net.neoforged.neoforge.common.crafting.DataComponentIngredient;
 import net.minecraft.data.PackOutput;
-import net.minecraft.data.recipes.FinishedRecipe;
+import net.minecraft.data.recipes.RecipeOutput;
+import net.minecraft.core.HolderLookup;
+import net.minecraft.advancements.Criterion;
+import java.util.concurrent.CompletableFuture;
 import net.minecraft.data.recipes.RecipeCategory;
 import net.minecraft.data.recipes.RecipeProvider;
 import net.minecraft.data.recipes.ShapedRecipeBuilder;
 import net.minecraft.data.recipes.ShapelessRecipeBuilder;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
-import net.minecraft.world.item.alchemy.PotionUtils;
 import net.minecraft.world.item.alchemy.Potions;
 import net.neoforged.neoforge.common.Tags;
-import net.neoforged.neoforge.common.crafting.PartialNBTIngredient;
-import net.neoforged.neoforge.common.crafting.conditions.IConditionBuilder;
 
 import java.util.Collections;
-import java.util.function.Consumer;
 
-public class ToolsRecipeProvider extends RecipeProvider implements IConditionBuilder, IInspirationsRecipeBuilder {
-  public ToolsRecipeProvider(PackOutput packOutput) {
-    super(packOutput);
+public class ToolsRecipeProvider extends RecipeProvider implements IInspirationsRecipeBuilder {
+  public ToolsRecipeProvider(PackOutput packOutput, CompletableFuture<HolderLookup.Provider> registries) {
+    super(packOutput, registries);
   }
 
   @Override
-  public String getName() {
-    return "Inspirations Recipes - Tools";
-  }
-
-  @Override
-  protected void buildRecipes(Consumer<FinishedRecipe> consumer) {
+  protected void buildRecipes(RecipeOutput consumer) {
     // photometer
     ShapedRecipeBuilder.shaped(RecipeCategory.TOOLS, InspirationsTools.photometer)
                        .unlockedBy("has_glowstone", has(Tags.Items.DUSTS_GLOWSTONE))
@@ -49,20 +45,11 @@ public class ToolsRecipeProvider extends RecipeProvider implements IConditionBui
                        .save(withCondition(consumer, ConfigEnabledCondition.PHOTOMETER), prefix(id(InspirationsTools.photometer), "tools/"));
 
     // barometer
-    // not using the builder because it lacks potion
-    ItemPredicate hasWaterBottle = new ItemPredicate(
-        null,  // Tag
-        Collections.singleton(Items.POTION),
-        MinMaxBounds.Ints.ANY,
-        MinMaxBounds.Ints.ANY,
-        EnchantmentPredicate.NONE,
-        EnchantmentPredicate.NONE,
-        Potions.WATER,
-        NbtPredicate.ANY
-    );
+    ItemPredicate hasWaterBottle = ItemPredicate.Builder.item().of(Items.POTION)
+      .withSubPredicate(ItemSubPredicates.POTIONS, new ItemPotionsPredicate(HolderSet.direct(Potions.WATER))).build();
     ShapedRecipeBuilder.shaped(RecipeCategory.TOOLS, InspirationsTools.barometer)
                        .unlockedBy("has_bottle", inventoryTrigger(hasWaterBottle))
-                       .define('W', PartialNBTIngredient.of(PotionUtils.setPotion(new ItemStack(Items.POTION), Potions.WATER).getTag(), Items.POTION))
+                       .define('W', DataComponentIngredient.of(false, PotionContents.createItemStack(Items.POTION, Potions.WATER)))
                        .define('B', Items.GLASS_BOTTLE)
                        .define('R', Tags.Items.DUSTS_REDSTONE)
                        .pattern(" W")
@@ -70,7 +57,7 @@ public class ToolsRecipeProvider extends RecipeProvider implements IConditionBui
                        .save(withCondition(consumer, ConfigEnabledCondition.BAROMETER), prefix(id(InspirationsTools.barometer), "tools/"));
 
     // lock and key
-    Consumer<FinishedRecipe> lockCondition = withCondition(consumer, ConfigEnabledCondition.LOCK);
+    RecipeOutput lockCondition = withCondition(consumer, ConfigEnabledCondition.LOCK);
     ShapedRecipeBuilder.shaped(RecipeCategory.TOOLS, InspirationsTools.lock)
                        .unlockedBy("has_iron", has(Tags.Items.INGOTS_IRON))
                        .define('I', Tags.Items.INGOTS_IRON)

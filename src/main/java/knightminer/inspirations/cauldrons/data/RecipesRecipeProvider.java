@@ -5,9 +5,11 @@ import knightminer.inspirations.common.InspirationsCommons;
 import knightminer.inspirations.common.data.ConfigEnabledCondition;
 import knightminer.inspirations.common.datagen.IInspirationsRecipeBuilder;
 import knightminer.inspirations.library.InspirationsTags;
-import net.minecraft.advancements.CriterionTriggerInstance;
 import net.minecraft.data.PackOutput;
-import net.minecraft.data.recipes.FinishedRecipe;
+import net.minecraft.data.recipes.RecipeOutput;
+import net.minecraft.core.HolderLookup;
+import net.minecraft.advancements.Criterion;
+import java.util.concurrent.CompletableFuture;
 import net.minecraft.data.recipes.RecipeCategory;
 import net.minecraft.data.recipes.RecipeProvider;
 import net.minecraft.data.recipes.ShapedRecipeBuilder;
@@ -20,28 +22,20 @@ import net.minecraft.world.item.Item;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.level.ItemLike;
 import net.neoforged.neoforge.common.Tags;
-import net.neoforged.neoforge.common.crafting.conditions.ICondition;
-import net.neoforged.neoforge.common.crafting.conditions.IConditionBuilder;
-import slimeknights.mantle.recipe.data.ConsumerWrapperBuilder;
+import net.neoforged.neoforge.common.conditions.ICondition;
 
 import javax.annotation.Nullable;
 import java.util.EnumSet;
 import java.util.Set;
-import java.util.function.Consumer;
 
-public class RecipesRecipeProvider extends RecipeProvider implements IConditionBuilder, IInspirationsRecipeBuilder {
-  public RecipesRecipeProvider(PackOutput packOutput) {
-    super(packOutput);
+public class RecipesRecipeProvider extends RecipeProvider implements IInspirationsRecipeBuilder {
+  public RecipesRecipeProvider(PackOutput packOutput, CompletableFuture<HolderLookup.Provider> registries) {
+    super(packOutput, registries);
   }
 
 
   @Override
-  public String getName() {
-    return "Inspirations Recipes - Recipes";
-  }
-
-  @Override
-  protected void buildRecipes(Consumer<FinishedRecipe> consumer) {
+  protected void buildRecipes(RecipeOutput consumer) {
     String folder = "cauldron/";
 
     // dyes //
@@ -68,11 +62,11 @@ public class RecipesRecipeProvider extends RecipeProvider implements IConditionB
 
     // craft vanilla blocks using dyed bottles, as Forge did not reimplement the tags
     // since I have to add recipes, a little more generous with them
-    Consumer<FinishedRecipe> bottleConsumer = withCondition(consumer, ConfigEnabledCondition.CAULDRON_DYEING);
+    RecipeOutput bottleConsumer = withCondition(consumer, ConfigEnabledCondition.CAULDRON_DYEING);
     String bottleFolder = folder + "bottle/";
     InspirationsCaudrons.simpleDyedWaterBottle.forEach((dye, bottle) -> {
       String name = dye.getSerializedName();
-      CriterionTriggerInstance hasBottle = has(bottle);
+      Criterion<?> hasBottle = has(bottle);
 
       // wool
       addComboRecipe(bottleConsumer, RecipeCategory.BUILDING_BLOCKS, VanillaEnum.WOOL.get(dye), "wool", ItemTags.WOOL, bottle, location(bottleFolder + "wool/" + name));
@@ -80,7 +74,7 @@ public class RecipesRecipeProvider extends RecipeProvider implements IConditionB
       addComboRecipe(bottleConsumer, RecipeCategory.DECORATIONS, VanillaEnum.BED.get(dye), "dyed_bed", ItemTags.BEDS, bottle, location(bottleFolder + "beds/" + name));
 
       // stained glass
-      addSurroundRecipe(bottleConsumer, RecipeCategory.BUILDING_BLOCKS, VanillaEnum.STAINED_GLASS.get(dye), "stained_glass", Tags.Items.GLASS_COLORLESS, bottle, location(bottleFolder + "stained_glass/" + name));
+      addSurroundRecipe(bottleConsumer, RecipeCategory.BUILDING_BLOCKS, VanillaEnum.STAINED_GLASS.get(dye), "stained_glass", Tags.Items.GLASS_BLOCKS_COLORLESS, bottle, location(bottleFolder + "stained_glass/" + name));
       addSurroundRecipe(bottleConsumer, RecipeCategory.DECORATIONS, VanillaEnum.STAINED_GLASS_PANE.get(dye), "stained_glass_pane", Tags.Items.GLASS_PANES_COLORLESS, bottle, location(bottleFolder + "stained_glass_pane/" + name));
       // terracotta
       addSurroundRecipe(bottleConsumer, RecipeCategory.BUILDING_BLOCKS, VanillaEnum.TERRACOTTA.get(dye), "stained_terracotta", InspirationsTags.Items.TERRACOTTA, bottle, location(bottleFolder + "terracotta/" + name));
@@ -92,10 +86,10 @@ public class RecipesRecipeProvider extends RecipeProvider implements IConditionB
                             .requires(ItemTags.SAND)
                             .requires(ItemTags.SAND)
                             .requires(ItemTags.SAND)
-                            .requires(Tags.Items.GRAVEL)
-                            .requires(Tags.Items.GRAVEL)
-                            .requires(Tags.Items.GRAVEL)
-                            .requires(Tags.Items.GRAVEL)
+                            .requires(Tags.Items.GRAVELS)
+                            .requires(Tags.Items.GRAVELS)
+                            .requires(Tags.Items.GRAVELS)
+                            .requires(Tags.Items.GRAVELS)
                             .unlockedBy("has_item", hasBottle)
                             .save(bottleConsumer, location(bottleFolder + "concrete_powder/" + name));
     });
@@ -109,9 +103,6 @@ public class RecipesRecipeProvider extends RecipeProvider implements IConditionB
                           .requires(Items.BOOK)
                           .unlockedBy("has_item", has(blackBottle))
                           .save(bottleConsumer, location(bottleFolder + "writable_book"));
-
-    // potions //
-    Consumer<FinishedRecipe> potionConsumer = withCondition(consumer, ConfigEnabledCondition.CAULDRON_POTIONS);
 
     // normal potato soup crafting
     ShapelessRecipeBuilder.shapeless(RecipeCategory.FOOD, InspirationsCaudrons.potatoSoupItem)
@@ -129,7 +120,7 @@ public class RecipesRecipeProvider extends RecipeProvider implements IConditionB
    * @param output          Output color
    * @param inputs          List of color inputs
    */
-  private void addDyedBottleMix(Consumer<FinishedRecipe> consumer, String folder, DyeColor output, DyeColor... inputs) {
+  private void addDyedBottleMix(RecipeOutput consumer, String folder, DyeColor output, DyeColor... inputs) {
     addDyedBottleMix(consumer, folder, output, null, inputs);
   }
 
@@ -140,15 +131,11 @@ public class RecipesRecipeProvider extends RecipeProvider implements IConditionB
    * @param extraCondition  Additional condition to add to the recipe
    * @param inputs          List of color inputs
    */
-  private void addDyedBottleMix(Consumer<FinishedRecipe> baseConsumer, String folder, DyeColor output, @Nullable ICondition extraCondition, DyeColor... inputs) {
+  private void addDyedBottleMix(RecipeOutput baseConsumer, String folder, DyeColor output, @Nullable ICondition extraCondition, DyeColor... inputs) {
     // set serializer to shapeless no container and add conditions
-    ConsumerWrapperBuilder consumerBuilder = ConsumerWrapperBuilder
-        .wrap(InspirationsCommons.shapelessNoContainer)
-        .addCondition(ConfigEnabledCondition.CAULDRON_DYEING);
-    if (extraCondition != null) {
-      consumerBuilder.addCondition(extraCondition);
-    }
-    Consumer<FinishedRecipe> consumer = consumerBuilder.build(baseConsumer);
+    RecipeOutput consumer = IInspirationsRecipeBuilder.noContainer(extraCondition != null
+      ? baseConsumer.withConditions(ConfigEnabledCondition.CAULDRON_DYEING, extraCondition)
+      : baseConsumer.withConditions(ConfigEnabledCondition.CAULDRON_DYEING));
 
     // build recipe name
     StringBuilder name = new StringBuilder(folder + output.getSerializedName() + "_from");
@@ -167,7 +154,7 @@ public class RecipesRecipeProvider extends RecipeProvider implements IConditionB
       }
     }
     // build the recipe with the built name
-    builder.save(consumer, prefix(name.toString()));
+    builder.save(consumer, location(name.toString()));
   }
 
   /**
@@ -180,7 +167,7 @@ public class RecipesRecipeProvider extends RecipeProvider implements IConditionB
    * @param center    Center item
    * @param location  Recipe output location
    */
-  private void addSurroundRecipe(Consumer<FinishedRecipe> consumer, RecipeCategory category, ItemLike output, String group, TagKey<Item> surround, ItemLike center, ResourceLocation location) {
+  private void addSurroundRecipe(RecipeOutput consumer, RecipeCategory category, ItemLike output, String group, TagKey<Item> surround, ItemLike center, ResourceLocation location) {
     ShapedRecipeBuilder.shaped(category, output, 8)
                        .group(group)
                        .define('#', surround)
@@ -202,7 +189,7 @@ public class RecipesRecipeProvider extends RecipeProvider implements IConditionB
    * @param modifier  Item consumed to modify it
    * @param location  Recipe output location
    */
-  private void addComboRecipe(Consumer<FinishedRecipe> consumer, RecipeCategory category, ItemLike output, String group, TagKey<Item> input, ItemLike modifier, ResourceLocation location) {
+  private void addComboRecipe(RecipeOutput consumer, RecipeCategory category, ItemLike output, String group, TagKey<Item> input, ItemLike modifier, ResourceLocation location) {
     ShapelessRecipeBuilder.shapeless(category, output)
                           .group(group)
                           .requires(input)

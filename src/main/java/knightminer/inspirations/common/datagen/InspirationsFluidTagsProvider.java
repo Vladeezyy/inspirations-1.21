@@ -33,7 +33,8 @@ public class InspirationsFluidTagsProvider extends FluidTagsProvider {
     tag(InspirationsTags.Common.BEETROOT_SOUP).addTag(InspirationsTags.Fluids.BEETROOT_SOUP);
     tag(InspirationsTags.Common.MUSHROOM_STEW).addTag(InspirationsTags.Fluids.MUSHROOM_STEW);
     tag(InspirationsTags.Common.RABBIT_STEW).addTag(InspirationsTags.Fluids.RABBIT_STEW);
-    // manntle adds the rest to soup, but potato is our own invention
-    tag(InspirationsTags.Common.SOUP).addTag(InspirationsTags.Fluids.POTATO_SOUP);
+    // Mantle added the other soups to its soup tag, without Mantle all of ours go in
+    tag(InspirationsTags.Common.SOUP).addTag(InspirationsTags.Fluids.BEETROOT_SOUP).addTag(InspirationsTags.Fluids.MUSHROOM_STEW)
+                                     .addTag(InspirationsTags.Fluids.RABBIT_STEW).addTag(InspirationsTags.Fluids.POTATO_SOUP);
   }
 }

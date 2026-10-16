@@ -87,6 +87,8 @@ public class InspirationsItemTagsProvider extends ItemTagsProvider {
 
   private void registerVanillaTags() {
     this.tag(ItemTags.ARROWS).add(InspirationsTools.redstoneArrow);
+    // 1.20 had a dyeable item interface: dyeing in cauldrons and the vanilla dye recipe
+    this.tag(ItemTags.DYEABLE).add(InspirationsBuilding.coloredBook, InspirationsTools.dimensionCompass);
     this.copy(BlockTags.LEAVES, ItemTags.LEAVES);
     this.copy(BlockTags.WOODEN_TRAPDOORS, ItemTags.WOODEN_TRAPDOORS);
     // Not copy(), we don't want to include the wall torch.

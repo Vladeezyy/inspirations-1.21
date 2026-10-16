@@ -1,0 +1,19 @@
+{
+  "required": true,
+  "minVersion": "0.8",
+  "package": "knightminer.inspirations.mixin",
+  "compatibilityLevel": "JAVA_21",
+  "mixins": [
+    "AxeItemMixin",
+    "EnchantmentHelperMixin",
+    "EnchantmentMixin",
+    "HopperBlockMixin",
+    "IronBarsBlockMixin",
+    "LayeredCauldronBlockMixin",
+    "ShieldItemMixin",
+    "WoolCarpetBlockMixin"
+  ],
+  "injectors": {
+    "defaultRequire": 1
+  }
+}

@@ -1,5 +1,6 @@
 package knightminer.inspirations.utility;
 
+import knightminer.inspirations.common.datagen.IInspirationsRecipeBuilder;
 
 import knightminer.inspirations.common.ModuleBase;
 import knightminer.inspirations.utility.block.CarpetedPressurePlateBlock;
@@ -144,6 +145,6 @@ public class InspirationsUtility extends ModuleBase {
   @SubscribeEvent
   public void gatherData(GatherDataEvent event) {
     DataGenerator gen = event.getGenerator();
-    gen.addProvider(event.includeServer(), new UtilityRecipeProvider(gen.getPackOutput()));
+    gen.addProvider(event.includeServer(), IInspirationsRecipeBuilder.named("Inspirations Recipes - Utility", new UtilityRecipeProvider(gen.getPackOutput(), event.getLookupProvider())));
   }
 }

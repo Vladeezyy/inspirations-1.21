@@ -1,0 +1,6 @@
+{
+  "type": "fill_item",
+  "input": {"item": "minecraft:glass_bottle"},
+  "fluid": {"tag": "c:milk", "amount": 250},
+  "result": "inspirations:milk_bottle"
+}

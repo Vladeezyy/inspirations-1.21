@@ -21,15 +21,16 @@ import net.minecraft.world.level.block.state.properties.DoubleBlockHalf;
 import net.minecraft.world.level.storage.loot.LootPool;
 import net.minecraft.world.level.storage.loot.LootTable;
 import net.minecraft.world.level.storage.loot.entries.LootItem;
-import net.minecraft.world.level.storage.loot.entries.LootTableReference;
+import net.minecraft.world.level.storage.loot.entries.NestedLootTable;
 import net.minecraft.world.level.storage.loot.functions.CopyNameFunction;
 import net.minecraft.world.level.storage.loot.functions.SetItemCountFunction;
 import net.minecraft.world.level.storage.loot.predicates.LootItemBlockStatePropertyCondition;
 import net.minecraft.world.level.storage.loot.predicates.LootItemCondition;
 import net.minecraft.world.level.storage.loot.providers.number.ConstantValue;
 import net.neoforged.neoforge.common.ItemAbilities;
-import net.neoforged.neoforge.common.loot.CanToolPerformAction;
-import slimeknights.mantle.loot.function.RetexturedLootFunction;
+import net.neoforged.neoforge.common.loot.CanItemPerformAbility;
+import net.minecraft.core.HolderLookup;
+import dev.vladeezyy.kilnwork.retexture.RetexturedHelper;
 
 import javax.annotation.Nonnull;
 import java.util.Map.Entry;
@@ -37,11 +38,14 @@ import java.util.Set;
 
 public class InspirationsBlockLootTable extends BlockLootSubProvider {
   // replacing the vanilla definition with the forge tool action
-  private static final LootItemCondition.Builder HAS_SHEARS = CanToolPerformAction.canToolPerformAction(ItemAbilities.SHEARS_DIG);
-  private static final LootItemCondition.Builder HAS_SHEARS_OR_SILK_TOUCH = HAS_SHEARS.or(HAS_SILK_TOUCH);
+  private static final LootItemCondition.Builder HAS_SHEARS = CanItemPerformAbility.canItemPerformAbility(ItemAbilities.SHEARS_DIG);
 
-  protected InspirationsBlockLootTable() {
-    super(Set.of(), FeatureFlags.REGISTRY.allFlags());
+  protected InspirationsBlockLootTable(HolderLookup.Provider registries) {
+    super(Set.of(), FeatureFlags.REGISTRY.allFlags(), registries);
+  }
+
+  private LootItemCondition.Builder hasShearsOrSilkTouch() {
+    return HAS_SHEARS.or(hasSilkTouch());
   }
 
   @SuppressWarnings("deprecation")
@@ -86,7 +90,7 @@ public class InspirationsBlockLootTable extends BlockLootSubProvider {
                                                              .setProperties(
                                                                  StatePropertiesPredicate.Builder.properties()
                                                                                                  .hasProperty(DoorBlock.HALF, DoubleBlockHalf.LOWER)))
-                                       .when(HAS_SILK_TOUCH)));
+                                       .when(hasSilkTouch())));
 
     // flowers
     InspirationsBuilding.flower.values().forEach(this::dropSelf);
@@ -168,8 +172,8 @@ public class InspirationsBlockLootTable extends BlockLootSubProvider {
                     // tool check.
                     .withPool(LootPool.lootPool()
                                          .add(LootItem.lootTableItem(bush)
-                                                                .apply(RetexturedLootFunction::new))
-                                         .when(HAS_SHEARS_OR_SILK_TOUCH)
+                                                                .apply(RetexturedHelper.copyTexture()))
+                                         .when(hasShearsOrSilkTouch())
                                 );
   }
 
@@ -178,13 +182,13 @@ public class InspirationsBlockLootTable extends BlockLootSubProvider {
                     .withPool(applyExplosionCondition(block, LootPool.lootPool()
                                                                       .add(LootItem.lootTableItem(block)
                                                                                              .apply(CopyNameFunction.copyName(CopyNameFunction.NameSource.BLOCK_ENTITY))
-                                                                                             .apply(RetexturedLootFunction::new)
+                                                                                             .apply(RetexturedHelper.copyTexture())
                                                                                )));
   }
 
   private void registerRedirect(Block block, Block originalBlock) {
     this.add(block, LootTable.lootTable()
-                                           .withPool(LootPool.lootPool().add(LootTableReference.lootTableReference(originalBlock.getLootTable()))
+                                           .withPool(LootPool.lootPool().add(NestedLootTable.lootTableReference(originalBlock.getLootTable()))
                                                        ));
   }
 }

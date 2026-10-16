@@ -1,5 +1,6 @@
 package knightminer.inspirations.building;
 
+import knightminer.inspirations.common.datagen.IInspirationsRecipeBuilder;
 import knightminer.inspirations.building.block.EnlightenedBushBlock;
 import knightminer.inspirations.building.block.GlassDoorBlock;
 import knightminer.inspirations.building.block.GrowableFlowerBlock;
@@ -185,7 +186,7 @@ public class InspirationsBuilding extends ModuleBase {
   @SubscribeEvent
   void gatherData(GatherDataEvent event) {
     DataGenerator gen = event.getGenerator();
-    gen.addProvider(event.includeServer(), new BuildingRecipeProvider(gen.getPackOutput()));
+    gen.addProvider(event.includeServer(), IInspirationsRecipeBuilder.named("Inspirations Recipes - Building", new BuildingRecipeProvider(gen.getPackOutput(), event.getLookupProvider())));
   }
 
   @SubscribeEvent

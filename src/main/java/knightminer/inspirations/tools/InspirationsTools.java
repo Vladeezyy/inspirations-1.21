@@ -1,5 +1,6 @@
 package knightminer.inspirations.tools;
 
+import knightminer.inspirations.common.datagen.IInspirationsRecipeBuilder;
 import knightminer.inspirations.common.Config;
 import knightminer.inspirations.common.ModuleBase;
 import knightminer.inspirations.tools.block.RedstoneChargeBlock;
@@ -110,7 +111,7 @@ public class InspirationsTools extends ModuleBase {
   @SubscribeEvent
   void gatherData(GatherDataEvent event) {
     DataGenerator gen = event.getGenerator();
-    gen.addProvider(event.includeServer(), new ToolsRecipeProvider(gen.getPackOutput()));
+    gen.addProvider(event.includeServer(), IInspirationsRecipeBuilder.named("Inspirations Recipes - Tools", new ToolsRecipeProvider(gen.getPackOutput(), event.getLookupProvider())));
   }
 
   private void registerDispenserBehavior() {

@@ -1,5 +1,6 @@
 package knightminer.inspirations.tweaks;
 
+import knightminer.inspirations.common.datagen.IInspirationsRecipeBuilder;
 import com.google.common.collect.ImmutableSet;
 import knightminer.inspirations.common.Config;
 import knightminer.inspirations.common.InspirationsCommons;
@@ -139,7 +140,7 @@ public class InspirationsTweaks extends ModuleBase {
   @SubscribeEvent
   public void gatherData(GatherDataEvent event) {
     DataGenerator gen = event.getGenerator();
-    gen.addProvider(event.includeServer(), new TweaksRecipeProvider(gen.getPackOutput()));
+    gen.addProvider(event.includeServer(), IInspirationsRecipeBuilder.named("Inspirations Recipes - Tweaks", new TweaksRecipeProvider(gen.getPackOutput(), event.getLookupProvider())));
   }
 
 

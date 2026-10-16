@@ -6,27 +6,21 @@ import knightminer.inspirations.common.CommonsClientEvents;
 import knightminer.inspirations.common.Config;
 import knightminer.inspirations.common.InspirationsCommons;
 import knightminer.inspirations.common.data.GlobalLootProvider;
-import knightminer.inspirations.common.datagen.FluidTransferProvider;
 import knightminer.inspirations.common.datagen.InspirationsBlockTagsProvider;
-import knightminer.inspirations.common.datagen.InspirationsDamageTypeProvider;
 import knightminer.inspirations.common.datagen.InspirationsFluidTagsProvider;
 import knightminer.inspirations.common.datagen.InspirationsItemTagsProvider;
 import knightminer.inspirations.common.datagen.InspirationsLootTableProvider;
-import knightminer.inspirations.common.datagen.RenderItemProvider;
-import knightminer.inspirations.common.datagen.SpriteSourcesProvider;
 import knightminer.inspirations.common.network.InspirationsNetwork;
 import knightminer.inspirations.tools.InspirationsTools;
 import knightminer.inspirations.tweaks.InspirationsTweaks;
 import knightminer.inspirations.utility.InspirationsUtility;
 import net.minecraft.core.HolderLookup.Provider;
-import net.minecraft.core.RegistrySetBuilder;
 import net.minecraft.data.DataGenerator;
 import net.minecraft.data.PackOutput;
 import net.minecraft.resources.ResourceLocation;
 import net.neoforged.api.distmarker.Dist;
 import net.neoforged.neoforge.common.NeoForge;
 import net.neoforged.neoforge.common.data.BlockTagsProvider;
-import net.neoforged.neoforge.common.data.DatapackBuiltinEntriesProvider;
 import net.neoforged.neoforge.common.data.ExistingFileHelper;
 import net.neoforged.neoforge.data.event.GatherDataEvent;
 import net.neoforged.bus.api.IEventBus;
@@ -41,7 +35,6 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
 import java.util.Locale;
-import java.util.Set;
 import java.util.concurrent.CompletableFuture;
 
 
@@ -80,24 +73,13 @@ public class Inspirations {
     boolean server = event.includeServer();
     ExistingFileHelper existing = event.getExistingFileHelper();
 
-    RegistrySetBuilder registrySetBuilder = new RegistrySetBuilder();
-    InspirationsDamageTypeProvider.registerGenerator(registrySetBuilder);
-    DatapackBuiltinEntriesProvider datapackRegistryProvider = new DatapackBuiltinEntriesProvider(packOutput, lookupProvider, registrySetBuilder, Set.of(modID));
-    gen.addProvider(server, datapackRegistryProvider);
-    lookupProvider = datapackRegistryProvider.getRegistryProvider();
-
     BlockTagsProvider blockTags = new InspirationsBlockTagsProvider(packOutput, lookupProvider, existing);
     gen.addProvider(server, blockTags);
     gen.addProvider(server, new InspirationsItemTagsProvider(packOutput, lookupProvider, blockTags.contentsGetter(), existing));
     gen.addProvider(server, new InspirationsFluidTagsProvider(packOutput, lookupProvider, existing));
     gen.addProvider(server, new InspirationsLootTableProvider(packOutput, lookupProvider));
     gen.addProvider(server, new GlobalLootProvider(packOutput, lookupProvider));
-    gen.addProvider(server, new InspirationsDamageTypeProvider(packOutput, lookupProvider, existing));
-    gen.addProvider(server, new FluidTransferProvider(packOutput, lookupProvider));
-
-    boolean client = event.includeClient();
-    gen.addProvider(client, new SpriteSourcesProvider(packOutput, lookupProvider, existing));
-    gen.addProvider(client, new RenderItemProvider(packOutput));
+    // damage type, atlas, fluid transfers and shelf item positions are plain files in src/main/resources
   }
 
 

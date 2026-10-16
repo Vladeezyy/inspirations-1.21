@@ -1,5 +1,6 @@
 package knightminer.inspirations.cauldrons;
 
+import knightminer.inspirations.common.datagen.IInspirationsRecipeBuilder;
 import knightminer.inspirations.library.InspirationsTags;
 
 import knightminer.inspirations.Inspirations;
@@ -12,9 +13,6 @@ import knightminer.inspirations.cauldrons.block.SuspiciousStewCauldronBlock;
 import knightminer.inspirations.cauldrons.block.entity.DyeCauldronBlockEntity;
 import knightminer.inspirations.cauldrons.block.entity.PotionCauldronBlockEntity;
 import knightminer.inspirations.cauldrons.block.entity.SuspiciousStewCauldronBlockEntity;
-import knightminer.inspirations.cauldrons.data.FluidBlockstateModelProvider;
-import knightminer.inspirations.cauldrons.data.FluidBucketModelProvider;
-import knightminer.inspirations.cauldrons.data.FluidTextureProvider;
 import knightminer.inspirations.cauldrons.data.RecipesRecipeProvider;
 import knightminer.inspirations.cauldrons.interaction.DecreaseLayerCauldronInteraction;
 import knightminer.inspirations.cauldrons.interaction.EmptyCauldronInteraction;
@@ -294,11 +292,8 @@ public class InspirationsCaudrons extends ModuleBase {
   void gatherData(GatherDataEvent event) {
     DataGenerator gen = event.getGenerator();
     PackOutput packOutput = gen.getPackOutput();
-    gen.addProvider(event.includeServer(), new RecipesRecipeProvider(packOutput));
-    boolean client = event.includeClient();
-    gen.addProvider(client, new FluidBlockstateModelProvider(packOutput, Inspirations.modID));
-    gen.addProvider(client, new FluidBucketModelProvider(packOutput, Inspirations.modID));
-    gen.addProvider(client, new FluidTextureProvider(packOutput));
+    gen.addProvider(event.includeServer(), IInspirationsRecipeBuilder.named("Inspirations Recipes - Cauldrons", new RecipesRecipeProvider(packOutput, event.getLookupProvider())));
+    // fluid blockstates, bucket models and fluid textures are plain files and client extensions in 1.21
   }
 
   /** Brewing glass bottles into splash and lingering bottles, with the ingredients of the potion container mixes */

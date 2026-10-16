@@ -1,0 +1,12 @@
+{
+  "sources": [
+    {"type": "minecraft:single", "resource": "inspirations:fluid/colorless_still"},
+    {"type": "minecraft:single", "resource": "inspirations:fluid/colorless_flowing"},
+    {"type": "minecraft:single", "resource": "inspirations:fluid/transparent_still"},
+    {"type": "minecraft:single", "resource": "inspirations:fluid/transparent_flowing"},
+    {"type": "minecraft:single", "resource": "inspirations:fluid/potion"},
+    {"type": "minecraft:single", "resource": "inspirations:fluid/potion_brewing"},
+    {"type": "minecraft:single", "resource": "inspirations:fluid/suspicious_stew"},
+    {"type": "minecraft:single", "resource": "inspirations:entity/lectern_book"}
+  ]
+}
