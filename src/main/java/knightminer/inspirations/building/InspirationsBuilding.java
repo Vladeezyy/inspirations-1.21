@@ -207,11 +207,11 @@ public class InspirationsBuilding extends ModuleBase {
 
   private static void registerCompostables() {
     for (Block bush : enlightenedBush.values()) {
-      ComposterBlock.COMPOSTABLES.put(bush, 0.3F);
+      ComposterBlock.COMPOSTABLES.put(bush.asItem(), 0.3F);
     }
-    ComposterBlock.COMPOSTABLES.put(vine, 0.5F);
+    ComposterBlock.COMPOSTABLES.put(vine.asItem(), 0.5F);
     for (Block plant : flower.values()) {
-      ComposterBlock.COMPOSTABLES.put(plant, 0.65F);
+      ComposterBlock.COMPOSTABLES.put(plant.asItem(), 0.65F);
     }
   }
 }

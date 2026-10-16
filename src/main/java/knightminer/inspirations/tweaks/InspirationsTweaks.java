@@ -152,9 +152,9 @@ public class InspirationsTweaks extends ModuleBase {
   private static final DispenseItemBehavior DEFAULT = new DefaultDispenseItemBehavior();
 
   private void registerCompostables() {
-    ComposterBlock.COMPOSTABLES.put(cactusSeeds, 0.3F);
-    ComposterBlock.COMPOSTABLES.put(sugarCaneSeeds, 0.3F);
-    ComposterBlock.COMPOSTABLES.put(heartbeet, 0.8F);
+    ComposterBlock.COMPOSTABLES.put(cactusSeeds.asItem(), 0.3F);
+    ComposterBlock.COMPOSTABLES.put(sugarCaneSeeds.asItem(), 0.3F);
+    ComposterBlock.COMPOSTABLES.put(heartbeet.asItem(), 0.8F);
   }
 
   private void registerDispenserBehavior() {

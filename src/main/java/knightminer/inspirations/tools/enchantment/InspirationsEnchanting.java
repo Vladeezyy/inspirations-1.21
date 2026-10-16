@@ -2,6 +2,8 @@ package knightminer.inspirations.tools.enchantment;
 
 import knightminer.inspirations.common.Config;
 import net.minecraft.core.Holder;
+import net.minecraft.core.component.DataComponents;
+import net.minecraft.world.level.block.entity.BannerPatternLayers;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.enchantment.Enchantment;
@@ -59,7 +61,10 @@ public final class InspirationsEnchanting {
     if (!Config.shieldEnchantmentTable.getAsBoolean()) {
       return 0;
     }
-    return stack.has(net.minecraft.core.component.DataComponents.BANNER_PATTERNS) || stack.has(net.minecraft.core.component.DataComponents.BASE_COLOR) ? 16 : 12;
+    // shields always have the (empty) banner pattern component in 1.21, a banner means a base color or layers
+    boolean banner = stack.get(DataComponents.BASE_COLOR) != null
+                     || !stack.getOrDefault(DataComponents.BANNER_PATTERNS, BannerPatternLayers.EMPTY).layers().isEmpty();
+    return banner ? 16 : 12;
   }
 
   /**
