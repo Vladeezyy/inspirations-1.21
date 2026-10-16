@@ -1,0 +1,16 @@
+{
+  "type": "minecraft:block",
+  "pools": [
+    {
+      "bonus_rolls": 0.0,
+      "entries": [
+        {
+          "type": "minecraft:loot_table",
+          "value": "minecraft:blocks/purple_carpet"
+        }
+      ],
+      "rolls": 1.0
+    }
+  ],
+  "random_sequence": "inspirations:blocks/purple_fitted_carpet"
+}

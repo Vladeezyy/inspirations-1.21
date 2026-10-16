@@ -1,5 +1,5 @@
 {
-  "loader": "mantle:retextured",
+  "loader": "kilnwork:retextured",
   "render_type": "minecraft:cutout_mipped",
   "parent": "minecraft:block/block",
   "textures": {

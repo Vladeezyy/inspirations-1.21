@@ -1,0 +1,49 @@
+{
+  "neoforge:conditions": [
+    {
+      "type": "inspirations:config",
+      "prop": "bookshelf"
+    }
+  ],
+  "parent": "minecraft:recipes/root",
+  "criteria": {
+    "has_book": {
+      "conditions": {
+        "items": [
+          {
+            "items": "minecraft:book"
+          }
+        ]
+      },
+      "trigger": "minecraft:inventory_changed"
+    },
+    "has_slabs": {
+      "conditions": {
+        "items": [
+          {
+            "items": "#minecraft:wooden_slabs"
+          }
+        ]
+      },
+      "trigger": "minecraft:inventory_changed"
+    },
+    "has_the_recipe": {
+      "conditions": {
+        "recipe": "inspirations:building/bookshelves/rainbow_rbg"
+      },
+      "trigger": "minecraft:recipe_unlocked"
+    }
+  },
+  "requirements": [
+    [
+      "has_the_recipe",
+      "has_slabs",
+      "has_book"
+    ]
+  ],
+  "rewards": {
+    "recipes": [
+      "inspirations:building/bookshelves/rainbow_rbg"
+    ]
+  }
+}

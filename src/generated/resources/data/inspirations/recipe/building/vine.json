@@ -1,0 +1,24 @@
+{
+  "neoforge:conditions": [
+    {
+      "type": "inspirations:config",
+      "prop": "rope"
+    }
+  ],
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "key": {
+    "V": {
+      "item": "minecraft:vine"
+    }
+  },
+  "pattern": [
+    "V",
+    "V",
+    "V"
+  ],
+  "result": {
+    "count": 3,
+    "id": "inspirations:vine"
+  }
+}

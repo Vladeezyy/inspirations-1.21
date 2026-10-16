@@ -1,0 +1,28 @@
+{
+  "neoforge:conditions": [
+    {
+      "type": "inspirations:config",
+      "prop": "colored_books"
+    }
+  ],
+  "type": "minecraft:crafting_shapeless",
+  "category": "misc",
+  "group": "inspirations:colored_book",
+  "ingredients": [
+    {
+      "item": "minecraft:book"
+    },
+    {
+      "tag": "c:dyes/light_gray"
+    }
+  ],
+  "result": {
+    "components": {
+      "minecraft:dyed_color": {
+        "rgb": 10329495
+      }
+    },
+    "count": 1,
+    "id": "inspirations:colored_book"
+  }
+}

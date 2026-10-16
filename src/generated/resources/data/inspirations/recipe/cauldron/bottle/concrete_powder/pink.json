@@ -1,0 +1,44 @@
+{
+  "neoforge:conditions": [
+    {
+      "type": "inspirations:config",
+      "prop": "cauldron_dyeing"
+    }
+  ],
+  "type": "minecraft:crafting_shapeless",
+  "category": "building",
+  "group": "concrete_powder",
+  "ingredients": [
+    {
+      "item": "inspirations:pink_dyed_bottle"
+    },
+    {
+      "tag": "minecraft:sand"
+    },
+    {
+      "tag": "minecraft:sand"
+    },
+    {
+      "tag": "minecraft:sand"
+    },
+    {
+      "tag": "minecraft:sand"
+    },
+    {
+      "tag": "c:gravels"
+    },
+    {
+      "tag": "c:gravels"
+    },
+    {
+      "tag": "c:gravels"
+    },
+    {
+      "tag": "c:gravels"
+    }
+  ],
+  "result": {
+    "count": 8,
+    "id": "minecraft:pink_concrete_powder"
+  }
+}

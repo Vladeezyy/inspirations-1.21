@@ -1,0 +1,23 @@
+{
+  "neoforge:conditions": [
+    {
+      "type": "inspirations:config",
+      "prop": "cauldron_dyeing"
+    }
+  ],
+  "type": "minecraft:crafting_shapeless",
+  "category": "misc",
+  "group": "dyed_bed",
+  "ingredients": [
+    {
+      "tag": "minecraft:beds"
+    },
+    {
+      "item": "inspirations:purple_dyed_bottle"
+    }
+  ],
+  "result": {
+    "count": 1,
+    "id": "minecraft:purple_bed"
+  }
+}

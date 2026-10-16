@@ -1,0 +1,38 @@
+{
+  "neoforge:conditions": [
+    {
+      "type": "inspirations:config",
+      "prop": "mulch"
+    }
+  ],
+  "parent": "minecraft:recipes/root",
+  "criteria": {
+    "has_mulch": {
+      "conditions": {
+        "items": [
+          {
+            "items": "inspirations:plain_mulch"
+          }
+        ]
+      },
+      "trigger": "minecraft:inventory_changed"
+    },
+    "has_the_recipe": {
+      "conditions": {
+        "recipe": "inspirations:building/mulch/blue"
+      },
+      "trigger": "minecraft:recipe_unlocked"
+    }
+  },
+  "requirements": [
+    [
+      "has_the_recipe",
+      "has_mulch"
+    ]
+  ],
+  "rewards": {
+    "recipes": [
+      "inspirations:building/mulch/blue"
+    ]
+  }
+}

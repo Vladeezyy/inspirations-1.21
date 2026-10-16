@@ -1,0 +1,28 @@
+{
+  "neoforge:conditions": [
+    {
+      "type": "inspirations:config",
+      "prop": "cauldron_dyeing"
+    }
+  ],
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "group": "stained_glass_pane",
+  "key": {
+    "#": {
+      "tag": "c:glass_panes/colorless"
+    },
+    "x": {
+      "item": "inspirations:orange_dyed_bottle"
+    }
+  },
+  "pattern": [
+    "###",
+    "#x#",
+    "###"
+  ],
+  "result": {
+    "count": 8,
+    "id": "minecraft:orange_stained_glass_pane"
+  }
+}

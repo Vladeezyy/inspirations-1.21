@@ -19,7 +19,6 @@ import net.minecraft.data.DataGenerator;
 import net.minecraft.data.PackOutput;
 import net.minecraft.resources.ResourceLocation;
 import net.neoforged.api.distmarker.Dist;
-import net.neoforged.neoforge.common.NeoForge;
 import net.neoforged.neoforge.common.data.BlockTagsProvider;
 import net.neoforged.neoforge.common.data.ExistingFileHelper;
 import net.neoforged.neoforge.data.event.GatherDataEvent;
@@ -58,7 +57,6 @@ public class Inspirations {
     modBus.register(new InspirationsCaudrons());
     modBus.addListener(Config::configChanged);
     modBus.addListener(InspirationsNetwork::register);
-    NeoForge.EVENT_BUS.register(Inspirations.class);
 
     if (FMLEnvironment.dist == Dist.CLIENT) {
       CommonsClientEvents.onConstruct(modBus);

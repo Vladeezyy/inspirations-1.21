@@ -8,12 +8,10 @@ import net.minecraft.server.packs.PackType;
 import net.neoforged.bus.api.IEventBus;
 import net.neoforged.neoforge.data.loading.DatagenModLoader;
 import net.neoforged.neoforge.event.AddPackFindersEvent;
-import net.minecraft.client.resources.model.ModelBakery;
 import net.minecraft.network.chat.Component;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.level.block.Blocks;
 import net.neoforged.api.distmarker.Dist;
-import net.neoforged.neoforge.client.event.ModelEvent.BakingCompleted;
 import net.neoforged.neoforge.client.event.RegisterClientReloadListenersEvent;
 import net.neoforged.bus.api.SubscribeEvent;
 import net.neoforged.fml.common.EventBusSubscriber;
@@ -51,14 +49,5 @@ public class CommonsClientEvents extends AbstractClientEvents {
   @SubscribeEvent
   static void reloadListeners(RegisterClientReloadListenersEvent event) {
     event.registerReloadListener(ClientUtil.RELOAD_LISTENER);
-  }
-
-  // For the textured blocks, we need to rebake the blocks with the new texture.
-  // Those are private, so grab copies from these two events when they fire.
-  public static ModelBakery modelLoader;
-
-  @SubscribeEvent
-  public void collectBakeParameters(BakingCompleted event) {
-    modelLoader = event.getModelBakery();
   }
 }

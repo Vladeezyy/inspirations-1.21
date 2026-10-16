@@ -1,0 +1,22 @@
+{
+  "neoforge:conditions": [
+    {
+      "type": "inspirations:config",
+      "prop": "path"
+    }
+  ],
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "key": {
+    "C": {
+      "item": "minecraft:stone_bricks"
+    }
+  },
+  "pattern": [
+    "CC"
+  ],
+  "result": {
+    "count": 6,
+    "id": "inspirations:tile_path"
+  }
+}

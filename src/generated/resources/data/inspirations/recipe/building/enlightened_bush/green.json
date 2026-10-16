@@ -1,0 +1,33 @@
+{
+  "neoforge:conditions": [
+    {
+      "type": "inspirations:config",
+      "prop": "enlightened_bush"
+    }
+  ],
+  "type": "kilnwork:crafting_shaped_retextured",
+  "category": "building",
+  "group": "inspirations:enlightened_bush",
+  "key": {
+    "D": {
+      "tag": "c:dyes/green"
+    },
+    "G": {
+      "tag": "c:dusts/glowstone"
+    },
+    "L": {
+      "tag": "minecraft:leaves"
+    }
+  },
+  "pattern": [
+    " D ",
+    "GLG"
+  ],
+  "result": {
+    "count": 1,
+    "id": "inspirations:green_enlightened_bush"
+  },
+  "texture": {
+    "tag": "minecraft:leaves"
+  }
+}

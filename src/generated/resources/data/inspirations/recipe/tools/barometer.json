@@ -1,0 +1,45 @@
+{
+  "neoforge:conditions": [
+    {
+      "type": "inspirations:config",
+      "prop": "barometer"
+    }
+  ],
+  "type": "minecraft:crafting_shaped",
+  "category": "equipment",
+  "key": {
+    "B": {
+      "item": "minecraft:glass_bottle"
+    },
+    "R": {
+      "tag": "c:dusts/redstone"
+    },
+    "W": {
+      "type": "neoforge:components",
+      "components": {
+        "minecraft:attribute_modifiers": {
+          "modifiers": []
+        },
+        "minecraft:enchantments": {
+          "levels": {}
+        },
+        "minecraft:lore": [],
+        "minecraft:max_stack_size": 1,
+        "minecraft:potion_contents": {
+          "potion": "minecraft:water"
+        },
+        "minecraft:rarity": "common",
+        "minecraft:repair_cost": 0
+      },
+      "items": "minecraft:potion"
+    }
+  },
+  "pattern": [
+    " W",
+    "BR"
+  ],
+  "result": {
+    "count": 1,
+    "id": "inspirations:barometer"
+  }
+}

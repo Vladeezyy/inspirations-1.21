@@ -1,0 +1,28 @@
+{
+  "neoforge:conditions": [
+    {
+      "type": "inspirations:config",
+      "prop": "cauldron_dyeing"
+    }
+  ],
+  "type": "minecraft:crafting_shaped",
+  "category": "building",
+  "group": "stained_glass",
+  "key": {
+    "#": {
+      "tag": "c:glass_blocks/colorless"
+    },
+    "x": {
+      "item": "inspirations:cyan_dyed_bottle"
+    }
+  },
+  "pattern": [
+    "###",
+    "#x#",
+    "###"
+  ],
+  "result": {
+    "count": 8,
+    "id": "minecraft:cyan_stained_glass"
+  }
+}

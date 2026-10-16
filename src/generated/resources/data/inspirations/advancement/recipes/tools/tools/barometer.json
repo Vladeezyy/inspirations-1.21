@@ -1,0 +1,41 @@
+{
+  "neoforge:conditions": [
+    {
+      "type": "inspirations:config",
+      "prop": "barometer"
+    }
+  ],
+  "parent": "minecraft:recipes/root",
+  "criteria": {
+    "has_bottle": {
+      "conditions": {
+        "items": [
+          {
+            "items": "minecraft:potion",
+            "predicates": {
+              "minecraft:potion_contents": "minecraft:water"
+            }
+          }
+        ]
+      },
+      "trigger": "minecraft:inventory_changed"
+    },
+    "has_the_recipe": {
+      "conditions": {
+        "recipe": "inspirations:tools/barometer"
+      },
+      "trigger": "minecraft:recipe_unlocked"
+    }
+  },
+  "requirements": [
+    [
+      "has_the_recipe",
+      "has_bottle"
+    ]
+  ],
+  "rewards": {
+    "recipes": [
+      "inspirations:tools/barometer"
+    ]
+  }
+}

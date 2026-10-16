@@ -1,0 +1,27 @@
+{
+  "neoforge:conditions": [
+    {
+      "type": "inspirations:config",
+      "prop": "carpeted_trapdoor"
+    }
+  ],
+  "type": "minecraft:crafting_shaped",
+  "category": "redstone",
+  "group": "inspirations:carpeted_trapdoor",
+  "key": {
+    "C": {
+      "item": "minecraft:black_carpet"
+    },
+    "T": {
+      "tag": "minecraft:wooden_trapdoors"
+    }
+  },
+  "pattern": [
+    "C",
+    "T"
+  ],
+  "result": {
+    "count": 1,
+    "id": "inspirations:black_carpeted_trapdoor"
+  }
+}

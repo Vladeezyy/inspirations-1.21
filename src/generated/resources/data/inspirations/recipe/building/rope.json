@@ -1,0 +1,24 @@
+{
+  "neoforge:conditions": [
+    {
+      "type": "inspirations:config",
+      "prop": "rope"
+    }
+  ],
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "key": {
+    "S": {
+      "item": "minecraft:string"
+    }
+  },
+  "pattern": [
+    "SS",
+    "SS",
+    "SS"
+  ],
+  "result": {
+    "count": 3,
+    "id": "inspirations:rope"
+  }
+}

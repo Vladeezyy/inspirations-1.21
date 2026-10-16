@@ -1,0 +1,32 @@
+{
+  "neoforge:conditions": [
+    {
+      "type": "inspirations:config",
+      "prop": "photometer"
+    }
+  ],
+  "type": "minecraft:crafting_shaped",
+  "category": "equipment",
+  "key": {
+    "B": {
+      "item": "minecraft:glass_bottle"
+    },
+    "G": {
+      "tag": "c:dusts/glowstone"
+    },
+    "I": {
+      "tag": "c:ingots/iron"
+    },
+    "R": {
+      "tag": "c:dusts/redstone"
+    }
+  },
+  "pattern": [
+    "RBG",
+    " I "
+  ],
+  "result": {
+    "count": 1,
+    "id": "inspirations:photometer"
+  }
+}

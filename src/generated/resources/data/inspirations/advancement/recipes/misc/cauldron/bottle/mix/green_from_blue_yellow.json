@@ -1,0 +1,53 @@
+{
+  "neoforge:conditions": [
+    {
+      "type": "inspirations:config",
+      "prop": "cauldron_dyeing"
+    },
+    {
+      "type": "inspirations:config",
+      "prop": "extra_bottle_recipes"
+    }
+  ],
+  "parent": "minecraft:recipes/root",
+  "criteria": {
+    "has_blue": {
+      "conditions": {
+        "items": [
+          {
+            "items": "inspirations:blue_dyed_bottle"
+          }
+        ]
+      },
+      "trigger": "minecraft:inventory_changed"
+    },
+    "has_the_recipe": {
+      "conditions": {
+        "recipe": "inspirations:cauldron/bottle/mix/green_from_blue_yellow"
+      },
+      "trigger": "minecraft:recipe_unlocked"
+    },
+    "has_yellow": {
+      "conditions": {
+        "items": [
+          {
+            "items": "inspirations:yellow_dyed_bottle"
+          }
+        ]
+      },
+      "trigger": "minecraft:inventory_changed"
+    }
+  },
+  "requirements": [
+    [
+      "has_the_recipe",
+      "has_blue",
+      "has_yellow"
+    ]
+  ],
+  "rewards": {
+    "recipes": [
+      "inspirations:cauldron/bottle/mix/green_from_blue_yellow"
+    ]
+  }
+}

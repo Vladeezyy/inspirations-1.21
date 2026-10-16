@@ -1,0 +1,49 @@
+{
+  "neoforge:conditions": [
+    {
+      "type": "inspirations:config",
+      "prop": "torch_lever"
+    }
+  ],
+  "parent": "minecraft:recipes/root",
+  "criteria": {
+    "has_lever": {
+      "conditions": {
+        "items": [
+          {
+            "items": "minecraft:lever"
+          }
+        ]
+      },
+      "trigger": "minecraft:inventory_changed"
+    },
+    "has_soul_torch": {
+      "conditions": {
+        "items": [
+          {
+            "items": "minecraft:soul_torch"
+          }
+        ]
+      },
+      "trigger": "minecraft:inventory_changed"
+    },
+    "has_the_recipe": {
+      "conditions": {
+        "recipe": "inspirations:utility/soul_torch_lever"
+      },
+      "trigger": "minecraft:recipe_unlocked"
+    }
+  },
+  "requirements": [
+    [
+      "has_the_recipe",
+      "has_soul_torch",
+      "has_lever"
+    ]
+  ],
+  "rewards": {
+    "recipes": [
+      "inspirations:utility/soul_torch_lever"
+    ]
+  }
+}

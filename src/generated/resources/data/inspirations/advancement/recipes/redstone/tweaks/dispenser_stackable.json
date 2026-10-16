@@ -1,0 +1,41 @@
+{
+  "neoforge:conditions": [
+    {
+      "type": "inspirations:config",
+      "prop": "unstackable_alts"
+    }
+  ],
+  "parent": "minecraft:recipes/root",
+  "criteria": {
+    "has_the_recipe": {
+      "conditions": {
+        "recipe": "inspirations:tweaks/dispenser_stackable"
+      },
+      "trigger": "minecraft:recipe_unlocked"
+    },
+    "many_collectors": {
+      "conditions": {
+        "items": [
+          {
+            "count": {
+              "min": 5
+            },
+            "items": "minecraft:dispenser"
+          }
+        ]
+      },
+      "trigger": "minecraft:inventory_changed"
+    }
+  },
+  "requirements": [
+    [
+      "has_the_recipe",
+      "many_collectors"
+    ]
+  ],
+  "rewards": {
+    "recipes": [
+      "inspirations:tweaks/dispenser_stackable"
+    ]
+  }
+}

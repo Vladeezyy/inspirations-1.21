@@ -1,0 +1,23 @@
+{
+  "neoforge:conditions": [
+    {
+      "type": "inspirations:config",
+      "prop": "cauldron_dyeing"
+    }
+  ],
+  "type": "inspirations:shapeless_no_container",
+  "category": "misc",
+  "group": "inspirations:purple_dyed_bottle",
+  "ingredients": [
+    {
+      "item": "inspirations:blue_dyed_bottle"
+    },
+    {
+      "item": "inspirations:red_dyed_bottle"
+    }
+  ],
+  "result": {
+    "count": 2,
+    "id": "inspirations:purple_dyed_bottle"
+  }
+}

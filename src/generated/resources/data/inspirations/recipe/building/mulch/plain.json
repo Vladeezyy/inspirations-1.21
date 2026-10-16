@@ -1,0 +1,16 @@
+{
+  "neoforge:conditions": [
+    {
+      "type": "inspirations:config",
+      "prop": "mulch"
+    }
+  ],
+  "type": "minecraft:stonecutting",
+  "ingredient": {
+    "tag": "minecraft:planks"
+  },
+  "result": {
+    "count": 1,
+    "id": "inspirations:plain_mulch"
+  }
+}

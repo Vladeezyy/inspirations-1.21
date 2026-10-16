@@ -1,0 +1,26 @@
+{
+  "neoforge:conditions": [
+    {
+      "type": "inspirations:config",
+      "prop": "torch_lever"
+    }
+  ],
+  "type": "minecraft:crafting_shaped",
+  "category": "redstone",
+  "key": {
+    "S": {
+      "tag": "c:cobblestones"
+    },
+    "T": {
+      "item": "minecraft:soul_torch"
+    }
+  },
+  "pattern": [
+    "T",
+    "S"
+  ],
+  "result": {
+    "count": 1,
+    "id": "inspirations:soul_torch_lever"
+  }
+}

@@ -1,0 +1,26 @@
+{
+  "neoforge:conditions": [
+    {
+      "type": "inspirations:config",
+      "prop": "cauldron_dyeing"
+    }
+  ],
+  "type": "minecraft:crafting_shapeless",
+  "category": "misc",
+  "group": "writable_book",
+  "ingredients": [
+    {
+      "item": "inspirations:black_dyed_bottle"
+    },
+    {
+      "tag": "c:feathers"
+    },
+    {
+      "item": "minecraft:book"
+    }
+  ],
+  "result": {
+    "count": 1,
+    "id": "minecraft:writable_book"
+  }
+}

@@ -1,0 +1,20 @@
+{
+  "neoforge:conditions": [
+    {
+      "type": "inspirations:config",
+      "prop": "flowers"
+    }
+  ],
+  "type": "minecraft:crafting_shapeless",
+  "category": "misc",
+  "group": "minecraft:magenta_dye",
+  "ingredients": [
+    {
+      "item": "inspirations:syringa"
+    }
+  ],
+  "result": {
+    "count": 1,
+    "id": "minecraft:magenta_dye"
+  }
+}

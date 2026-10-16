@@ -1,8 +1,8 @@
 {
-  "type": "mantle:replace_item",
+  "type": "inspirations:replace_item",
   "conditions": [
     {
-      "condition": "forge:loot_table_id",
+      "condition": "neoforge:loot_table_id",
       "loot_table_id": "minecraft:blocks/beetroots"
     },
     {
@@ -27,7 +27,6 @@
       "enchantment": "minecraft:fortune"
     }
   ],
-  "functions": [],
   "original": {
     "item": "minecraft:beetroot"
   },

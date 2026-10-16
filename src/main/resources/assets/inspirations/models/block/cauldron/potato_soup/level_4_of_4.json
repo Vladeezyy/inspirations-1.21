@@ -1,5 +1,5 @@
 {
-  "loader": "mantle:colored_block",
+  "loader": "kilnwork:colored_block",
   "parent": "inspirations:block/cauldron/level_4_of_4",
   "textures": {
     "content": "inspirations:fluid/colorless_still"

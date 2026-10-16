@@ -1,0 +1,26 @@
+{
+  "neoforge:conditions": [
+    {
+      "type": "inspirations:config",
+      "prop": "cauldron_dyeing"
+    }
+  ],
+  "type": "inspirations:shapeless_no_container",
+  "category": "misc",
+  "group": "inspirations:light_gray_dyed_bottle",
+  "ingredients": [
+    {
+      "item": "inspirations:black_dyed_bottle"
+    },
+    {
+      "item": "inspirations:white_dyed_bottle"
+    },
+    {
+      "item": "inspirations:white_dyed_bottle"
+    }
+  ],
+  "result": {
+    "count": 3,
+    "id": "inspirations:light_gray_dyed_bottle"
+  }
+}

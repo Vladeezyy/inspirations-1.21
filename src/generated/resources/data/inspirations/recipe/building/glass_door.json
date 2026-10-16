@@ -1,0 +1,24 @@
+{
+  "neoforge:conditions": [
+    {
+      "type": "inspirations:config",
+      "prop": "glass_door"
+    }
+  ],
+  "type": "minecraft:crafting_shaped",
+  "category": "redstone",
+  "key": {
+    "G": {
+      "item": "minecraft:glass_pane"
+    }
+  },
+  "pattern": [
+    "GG",
+    "GG",
+    "GG"
+  ],
+  "result": {
+    "count": 1,
+    "id": "inspirations:glass_door"
+  }
+}

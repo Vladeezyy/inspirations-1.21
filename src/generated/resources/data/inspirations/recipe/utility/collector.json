@@ -1,0 +1,30 @@
+{
+  "neoforge:conditions": [
+    {
+      "type": "inspirations:config",
+      "prop": "collector"
+    }
+  ],
+  "type": "minecraft:crafting_shaped",
+  "category": "redstone",
+  "key": {
+    "C": {
+      "tag": "c:cobblestones"
+    },
+    "F": {
+      "item": "minecraft:fishing_rod"
+    },
+    "R": {
+      "tag": "c:dusts/redstone"
+    }
+  },
+  "pattern": [
+    "CCC",
+    "CFC",
+    "CRC"
+  ],
+  "result": {
+    "count": 1,
+    "id": "inspirations:collector"
+  }
+}

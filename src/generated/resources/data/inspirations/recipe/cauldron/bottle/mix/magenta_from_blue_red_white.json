@@ -1,0 +1,29 @@
+{
+  "neoforge:conditions": [
+    {
+      "type": "inspirations:config",
+      "prop": "cauldron_dyeing"
+    }
+  ],
+  "type": "inspirations:shapeless_no_container",
+  "category": "misc",
+  "group": "inspirations:magenta_dyed_bottle",
+  "ingredients": [
+    {
+      "item": "inspirations:blue_dyed_bottle"
+    },
+    {
+      "item": "inspirations:red_dyed_bottle"
+    },
+    {
+      "item": "inspirations:red_dyed_bottle"
+    },
+    {
+      "item": "inspirations:white_dyed_bottle"
+    }
+  ],
+  "result": {
+    "count": 4,
+    "id": "inspirations:magenta_dyed_bottle"
+  }
+}

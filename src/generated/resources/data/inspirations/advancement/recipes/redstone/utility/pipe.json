@@ -1,0 +1,38 @@
+{
+  "neoforge:conditions": [
+    {
+      "type": "inspirations:config",
+      "prop": "pipe"
+    }
+  ],
+  "parent": "minecraft:recipes/root",
+  "criteria": {
+    "has_hopper": {
+      "conditions": {
+        "items": [
+          {
+            "items": "minecraft:hopper"
+          }
+        ]
+      },
+      "trigger": "minecraft:inventory_changed"
+    },
+    "has_the_recipe": {
+      "conditions": {
+        "recipe": "inspirations:utility/pipe"
+      },
+      "trigger": "minecraft:recipe_unlocked"
+    }
+  },
+  "requirements": [
+    [
+      "has_the_recipe",
+      "has_hopper"
+    ]
+  ],
+  "rewards": {
+    "recipes": [
+      "inspirations:utility/pipe"
+    ]
+  }
+}

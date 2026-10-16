@@ -1,0 +1,60 @@
+{
+  "neoforge:conditions": [
+    {
+      "type": "inspirations:config",
+      "prop": "cauldron_dyeing"
+    }
+  ],
+  "parent": "minecraft:recipes/root",
+  "criteria": {
+    "has_blue": {
+      "conditions": {
+        "items": [
+          {
+            "items": "inspirations:blue_dyed_bottle"
+          }
+        ]
+      },
+      "trigger": "minecraft:inventory_changed"
+    },
+    "has_red": {
+      "conditions": {
+        "items": [
+          {
+            "items": "inspirations:red_dyed_bottle"
+          }
+        ]
+      },
+      "trigger": "minecraft:inventory_changed"
+    },
+    "has_the_recipe": {
+      "conditions": {
+        "recipe": "inspirations:cauldron/bottle/mix/magenta_from_blue_red_white"
+      },
+      "trigger": "minecraft:recipe_unlocked"
+    },
+    "has_white": {
+      "conditions": {
+        "items": [
+          {
+            "items": "inspirations:white_dyed_bottle"
+          }
+        ]
+      },
+      "trigger": "minecraft:inventory_changed"
+    }
+  },
+  "requirements": [
+    [
+      "has_the_recipe",
+      "has_blue",
+      "has_red",
+      "has_white"
+    ]
+  ],
+  "rewards": {
+    "recipes": [
+      "inspirations:cauldron/bottle/mix/magenta_from_blue_red_white"
+    ]
+  }
+}
