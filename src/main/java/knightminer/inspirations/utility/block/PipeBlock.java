@@ -9,7 +9,8 @@ import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.Container;
 import net.minecraft.world.Containers;
 import net.minecraft.world.InteractionHand;
-import net.minecraft.world.InteractionResult;
+import net.minecraft.world.ItemInteractionResult;
+import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.context.BlockPlaceContext;
@@ -36,7 +37,6 @@ import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.phys.shapes.CollisionContext;
 import net.minecraft.world.phys.shapes.Shapes;
 import net.minecraft.world.phys.shapes.VoxelShape;
-import net.neoforged.neoforge.network.NetworkHooks;
 import dev.vladeezyy.kilnwork.block.InventoryBlock;
 import dev.vladeezyy.kilnwork.util.BlockEntityHelper;
 
@@ -124,7 +124,7 @@ public class PipeBlock extends InventoryBlock implements SimpleWaterloggedBlock 
 
     Direction facing = context.getClickedFace().getOpposite();
     // only allow up if allowed in the config.
-    if (!Config.pipeUpwards.get() && facing == Direction.UP) {
+    if (!Config.get(Config.pipeUpwards) && facing == Direction.UP) {
       facing = context.getHorizontalDirection();
     }
 
@@ -148,28 +148,16 @@ public class PipeBlock extends InventoryBlock implements SimpleWaterloggedBlock 
     return state.getValue(WATERLOGGED) ? Fluids.WATER.getSource(false) : super.getFluidState(state);
   }
 
-  @Deprecated
   @Override
-  public InteractionResult use(BlockState state, Level world, BlockPos pos, Player player, InteractionHand hand, BlockHitResult trace) {
+  protected ItemInteractionResult useItemOn(ItemStack stack, BlockState state, Level world, BlockPos pos, Player player, InteractionHand hand, BlockHitResult trace) {
     // return false if holding a pipe to make easier to place
-    Item item = player.getItemInHand(hand).getItem();
+    Item item = stack.getItem();
     if (item == InspirationsUtility.pipe.asItem() || Block.byItem(item) instanceof HopperBlock) {
-      return InteractionResult.PASS;
+      return ItemInteractionResult.SKIP_DEFAULT_BLOCK_INTERACTION;
     }
-    return super.use(state, world, pos, player, hand, trace);
+    return super.useItemOn(stack, state, world, pos, player, hand, trace);
   }
 
-  @Override
-  public void onRemove(BlockState state, Level world, BlockPos pos, BlockState newState, boolean isMoving) {
-    // If destroyed, drop contents.
-    if (state.getBlock() != newState.getBlock()) {
-      BlockEntity te = world.getBlockEntity(pos);
-      if (te instanceof Container container) {
-        Containers.dropContents(world, pos, container);
-      }
-    }
-    super.onRemove(state, world, pos, newState, isMoving);
-  }
 
   /* Model and shape */
 
@@ -201,29 +189,6 @@ public class PipeBlock extends InventoryBlock implements SimpleWaterloggedBlock 
     return BlockEntityHelper.serverTicker(level, matchType, InspirationsUtility.tilePipe, PipeBlockEntity.SERVER_TICKER);
   }
 
-  @Override
-  protected boolean openGui(Player player, Level world, BlockPos pos) {
-    if (!(player instanceof ServerPlayer serverPlayer)) {
-      throw new AssertionError("Needs to be server!");
-    }
-    BlockEntity te = world.getBlockEntity(pos);
-    if (te instanceof PipeBlockEntity pipe) {
-      NetworkHooks.openScreen(serverPlayer, pipe, pos);
-      return true;
-    }
-    return false;
-  }
-
-  @Override
-  public void neighborChanged(BlockState state, Level world, BlockPos pos, Block blockIn, BlockPos neighbor, boolean isMoving) {
-    if (pos.relative(state.getValue(FACING)).equals(neighbor)) {
-      BlockEntity te = world.getBlockEntity(pos);
-      if (te instanceof PipeBlockEntity) {
-        ((PipeBlockEntity) te).clearCachedInventories();
-      }
-    }
-    super.neighborChanged(state, world, pos, blockIn, neighbor, isMoving);
-  }
 
   /* Bounds */
 

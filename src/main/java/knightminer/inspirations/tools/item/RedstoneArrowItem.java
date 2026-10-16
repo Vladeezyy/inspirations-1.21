@@ -7,6 +7,10 @@ import net.minecraft.world.entity.projectile.AbstractArrow;
 import net.minecraft.world.item.ArrowItem;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
+import net.minecraft.core.Direction;
+import net.minecraft.core.Position;
+import net.minecraft.world.entity.projectile.Projectile;
+import javax.annotation.Nullable;
 
 public class RedstoneArrowItem extends ArrowItem {
   public RedstoneArrowItem(Properties builder) {
@@ -14,12 +18,19 @@ public class RedstoneArrowItem extends ArrowItem {
   }
 
   @Override
-  public AbstractArrow createArrow(Level world, ItemStack stack, LivingEntity shooter) {
-    return new RedstoneArrow(world, shooter);
+  public AbstractArrow createArrow(Level world, ItemStack stack, LivingEntity shooter, @Nullable ItemStack weapon) {
+    return new RedstoneArrow(world, shooter, stack.copyWithCount(1), weapon);
   }
 
   @Override
-  public boolean isInfinite(ItemStack stack, ItemStack bow, Player player) {
+  public Projectile asProjectile(Level level, Position pos, ItemStack stack, Direction direction) {
+    RedstoneArrow arrow = new RedstoneArrow(level, pos.x(), pos.y(), pos.z(), stack.copyWithCount(1), null);
+    arrow.pickup = AbstractArrow.Pickup.ALLOWED;
+    return arrow;
+  }
+
+  @Override
+  public boolean isInfinite(ItemStack stack, ItemStack bow, LivingEntity player) {
     return false;
   }
 }

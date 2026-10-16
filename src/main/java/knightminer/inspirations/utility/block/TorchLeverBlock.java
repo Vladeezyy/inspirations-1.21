@@ -2,7 +2,7 @@ package knightminer.inspirations.utility.block;
 
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
-import net.minecraft.core.particles.ParticleOptions;
+import net.minecraft.core.particles.SimpleParticleType;
 import net.minecraft.core.particles.ParticleTypes;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
@@ -23,8 +23,8 @@ import net.minecraft.world.phys.BlockHitResult;
 public class TorchLeverBlock extends TorchBlock {
   private static final DirectionProperty SWING = DirectionProperty.create("swing", (dir) -> dir != Direction.DOWN);
 
-  public TorchLeverBlock(BlockBehaviour.Properties props, ParticleOptions particles) {
-    super(props, particles);
+  public TorchLeverBlock(BlockBehaviour.Properties props, SimpleParticleType particles) {
+    super(particles, props);
     registerDefaultState(defaultBlockState().setValue(SWING, Direction.UP));
   }
 
@@ -60,9 +60,8 @@ public class TorchLeverBlock extends TorchBlock {
    * Powering
    */
 
-  @Deprecated
   @Override
-  public InteractionResult use(BlockState state, Level world, BlockPos pos, Player player, InteractionHand hand, BlockHitResult trace) {
+  protected InteractionResult useWithoutItem(BlockState state, Level world, BlockPos pos, Player player, BlockHitResult trace) {
     if (world.isClientSide) {
       return InteractionResult.SUCCESS;
     }

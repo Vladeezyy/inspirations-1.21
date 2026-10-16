@@ -19,7 +19,7 @@ import net.minecraft.world.level.block.SoundType;
 import net.minecraft.world.level.block.WoolCarpetBlock;
 import net.minecraft.world.level.block.state.BlockState;
 import net.neoforged.neoforge.event.entity.player.PlayerInteractEvent.RightClickBlock;
-import net.neoforged.bus.api.Event;
+import net.neoforged.neoforge.common.util.TriState;
 import net.neoforged.bus.api.SubscribeEvent;
 import net.neoforged.fml.common.EventBusSubscriber;
 
@@ -93,7 +93,7 @@ public class UtilityEvents {
       return;
     }
 
-    event.setUseBlock(Event.Result.DENY);
-    event.setUseItem(Event.Result.ALLOW);
+    event.setUseBlock(TriState.FALSE);
+    event.setUseItem(TriState.TRUE);
   }
 }

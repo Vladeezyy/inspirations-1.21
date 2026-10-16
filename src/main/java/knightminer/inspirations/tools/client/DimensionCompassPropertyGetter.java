@@ -1,7 +1,6 @@
 package knightminer.inspirations.tools.client;
 
 import knightminer.inspirations.tools.capability.DimensionCompass;
-import knightminer.inspirations.tools.capability.IDimensionCompass;
 import net.minecraft.client.multiplayer.ClientLevel;
 import net.minecraft.client.renderer.item.ItemPropertyFunction;
 import net.minecraft.core.BlockPos;
@@ -15,7 +14,8 @@ import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.decoration.ItemFrame;
 import net.minecraft.world.entity.item.ItemEntity;
 import net.minecraft.world.entity.player.Player;
-import net.minecraft.world.item.CompassItem;
+import net.minecraft.core.component.DataComponents;
+import net.minecraft.world.item.component.LodestoneTracker;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.phys.Vec3;
@@ -42,8 +42,9 @@ public class DimensionCompassPropertyGetter implements ItemPropertyFunction {
 		}
 
 		// start by selecting our target position
-		BlockPos pos = CompassItem.isLodestoneCompass(stack)
-									 ? getLodestonePosition(world, stack.getOrCreateTag())
+		LodestoneTracker tracker = stack.get(DataComponents.LODESTONE_TRACKER);
+		BlockPos pos = tracker != null
+									 ? getLodestonePosition(world, tracker)
 									 : getDimensionEntered(entity);
 		long time = world.getGameTime();
 		Vec3 entityPos = entity.position();
@@ -96,7 +97,7 @@ public class DimensionCompassPropertyGetter implements ItemPropertyFunction {
 	 */
 	@Nullable
 	private static BlockPos getDimensionEntered(Entity entity) {
-		return entity.getCapability(DimensionCompass.CAPABILITY).resolve().map(IDimensionCompass::getEnteredPosition).orElse(null);
+		return entity instanceof Player player ? DimensionCompass.get(player).getEnteredPosition() : null;
 	}
 
 	/**
@@ -106,30 +107,24 @@ public class DimensionCompassPropertyGetter implements ItemPropertyFunction {
 	 * @return  Lodestone position
 	 */
 	@Nullable
-	private static BlockPos getLodestonePosition(Level world, CompoundTag nbt) {
-		boolean hasPos = nbt.contains("LodestonePos");
-		boolean hasDim = nbt.contains("LodestoneDimension");
-		if (hasPos && hasDim) {
-			GlobalPos globalPos = CompassItem.getLodestonePosition(nbt);
-			if (globalPos != null) {
-				ResourceKey<Level> storedDimension = globalPos.dimension();
-				ResourceKey<Level> currentDimension = world.dimension();
-				BlockPos pos = NbtUtils.readBlockPos(nbt.getCompound("LodestonePos"));
-
-				if (storedDimension != currentDimension) {
-					// from nether coords
-					if (storedDimension == Level.NETHER) {
-						return new BlockPos(pos.getX() * 8, pos.getY(), pos.getZ() * 8);
-					}
-					// to nether coords
-					if (currentDimension == Level.NETHER) {
-						return new BlockPos(Math.round(pos.getX() / 8f), pos.getY(), Math.round(pos.getZ() / 8f));
-					}
+	private static BlockPos getLodestonePosition(Level world, LodestoneTracker tracker) {
+		GlobalPos globalPos = tracker.target().orElse(null);
+		if (globalPos != null) {
+			ResourceKey<Level> storedDimension = globalPos.dimension();
+			ResourceKey<Level> currentDimension = world.dimension();
+			BlockPos pos = globalPos.pos();
+			if (storedDimension != currentDimension) {
+				// from nether coords
+				if (storedDimension == Level.NETHER) {
+					return new BlockPos(pos.getX() * 8, pos.getY(), pos.getZ() * 8);
 				}
-				return pos;
+				// to nether coords
+				if (currentDimension == Level.NETHER) {
+					return new BlockPos(Math.round(pos.getX() / 8f), pos.getY(), Math.round(pos.getZ() / 8f));
+				}
 			}
+			return pos;
 		}
-
 		return null;
 	}
 

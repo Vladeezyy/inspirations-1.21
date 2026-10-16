@@ -2,7 +2,7 @@ package knightminer.inspirations.utility.block;
 
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
-import net.minecraft.core.particles.ParticleOptions;
+import net.minecraft.core.particles.SimpleParticleType;
 import net.minecraft.core.particles.ParticleTypes;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
@@ -26,8 +26,8 @@ public class TorchLeverWallBlock extends WallTorchBlock {
   private static final BooleanProperty POWERED = BlockStateProperties.POWERED;
   public static final DirectionProperty FACING = BlockStateProperties.HORIZONTAL_FACING;
 
-  public TorchLeverWallBlock(BlockBehaviour.Properties props, ParticleOptions particles) {
-    super(props, particles);
+  public TorchLeverWallBlock(BlockBehaviour.Properties props, SimpleParticleType particles) {
+    super(particles, props);
     registerDefaultState(defaultBlockState().setValue(POWERED, false));
   }
 
@@ -61,9 +61,8 @@ public class TorchLeverWallBlock extends WallTorchBlock {
    * Powering
    */
 
-  @Deprecated
   @Override
-  public InteractionResult use(BlockState state, Level world, BlockPos pos, Player player, InteractionHand hand, BlockHitResult trace) {
+  protected InteractionResult useWithoutItem(BlockState state, Level world, BlockPos pos, Player player, BlockHitResult trace) {
     if (world.isClientSide) {
       return InteractionResult.SUCCESS;
     }

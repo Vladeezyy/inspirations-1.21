@@ -22,7 +22,9 @@ import net.neoforged.neoforge.common.util.NonNullConsumer;
 import net.neoforged.neoforge.items.IItemHandler;
 import net.neoforged.neoforge.items.ItemHandlerHelper;
 import dev.vladeezyy.kilnwork.block.InventoryBlockEntity;
-import slimeknights.mantle.util.WeakConsumerWrapper;
+import net.neoforged.neoforge.capabilities.BlockCapabilityCache;
+import net.minecraft.server.level.ServerLevel;
+import net.minecraft.core.HolderLookup;
 
 import javax.annotation.Nullable;
 import java.lang.ref.WeakReference;
@@ -35,30 +37,18 @@ public class PipeBlockEntity extends InventoryBlockEntity {
   /* Number of ticks before transfer is allowed again */
   private short cooldown = 0;
 
-  /** Cache of the current TE we are facing */
+  /** Item handler of the block we output to, created once per facing (server only) */
   @Nullable
-  private LazyOptional<IItemHandler> facingHandler = null;
-  /** Cache of the current hopper we are facing */
-  @Nullable
-  private WeakReference<HopperBlockEntity> hopper;
-
-  /** Lambda to call on every item transfer. Final variable to reduce memory usage every tick */
-  private final NonNullConsumer<IItemHandler> transferItem = this::transferItem;
-  /** Lambda to call when a lazy optional is invalidated. Final variable to reduce memory usage */
-  private final NonNullConsumer<LazyOptional<IItemHandler>> facingInvalidator = new WeakConsumerWrapper<>(this, (te, handler) -> {
-    if (te.facingHandler == handler) {
-      te.clearCachedInventories();
-    }
-  });
+  private BlockCapabilityCache<IItemHandler, Direction> facingHandler = null;
 
   public PipeBlockEntity(BlockPos pos, BlockState state) {
-    super(InspirationsUtility.tilePipe, pos, state, TITLE, false, 1);
+    super(InspirationsUtility.tilePipe, pos, state, TITLE, 1);
   }
 
   private void tick() {
     // do not function if facing up when disallowed
     Direction facing = this.getBlockState().getValue(PipeBlock.FACING);
-    if (!Config.pipeUpwards.get() && facing == Direction.UP) {
+    if (!Config.get(Config.pipeUpwards) && facing == Direction.UP) {
       return;
     }
 
@@ -75,7 +65,10 @@ public class PipeBlockEntity extends InventoryBlockEntity {
     }
 
     // transfer items if we have a handler
-    getHandler(facing).ifPresent(transferItem);
+    IItemHandler handler = getHandler(facing);
+    if (handler != null) {
+      transferItem(handler, facing);
+    }
   }
 
   /**
@@ -83,37 +76,23 @@ public class PipeBlockEntity extends InventoryBlockEntity {
    * @param facing  Direction
    * @return  Item handler
    */
-  private LazyOptional<IItemHandler> getHandler(Direction facing) {
-    // return cached handler if present
-    if (facingHandler != null) {
-      return facingHandler;
+  @Nullable
+  private IItemHandler getHandler(Direction facing) {
+    if (!(level instanceof ServerLevel serverLevel)) {
+      return null;
     }
-
-    // fetch TE and capability
-    assert level != null;
-    BlockEntity te = level.getBlockEntity(worldPosition.relative(facing));
-    if (te != null) {
-      LazyOptional<IItemHandler> handler = te.getCapability(Capabilities.ITEM_HANDLER, facing.getOpposite());
-      if (handler.isPresent()) {
-        // add the invalidator
-        handler.addListener(facingInvalidator);
-        // if its a hopper, store that so we can update cooldowns
-        if (te instanceof HopperBlockEntity) {
-          hopper = new WeakReference<>((HopperBlockEntity)te);
-        }
-        // cache and return
-        return facingHandler = handler;
-      }
+    // the cache follows the neighbor by itself, so it is made once per facing
+    if (facingHandler == null) {
+      facingHandler = BlockCapabilityCache.create(Capabilities.ItemHandler.BLOCK, serverLevel, worldPosition.relative(facing), facing.getOpposite(), () -> !isRemoved(), () -> {});
     }
-    // no item handler, cache empty
-    return facingHandler = LazyOptional.empty();
+    return facingHandler.getCapability();
   }
 
   /**
    * Logic to transfer a single item
    * @param neighbor  Neighbor to transfer items into
    */
-  private void transferItem(IItemHandler neighbor) {
+  private void transferItem(IItemHandler neighbor, Direction facing) {
     ItemStack stack = getItem(0);
     if (stack.isEmpty()) {
       return;
@@ -124,11 +103,8 @@ public class PipeBlockEntity extends InventoryBlockEntity {
     // if we successfully place it in, shrink it here
     if (ItemHandlerHelper.insertItemStacked(neighbor, copy, false).isEmpty()) {
       // set cooldown on the hopper
-      if (hopper != null) {
-        HopperBlockEntity hop = this.hopper.get();
-        if (hop != null) {
-          hop.setCooldown(8);
-        }
+      if (level != null && level.getBlockEntity(worldPosition.relative(facing)) instanceof HopperBlockEntity hop) {
+        hop.setCooldown(8);
       }
 
       // remove the stack if empty
@@ -142,19 +118,14 @@ public class PipeBlockEntity extends InventoryBlockEntity {
     }
   }
 
-  /**
-   * Called when a neighbor updates to invalidate the inventory cache
-   */
-  public void clearCachedInventories() {
-    this.facingHandler = null;
-    this.hopper = null;
-  }
-
   @Override
-  public void setBlockState(BlockState pBlockState) {
-    super.setBlockState(pBlockState);
-    // if the block changed and this TE is intact, remove cache. likely we were rotated
-    this.clearCachedInventories();
+  public void setBlockState(BlockState state) {
+    Direction old = getBlockState().getValue(PipeBlock.FACING);
+    super.setBlockState(state);
+    // rotated: the output is somewhere else now
+    if (state.getValue(PipeBlock.FACING) != old) {
+      this.facingHandler = null;
+    }
   }
 
   @Override
@@ -177,14 +148,14 @@ public class PipeBlockEntity extends InventoryBlockEntity {
   private static final String TAG_COOLDOWN = "cooldown";
 
   @Override
-  public void load(CompoundTag tags) {
-    super.load(tags);
+  protected void loadAdditional(CompoundTag tags, HolderLookup.Provider registries) {
+    super.loadAdditional(tags, registries);
     this.cooldown = tags.getShort(TAG_COOLDOWN);
   }
 
   @Override
-  public void saveAdditional(CompoundTag tags) {
-    super.saveAdditional(tags);
+  protected void saveAdditional(CompoundTag tags, HolderLookup.Provider registries) {
+    super.saveAdditional(tags, registries);
     tags.putShort(TAG_COOLDOWN, this.cooldown);
   }
 }

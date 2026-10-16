@@ -9,7 +9,7 @@ import knightminer.inspirations.tools.client.NorthCompassPropertyGetter;
 import knightminer.inspirations.tools.client.PhotometerPropertyGetter;
 import knightminer.inspirations.tools.client.RedstoneArrowRenderer;
 import net.minecraft.client.color.item.ItemColors;
-import net.minecraft.client.renderer.item.ItemProperties;
+import net.minecraft.util.FastColor;
 import net.minecraft.resources.ResourceLocation;
 import net.neoforged.api.distmarker.Dist;
 import net.neoforged.neoforge.client.event.RegisterColorHandlersEvent;
@@ -26,15 +26,12 @@ public class ToolsClientEvents extends AbstractClientEvents {
   @SubscribeEvent
   static void clientSetup(FMLClientSetupEvent event) {
     // item model properties
-    registerModelProperty(InspirationsTools.northCompass, "angle", new NorthCompassPropertyGetter());
-    registerModelProperty(InspirationsTools.barometer, "height", new BarometerPropertyGetter());
-    registerModelProperty(InspirationsTools.photometer, "light", new PhotometerPropertyGetter());
-    registerModelProperty(InspirationsTools.dimensionCompass, "angle", new DimensionCompassPropertyGetter());
-    // re-register shield blocking with registry sub shield, not strictly needed unless certain mods decide to register their properties before regsitry events
-    if (InspirationsTools.shield != null) {
-      ItemProperties.register(InspirationsTools.shield, ResourceLocation.parse("blocking"),
-                           (stack, world, entity, seed) -> entity != null && entity.isUsingItem() && entity.getUseItem() == stack ? 1.0F : 0.0F);
-    }
+    event.enqueueWork(() -> {
+      registerModelProperty(InspirationsTools.northCompass, "angle", new NorthCompassPropertyGetter());
+      registerModelProperty(InspirationsTools.barometer, "height", new BarometerPropertyGetter());
+      registerModelProperty(InspirationsTools.photometer, "light", new PhotometerPropertyGetter());
+      registerModelProperty(InspirationsTools.dimensionCompass, "angle", new DimensionCompassPropertyGetter());
+    });
   }
 
   @SubscribeEvent
@@ -49,9 +46,9 @@ public class ToolsClientEvents extends AbstractClientEvents {
     // coloring of books for normal bookshelf
     registerItemColors(itemColors, (stack, tintIndex) -> {
       if (tintIndex == 1 && MiscUtil.hasColor(stack)) {
-        return MiscUtil.getColor(stack);
+        return FastColor.ARGB32.opaque(MiscUtil.getColor(stack));
       }
-      return tintIndex == 0 ? -1 : 0x2CCDB1;
+      return tintIndex == 0 ? -1 : FastColor.ARGB32.opaque(0x2CCDB1);
     }, InspirationsTools.dimensionCompass);
   }
 }

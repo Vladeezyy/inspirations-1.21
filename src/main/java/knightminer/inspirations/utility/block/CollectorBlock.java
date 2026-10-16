@@ -25,7 +25,6 @@ import net.minecraft.world.level.block.state.properties.BooleanProperty;
 import net.minecraft.world.level.block.state.properties.DirectionProperty;
 import net.neoforged.neoforge.capabilities.Capabilities;
 import net.neoforged.neoforge.items.ItemHandlerHelper;
-import net.neoforged.neoforge.network.NetworkHooks;
 import dev.vladeezyy.kilnwork.block.InventoryBlock;
 
 import javax.annotation.Nullable;
@@ -73,19 +72,6 @@ public class CollectorBlock extends InventoryBlock {
     return this.defaultBlockState().setValue(FACING, facing);
   }
 
-  @SuppressWarnings("deprecation")
-  @Deprecated
-  @Override
-  public void onRemove(BlockState state, Level world, BlockPos pos, BlockState newState, boolean isMoving) {
-    // If destroyed, drop contents.
-    if (state.getBlock() != newState.getBlock()) {
-      BlockEntity te = world.getBlockEntity(pos);
-      if (te instanceof Container) {
-        Containers.dropContents(world, pos, (Container)te);
-      }
-    }
-    super.onRemove(state, world, pos, newState, isMoving);
-  }
 
   /* Tile Entity */
 
@@ -95,18 +81,6 @@ public class CollectorBlock extends InventoryBlock {
     return new CollectorBlockEntity(pos, state);
   }
 
-  @Override
-  protected boolean openGui(Player player, Level world, BlockPos pos) {
-    if (!(player instanceof ServerPlayer)) {
-      throw new AssertionError("Needs to be server!");
-    }
-    BlockEntity te = world.getBlockEntity(pos);
-    if (te instanceof CollectorBlockEntity) {
-      NetworkHooks.openScreen((ServerPlayer)player, (MenuProvider)te, pos);
-      return true;
-    }
-    return false;
-  }
 
 
   /* Comparator logic */
@@ -115,13 +89,7 @@ public class CollectorBlock extends InventoryBlock {
   @Deprecated
   @Override
   public int getAnalogOutputSignal(BlockState blockState, Level world, BlockPos pos) {
-    BlockEntity te = world.getBlockEntity(pos);
-    if (te != null) {
-      return te.getCapability(Capabilities.ITEM_HANDLER, null).map(
-          ItemHandlerHelper::calcRedstoneFromInventory
-                                                                       ).orElse(0);
-    }
-    return 0;
+    return ItemHandlerHelper.calcRedstoneFromInventory(world.getCapability(Capabilities.ItemHandler.BLOCK, pos, null));
   }
 
   @SuppressWarnings("deprecation")
@@ -138,14 +106,6 @@ public class CollectorBlock extends InventoryBlock {
   @Deprecated
   @Override
   public void neighborChanged(BlockState state, Level world, BlockPos pos, Block block, BlockPos neighbor, boolean isMoving) {
-    // clear inventory cache
-    if (pos.relative(state.getValue(FACING)).equals(neighbor)) {
-      BlockEntity te = world.getBlockEntity(pos);
-      if (te instanceof CollectorBlockEntity) {
-        ((CollectorBlockEntity) te).clearCachedInventories();
-      }
-    }
-
     // update powered state
     boolean powered = world.hasNeighborSignal(pos) || world.hasNeighborSignal(pos.above());
     boolean triggered = state.getValue(TRIGGERED);

@@ -5,6 +5,8 @@ import knightminer.inspirations.utility.block.entity.CollectorBlockEntity;
 import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.inventory.Slot;
+import net.minecraft.world.Container;
+import net.minecraft.world.SimpleContainer;
 import dev.vladeezyy.kilnwork.inventory.BaseContainerMenu;
 
 import javax.annotation.Nullable;
@@ -12,11 +14,11 @@ import javax.annotation.Nullable;
 public class CollectorContainerMenu extends BaseContainerMenu<CollectorBlockEntity> {
   public CollectorContainerMenu(int winId, Inventory inventoryPlayer, @Nullable CollectorBlockEntity tile) {
     super(InspirationsUtility.contCollector, winId, inventoryPlayer, tile);
-    if (tile != null) {
-      for (int y = 0; y < 3; y++) {
-        for (int x = 0; x < 3; x++) {
-          this.addSlot(new Slot(tile, (x + y * 3), 62 + (x * 18), 17 + (y * 18)));
-        }
+    // a client that could not find the block entity still needs the slots, or the server's slot updates break
+    Container inventory = tile != null ? tile : new SimpleContainer(9);
+    for (int y = 0; y < 3; y++) {
+      for (int x = 0; x < 3; x++) {
+        this.addSlot(new Slot(inventory, (x + y * 3), 62 + (x * 18), 17 + (y * 18)));
       }
     }
     addInventorySlots();

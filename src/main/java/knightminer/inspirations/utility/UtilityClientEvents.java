@@ -10,14 +10,14 @@ import net.neoforged.bus.api.SubscribeEvent;
 import net.neoforged.fml.common.EventBusSubscriber;
 import net.neoforged.fml.common.EventBusSubscriber.Bus;
 import net.neoforged.fml.event.lifecycle.FMLClientSetupEvent;
-import net.neoforged.fml.event.lifecycle.FMLCommonSetupEvent;
+import net.neoforged.neoforge.client.event.RegisterMenuScreensEvent;
 
 @EventBusSubscriber(modid = Inspirations.modID, value = Dist.CLIENT, bus = Bus.MOD)
 public class UtilityClientEvents extends AbstractClientEvents {
   @SubscribeEvent
-  static void commonSetup(FMLCommonSetupEvent event) {
+  static void registerScreens(RegisterMenuScreensEvent event) {
     // Register GUIs.
-    registerScreenFactory(InspirationsUtility.contCollector, new BackgroundContainerScreen.Factory<>(166, ResourceLocation.parse("textures/gui/container/dispenser.png")));
-    registerScreenFactory(InspirationsUtility.contPipe, new BackgroundContainerScreen.Factory<>(133, "pipe"));
+    registerScreenFactory(event, InspirationsUtility.contCollector, new BackgroundContainerScreen.Factory<>(166, ResourceLocation.withDefaultNamespace("textures/gui/container/dispenser.png")));
+    registerScreenFactory(event, InspirationsUtility.contPipe, new BackgroundContainerScreen.Factory<>(133, "pipe"));
   }
 }

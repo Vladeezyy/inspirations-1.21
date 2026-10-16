@@ -43,6 +43,7 @@ import net.minecraft.world.item.enchantment.ProtectionEnchantment;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.DispenserBlock;
+import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.level.material.MapColor;
 import net.minecraft.world.level.material.PushReaction;
 import net.neoforged.neoforge.common.NeoForge;
@@ -65,8 +66,6 @@ public class InspirationsTools extends ModuleBase {
   public static Item barometer;
   public static Item photometer;
   public static ArrowItem redstoneArrow;
-  // only used in client proxy, should use Items.SHIELD normally
-  static Item shield;
 
   // The "undyed" compass is White.
   public static Item dimensionCompass;
@@ -85,15 +84,14 @@ public class InspirationsTools extends ModuleBase {
 
   @SubscribeEvent
   public void register(RegisterEvent event) {
-    ResourceKey<? extends Registry<?>> registryKey = event.getRegistryKey();
-    if (registryKey == Registries.BLOCK) {
-      BlockRegistryAdapter registry = new BlockRegistryAdapter(BuiltInRegistries.BLOCK);
+    event.register(Registries.BLOCK, helper -> {
+      BlockRegistryAdapter registry = new BlockRegistryAdapter(helper);
       redstoneCharge = registry.register(new RedstoneChargeBlock(
         Block.Properties.of().mapColor(MapColor.NONE).pushReaction(PushReaction.DESTROY).strength(0).lightLevel((state) -> 2)
       ), "redstone_charge");
-    }
-    else if (registryKey == Registries.ITEM) {
-      ItemRegistryAdapter registry = new ItemRegistryAdapter(BuiltInRegistries.ITEM);
+    });
+    event.register(Registries.ITEM, helper -> {
+      ItemRegistryAdapter registry = new ItemRegistryAdapter(helper);
       Item.Properties props = new Item.Properties();
 
       redstoneArrow = registry.register(new RedstoneArrowItem(props), "charged_arrow");
@@ -106,59 +104,19 @@ public class InspirationsTools extends ModuleBase {
       barometer = registry.register(props, "barometer");
       photometer = registry.register(props, "photometer");
       dimensionCompass = registry.register(new DimensionCompassItem(props), "dimension_compass");
-
-      if (Config.shieldEnchantmentTable.getAsBoolean()) {
-        //noinspection deprecation  not how I am using it
-        shield = registry.register(new EnchantableShieldItem(new Item.Properties().durability(Items.SHIELD.getMaxDamage())), Items.SHIELD);
-      }
-    }
-    else if (registryKey == Registries.ENTITY_TYPE) {
-      EntityTypeRegistryAdapter registry = new EntityTypeRegistryAdapter(BuiltInRegistries.ENTITY_TYPE);
+      // the enchantable shield of 1.20 replaced the vanilla item; NeoForge cannot, ShieldItemMixin does it
+    });
+    event.register(Registries.ENTITY_TYPE, helper -> {
+      EntityTypeRegistryAdapter registry = new EntityTypeRegistryAdapter(helper);
       entRSArrow = registry.register(EntityType.Builder
                                          .<RedstoneArrow>of(RedstoneArrow::new, MobCategory.MISC)
                                          .sized(0.5F, 0.5F)
-                                         .setTrackingRange(4)
-                                         .setUpdateInterval(20)
-                                         .setCustomClientFactory((packet, world) -> new RedstoneArrow(InspirationsTools.entRSArrow, world)),
+                                         .clientTrackingRange(4)
+                                         .updateInterval(20),
                                      "redstone_arrow");
-    }
-    else if (registryKey == Registries.ENCHANTMENT) {
-      RegistryAdapter<Enchantment> registry = new RegistryAdapter<>(BuiltInRegistries.ENCHANTMENT);
-
-      if (Config.moreShieldEnchantments.getAsBoolean()) {
-        EquipmentSlot[] slots = new EquipmentSlot[]{
-            EquipmentSlot.HEAD,
-            EquipmentSlot.CHEST,
-            EquipmentSlot.LEGS,
-            EquipmentSlot.FEET
-        };
-        for (ProtectionEnchantment ench : new ProtectionEnchantment[]{
-            (ProtectionEnchantment)Enchantments.ALL_DAMAGE_PROTECTION,
-            (ProtectionEnchantment)Enchantments.FIRE_PROTECTION,
-            (ProtectionEnchantment)Enchantments.PROJECTILE_PROTECTION,
-            (ProtectionEnchantment)Enchantments.BLAST_PROTECTION
-        }) {
-          registry.register(new ShieldProtectionEnchantment(ench.getRarity(), ench.type, slots), ench);
-        }
-        registry.register(new ShieldThornsEnchantment(Enchantments.THORNS.getRarity(), slots), Enchantments.THORNS);
-      }
-
-      if (Config.moreShieldEnchantments.getAsBoolean() || Config.axeWeaponEnchants.getAsBoolean()) {
-        EquipmentSlot[] slots = new EquipmentSlot[]{EquipmentSlot.MAINHAND};
-        registry.register(new ExtendedKnockbackEnchantment(Enchantment.Rarity.UNCOMMON, slots), Enchantments.KNOCKBACK);
-        registry.register(new ExtendedFireAspectEnchantment(Enchantment.Rarity.RARE, slots), Enchantments.FIRE_ASPECT);
-        if (Config.axeWeaponEnchants.getAsBoolean()) {
-          registry.register(new AxeLootBonusEnchantment(Enchantment.Rarity.RARE, EnchantmentCategory.WEAPON, slots), Enchantments.MOB_LOOTING);
-        }
-      }
-
-      if (Config.axeEnchantmentTable.getAsBoolean()) {
-        EquipmentSlot[] slots = new EquipmentSlot[]{EquipmentSlot.MAINHAND};
-        registry.register(new AxeDamageEnchantment(Enchantment.Rarity.COMMON, 0, slots), Enchantments.SHARPNESS);
-        registry.register(new AxeDamageEnchantment(Enchantment.Rarity.UNCOMMON, 1, slots), Enchantments.SMITE);
-        registry.register(new AxeDamageEnchantment(Enchantment.Rarity.UNCOMMON, 2, slots), Enchantments.BANE_OF_ARTHROPODS);
-      }
-    }
+    });
+    // enchantments are data in 1.21: which items take them is in the mixins (AxeItemMixin, ShieldItemMixin, EnchantmentMixin)
+    DimensionCompass.registerAttachment(event);
   }
 
   @SubscribeEvent
@@ -168,29 +126,20 @@ public class InspirationsTools extends ModuleBase {
   }
 
   private void registerDispenserBehavior() {
-    DispenserBlock.registerBehavior(redstoneArrow, new AbstractProjectileDispenseBehavior() {
-      @Override
-      protected Projectile getProjectile(Level world, Position position, ItemStack stack) {
-        RedstoneArrow arrow = new RedstoneArrow(world, position.x(), position.y(), position.z());
-        arrow.pickup = Arrow.Pickup.ALLOWED;
-        return arrow;
-      }
-    });
+    DispenserBlock.registerProjectileBehavior(redstoneArrow);
     DispenserBlock.registerBehavior(redstoneCharger, new OptionalDispenseItemBehavior() {
       @Override
       protected ItemStack execute(BlockSource source, ItemStack stack) {
         this.setSuccess(true);
-        Level world = source.getLevel();
-        Direction facing = source.getBlockState().getValue(DispenserBlock.FACING);
-        BlockPos pos = source.getPos().relative(facing);
+        ServerLevel world = source.level();
+        Direction facing = source.state().getValue(DispenserBlock.FACING);
+        BlockPos pos = source.pos().relative(facing);
 
         if (world.getBlockState(pos).canBeReplaced(new DirectionalPlaceContext(
             world, pos, facing, ItemStack.EMPTY, facing
         ))) {
           world.setBlockAndUpdate(pos, redstoneCharge.defaultBlockState().setValue(RedstoneChargeBlock.FACING, facing));
-          if (stack.hurt(1, world.random, null)) {
-            stack.setCount(0);
-          }
+          stack.hurtAndBreak(1, world, null, item -> {});
         } else {
           this.setSuccess(false);
         }

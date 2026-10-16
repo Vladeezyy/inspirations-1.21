@@ -6,6 +6,7 @@ import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.DyeColor;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.BlockGetter;
+import net.minecraft.world.level.LevelReader;
 import net.minecraft.world.level.ItemLike;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.PressurePlateBlock;
@@ -29,7 +30,7 @@ public class CarpetedPressurePlateBlock extends PressurePlateBlock {
   private final String transKey;
 
   public CarpetedPressurePlateBlock(BlockBehaviour.Properties props, DyeColor color) {
-    super(Sensitivity.MOBS, props, BlockSetType.STONE);
+    super(BlockSetType.STONE, props);
     this.color = color;
     this.transKey = String.format("block.minecraft.%s_carpet", color.getName());
   }
@@ -57,7 +58,7 @@ public class CarpetedPressurePlateBlock extends PressurePlateBlock {
   }
 
   @Override
-  public ItemStack getCloneItemStack(BlockState state, HitResult target, BlockGetter level, BlockPos pos, Player player) {
+  public ItemStack getCloneItemStack(BlockState state, HitResult target, LevelReader level, BlockPos pos, Player player) {
     return new ItemStack(getCarpet());
   }
 }

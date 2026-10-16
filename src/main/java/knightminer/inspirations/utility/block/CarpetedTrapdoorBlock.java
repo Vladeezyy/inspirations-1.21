@@ -20,7 +20,7 @@ public class CarpetedTrapdoorBlock extends TrapDoorBlock {
   private static final VoxelShape TOP_CARP_AABB = Block.box(0.0D, 13.0D, 0.0D, 16.0D, 16.9D, 16.0D);
 
   public CarpetedTrapdoorBlock(BlockBehaviour.Properties properties) {
-    super(properties, BlockSetType.OAK);
+    super(BlockSetType.OAK, properties);
   }
 
   @Override

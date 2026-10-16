@@ -35,9 +35,9 @@ public class DispenseFluidTank extends DefaultDispenseItemBehavior {
       return fallback.dispense(source, stack);
     }
 
-    Direction side = source.getBlockState().getValue(DispenserBlock.FACING);
-    BlockPos pos = source.getPos().relative(side);
-    Level world = source.getLevel();
+    Direction side = source.state().getValue(DispenserBlock.FACING);
+    BlockPos pos = source.pos().relative(side);
+    Level world = source.level();
     return FluidUtil.getFluidHandler(world, pos, side.getOpposite()).map((handler) -> {
       FluidActionResult result;
       Optional<FluidStack> optFluid = FluidUtil.getFluidContained(stack);
@@ -62,8 +62,11 @@ public class DispenseFluidTank extends DefaultDispenseItemBehavior {
           return resultStack;
         }
 
-        if (!resultStack.isEmpty() && ((DispenserBlockEntity)source.getEntity()).addItem(resultStack) < 0) {
-          DEFAULT.dispense(source, resultStack);
+        if (!resultStack.isEmpty()) {
+          ItemStack remainder = source.blockEntity().insertItem(resultStack);
+          if (!remainder.isEmpty()) {
+            DEFAULT.dispense(source, remainder);
+          }
         }
 
         ItemStack shrink = stack.copy();

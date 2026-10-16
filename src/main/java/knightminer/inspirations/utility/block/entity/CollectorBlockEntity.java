@@ -18,35 +18,26 @@ import net.minecraft.world.level.block.state.properties.BlockStateProperties;
 import net.minecraft.world.phys.AABB;
 import net.neoforged.neoforge.capabilities.Capabilities;
 
-import net.neoforged.neoforge.common.util.NonNullConsumer;
 import net.neoforged.neoforge.items.IItemHandler;
 import net.neoforged.neoforge.items.ItemHandlerHelper;
 import dev.vladeezyy.kilnwork.block.InventoryBlockEntity;
-import slimeknights.mantle.util.WeakConsumerWrapper;
+import net.neoforged.neoforge.capabilities.BlockCapabilityCache;
+import net.minecraft.server.level.ServerLevel;
 
 import javax.annotation.Nullable;
 
 public class CollectorBlockEntity extends InventoryBlockEntity {
   private static final Component TITLE = Component.translatable("gui.inspirations.collector");
 
-  /** Cache of the current TE we are facing */
+  /** Item handler of the block we are facing, created once per facing (server only) */
   @Nullable
-  private LazyOptional<IItemHandler> facingHandler;
+  private BlockCapabilityCache<IItemHandler, Direction> facingHandler;
   /** Cache of the bounds to check for items */
   @Nullable
   private AABB itemBounds;
 
-  /** Lambda to call on every item transfer. Final variable to reduce memory usage every tick */
-  private final NonNullConsumer<IItemHandler> extractItem = this::extractItem;
-  /** Lambda to call when a lazy optional is invalidated. Final variable to reduce memory usage */
-  private final NonNullConsumer<LazyOptional<IItemHandler>> facingInvalidator = new WeakConsumerWrapper<>(this, (te, handler) -> {
-    if (te.facingHandler == handler) {
-      te.clearCachedInventories();
-    }
-  });
-
   public CollectorBlockEntity(BlockPos pos, BlockState state) {
-    super(InspirationsUtility.tileCollector, pos, state, TITLE, false, 9);
+    super(InspirationsUtility.tileCollector, pos, state, TITLE, 9);
   }
 
   /**
@@ -58,16 +49,17 @@ public class CollectorBlockEntity extends InventoryBlockEntity {
     }
 
     // if there is an item handler, extract the items
-    LazyOptional<IItemHandler> handler = getHandler();
-    if (handler.isPresent()) {
-      handler.ifPresent(extractItem);
+    IItemHandler handler = getHandler();
+    if (handler != null) {
+      extractItem(handler);
     } else {
       // collect items from world
       boolean collected = false;
       for (ItemEntity entity : level.getEntitiesOfClass(ItemEntity.class, getItemBounds(), EntitySelector.ENTITY_STILL_ALIVE)) {
         ItemStack insert = entity.getItem();
         // no need to simulate, if successful we have to modify the stack regardless
-        ItemStack remainder = ItemHandlerHelper.insertItemStacked(itemHandler, insert, false);
+        // insert a copy: a stack that fits whole would otherwise be shared with the item entity (issue #227)
+        ItemStack remainder = ItemHandlerHelper.insertItemStacked(itemHandler, insert.copy(), false);
         // if the stack changed, we were successful
         if (remainder.getCount() < insert.getCount()) {
           collected = true;
@@ -88,27 +80,17 @@ public class CollectorBlockEntity extends InventoryBlockEntity {
    * Gets the item handler this collector is facing
    * @return  Item handler
    */
-  private LazyOptional<IItemHandler> getHandler() {
-    if (facingHandler != null) {
-      return facingHandler;
+  @Nullable
+  private IItemHandler getHandler() {
+    if (!(level instanceof ServerLevel serverLevel)) {
+      return null;
     }
-
-    // if no inventory cached yet, find a new one
-    Direction facing = getBlockState().getValue(BlockStateProperties.FACING);
-    assert level != null;
-    BlockEntity te = level.getBlockEntity(worldPosition.relative(facing));
-    // if we have a TE and its an item handler, try extracting from that
-    if (te != null) {
-      LazyOptional<IItemHandler> handler = te.getCapability(Capabilities.ITEM_HANDLER, facing.getOpposite());
-      if (handler.isPresent()) {
-        // add the invalidator
-        handler.addListener(facingInvalidator);
-        // cache and return
-        return facingHandler = handler;
-      }
+    if (facingHandler == null) {
+      // the cache follows the neighbor by itself, so it is made once per facing
+      Direction facing = getBlockState().getValue(BlockStateProperties.FACING);
+      facingHandler = BlockCapabilityCache.create(Capabilities.ItemHandler.BLOCK, serverLevel, worldPosition.relative(facing), facing.getOpposite(), () -> !isRemoved(), () -> {});
     }
-    // no item handler, cache empty
-    return facingHandler = LazyOptional.empty();
+    return facingHandler.getCapability();
   }
 
   /**
@@ -142,18 +124,15 @@ public class CollectorBlockEntity extends InventoryBlockEntity {
     }
   }
 
-  /**
-   * Called when a neighbor updates to invalidate the inventory cache
-   */
-  public void clearCachedInventories() {
-    this.facingHandler = null;
-  }
-
   @Override
-  public void setBlockState(BlockState pBlockState) {
-    super.setBlockState(pBlockState);
-    // if the block changed and this TE is intact, remove cache. likely we were rotated
-    this.clearCachedInventories();
+  public void setBlockState(BlockState state) {
+    Direction old = getBlockState().getValue(BlockStateProperties.FACING);
+    super.setBlockState(state);
+    // rotated: the cache and the item area face somewhere else now
+    if (state.getValue(BlockStateProperties.FACING) != old) {
+      this.facingHandler = null;
+      this.itemBounds = null;
+    }
   }
 
   @Override

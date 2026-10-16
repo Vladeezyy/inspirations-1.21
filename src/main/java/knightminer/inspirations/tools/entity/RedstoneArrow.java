@@ -17,46 +17,26 @@ import net.minecraft.world.entity.projectile.AbstractArrow;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.context.DirectionalPlaceContext;
 import net.minecraft.world.level.Level;
+import javax.annotation.Nullable;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.BlockHitResult;
-import net.neoforged.neoforge.entity.IEntityAdditionalSpawnData;
-import net.neoforged.neoforge.network.NetworkHooks;
 
 import static knightminer.inspirations.tools.InspirationsTools.redstoneCharge;
 
-public class RedstoneArrow extends AbstractArrow implements IEntityAdditionalSpawnData {
+public class RedstoneArrow extends AbstractArrow {
   public RedstoneArrow(EntityType<RedstoneArrow> entType, Level world) {
     super(entType, world);
   }
 
-  public RedstoneArrow(Level world, double x, double y, double z) {
-    super(InspirationsTools.entRSArrow, x, y, z, world);
+  public RedstoneArrow(Level world, double x, double y, double z, ItemStack pickup, @Nullable ItemStack weapon) {
+    super(InspirationsTools.entRSArrow, x, y, z, world, pickup, weapon);
     init();
   }
 
-  public RedstoneArrow(Level world, LivingEntity shooter) {
-    super(InspirationsTools.entRSArrow, shooter, world);
+  public RedstoneArrow(Level world, LivingEntity shooter, ItemStack pickup, @Nullable ItemStack weapon) {
+    super(InspirationsTools.entRSArrow, shooter, world, pickup, weapon);
     init();
-  }
-
-  @Override
-  public Packet<ClientGamePacketListener> getAddEntityPacket() {
-    return NetworkHooks.getEntitySpawningPacket(this);
-  }
-
-  @Override
-  public void writeSpawnData(FriendlyByteBuf buffer) {
-    Entity shooter = this.getOwner();
-    buffer.writeInt(shooter != null ? shooter.getId() : 0);
-  }
-
-  @Override
-  public void readSpawnData(FriendlyByteBuf buffer) {
-    Entity shooter = level().getEntity(buffer.readInt());
-    if (shooter != null) {
-      this.setOwner(shooter);
-    }
   }
 
   private void init() {
@@ -75,7 +55,7 @@ public class RedstoneArrow extends AbstractArrow implements IEntityAdditionalSpa
   }
 
   @Override
-  protected ItemStack getPickupItem() {
+  protected ItemStack getDefaultPickupItem() {
     return new ItemStack(InspirationsTools.redstoneArrow, 1);
   }
 

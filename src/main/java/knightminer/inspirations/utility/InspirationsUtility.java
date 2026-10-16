@@ -34,6 +34,8 @@ import net.neoforged.neoforge.data.event.GatherDataEvent;
 import net.neoforged.bus.api.SubscribeEvent;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.neoforged.neoforge.registries.RegisterEvent;
+import net.neoforged.neoforge.capabilities.Capabilities;
+import net.neoforged.neoforge.capabilities.RegisterCapabilitiesEvent;
 import knightminer.inspirations.common.registration.BlockEntityTypeRegistryAdapter;
 import knightminer.inspirations.common.registration.BlockRegistryAdapter;
 import knightminer.inspirations.common.registration.ContainerTypeRegistryAdapter;
@@ -67,25 +69,24 @@ public class InspirationsUtility extends ModuleBase {
 
   @SubscribeEvent
   public void register(RegisterEvent event) {
-    ResourceKey<? extends Registry<?>> resourceKey = event.getRegistryKey();
-    if (resourceKey == Registries.BLOCK) {
-      BlockRegistryAdapter registry = new BlockRegistryAdapter(BuiltInRegistries.BLOCK);
+    event.register(Registries.BLOCK, helper -> {
+      BlockRegistryAdapter registry = new BlockRegistryAdapter(helper);
 
       torchLeverFloor = registry.register(new TorchLeverBlock(
-          BlockBehaviour.Properties.copy(Blocks.TORCH).sound(SoundType.WOOD),
+          BlockBehaviour.Properties.ofFullCopy(Blocks.TORCH).sound(SoundType.WOOD),
           ParticleTypes.FLAME
       ), "torch_lever");
       torchLeverWall = registry.register(new TorchLeverWallBlock(
-          BlockBehaviour.Properties.copy(Blocks.WALL_TORCH).lootFrom(() -> torchLeverFloor),
+          BlockBehaviour.Properties.ofFullCopy(Blocks.WALL_TORCH).lootFrom(() -> torchLeverFloor),
           ParticleTypes.FLAME
       ), "wall_torch_lever");
 
       soulLeverFloor = registry.register(new TorchLeverBlock(
-          BlockBehaviour.Properties.copy(Blocks.SOUL_TORCH),
+          BlockBehaviour.Properties.ofFullCopy(Blocks.SOUL_TORCH),
           ParticleTypes.SOUL_FIRE_FLAME
       ), "soul_torch_lever");
       soulLeverWall = registry.register(new TorchLeverWallBlock(
-          BlockBehaviour.Properties.copy(Blocks.SOUL_WALL_TORCH).lootFrom(() -> soulLeverFloor),
+          BlockBehaviour.Properties.ofFullCopy(Blocks.SOUL_WALL_TORCH).lootFrom(() -> soulLeverFloor),
           ParticleTypes.SOUL_FIRE_FLAME
       ), "wall_soul_torch_lever");
 
@@ -106,22 +107,22 @@ public class InspirationsUtility extends ModuleBase {
       pipe = registry.register(new PipeBlock(
         Block.Properties.of().mapColor(MapColor.STONE).strength(3.0F, 8.0F).sound(SoundType.METAL)
       ), "pipe");
-    }
-    else if (resourceKey == Registries.BLOCK_ENTITY_TYPE) {
-      BlockEntityTypeRegistryAdapter registry = new BlockEntityTypeRegistryAdapter(BuiltInRegistries.BLOCK_ENTITY_TYPE);
+    });
+    event.register(Registries.BLOCK_ENTITY_TYPE, helper -> {
+      BlockEntityTypeRegistryAdapter registry = new BlockEntityTypeRegistryAdapter(helper);
 
       tileCollector = registry.register(CollectorBlockEntity::new, collector, "collector");
       tilePipe = registry.register(PipeBlockEntity::new, pipe, "pipe");
-    }
-    else if (resourceKey == Registries.MENU) {
-      ContainerTypeRegistryAdapter registry = new ContainerTypeRegistryAdapter(BuiltInRegistries.MENU);
+    });
+    event.register(Registries.MENU, helper -> {
+      ContainerTypeRegistryAdapter registry = new ContainerTypeRegistryAdapter(helper);
 
       contCollector = registry.registerType(CollectorContainerMenu::new, "collector");
       contPipe = registry.registerType(PipeContainerMenu::new, "pipe");
-    }
-    else if (resourceKey == Registries.ITEM) {
+    });
+    event.register(Registries.ITEM, helper -> {
       Item.Properties props = new Item.Properties();
-      ItemRegistryAdapter registry = new ItemRegistryAdapter(BuiltInRegistries.ITEM, props);
+      ItemRegistryAdapter registry = new ItemRegistryAdapter(helper);
 
       // itemblocks
       torchLeverItem = registry.register(new StandingAndWallBlockItem(InspirationsUtility.torchLeverFloor, InspirationsUtility.torchLeverWall, props, Direction.DOWN), "torch_lever");
@@ -131,7 +132,13 @@ public class InspirationsUtility extends ModuleBase {
       registry.registerDefaultBlockItem(carpetedTrapdoors);
       registry.registerDefaultBlockItem(collector);
       registry.registerDefaultBlockItem(pipe);
-    }
+    });
+  }
+
+  @SubscribeEvent
+  void registerCapabilities(RegisterCapabilitiesEvent event) {
+    event.registerBlockEntity(Capabilities.ItemHandler.BLOCK, tileCollector, (collector, side) -> collector.getItemHandler());
+    event.registerBlockEntity(Capabilities.ItemHandler.BLOCK, tilePipe, (pipe, side) -> pipe.getItemHandler());
   }
 
   @SubscribeEvent

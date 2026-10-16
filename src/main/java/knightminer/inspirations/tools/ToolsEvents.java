@@ -18,7 +18,6 @@ import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.enchantment.Enchantments;
-import net.minecraft.world.item.enchantment.ThornsEnchantment;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.VineBlock;
@@ -26,7 +25,11 @@ import net.minecraft.world.level.block.entity.BaseContainerBlockEntity;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
 import net.neoforged.neoforge.common.ItemAbilities;
-import net.neoforged.neoforge.event.entity.living.LivingAttackEvent;
+import net.neoforged.neoforge.event.entity.living.LivingShieldBlockEvent;
+import net.minecraft.core.component.DataComponents;
+import net.minecraft.core.registries.Registries;
+import net.minecraft.world.InteractionHand;
+import net.minecraft.world.entity.EquipmentSlot;
 import net.neoforged.neoforge.event.entity.player.PlayerInteractEvent.RightClickBlock;
 import net.neoforged.neoforge.event.level.BlockEvent.BreakEvent;
 import net.neoforged.bus.api.EventPriority;
@@ -61,7 +64,7 @@ public class ToolsEvents {
         // already locked: display message
         if (lockable.lockKey != LockCode.NO_LOCK) {
           player.displayClientMessage(Component.translatable(Inspirations.prefix("lock.fail.locked")), true);
-        } else if (!stack.hasCustomHoverName()) {
+        } else if (!stack.has(DataComponents.CUSTOM_NAME)) {
           player.displayClientMessage(Component.translatable(Inspirations.prefix("lock.fail.blank")), true);
         } else {
           // lock the container
@@ -83,7 +86,9 @@ public class ToolsEvents {
             LockCode code = lockable.lockKey;
             lockable.lockKey = LockCode.NO_LOCK;
             lockable.setChanged();
-            ItemHandlerHelper.giveItemToPlayer(player, new ItemStack(InspirationsTools.lock).setHoverName(Component.literal(code.key)));
+            ItemStack lock = new ItemStack(InspirationsTools.lock);
+            lock.set(DataComponents.CUSTOM_NAME, Component.literal(code.key()));
+            ItemHandlerHelper.giveItemToPlayer(player, lock);
             player.displayClientMessage(Component.translatable(Inspirations.prefix("unlock.success")), true);
           } else {
             player.displayClientMessage(Component.translatable(Inspirations.prefix("unlock.fail.no_match")), true);
@@ -122,7 +127,8 @@ public class ToolsEvents {
       return;
     }
     ItemStack shears = player.getMainHandItem();
-    if (shears.canPerformAction(ItemAbilities.SHEARS_DIG)) {
+    // 1.20 returned here when holding shears, so the vines were only pulled down by hand and never with shears
+    if (!shears.canPerformAction(ItemAbilities.SHEARS_DIG)) {
       return;
     }
 
@@ -131,7 +137,7 @@ public class ToolsEvents {
 
     // iterate down until we find either a non-vine or the vine can stay
     int count = 0;
-    while (state.getBlock() == block && vine.isShearable(shears, world, pos) && !vineCanStay(world, state, pos)) {
+    while (state.getBlock() == block && vine.isShearable(player, shears, world, pos) && !vineCanStay(world, state, pos)) {
       count++;
       for (ItemStack stack : Block.getDrops(state, world, pos, null, player, shears)) {
         Block.popResource(world, pos, stack);
@@ -194,32 +200,34 @@ public class ToolsEvents {
   }
    */
 
-  @SubscribeEvent
-  static void onShieldHit(LivingAttackEvent event) {
-    if (!Config.moreShieldEnchantments.getAsBoolean()) {
+  /** Thorns, fire aspect and knockback on a shield act on attackers whose hit the shield blocked */
+  @SubscribeEvent(priority = EventPriority.LOWEST)
+  static void onShieldHit(LivingShieldBlockEvent event) {
+    if (!Config.moreShieldEnchantments.getAsBoolean() || !event.getBlocked()) {
       return;
     }
     LivingEntity target = event.getEntity();
-    if (target.level().isClientSide || !target.isBlocking()) {
+    if (!(target.level() instanceof ServerLevel level) || !target.isBlocking()) {
       return;
     }
     ItemStack stack = target.getUseItem();
-    int thorns = stack.getEnchantmentLevel(Enchantments.THORNS);
-    int fire = stack.getEnchantmentLevel(Enchantments.FIRE_ASPECT);
-    int knockback = stack.getEnchantmentLevel(Enchantments.KNOCKBACK);
+    var enchantments = level.registryAccess().lookupOrThrow(Registries.ENCHANTMENT);
+    int thorns = stack.getEnchantmentLevel(enchantments.getOrThrow(Enchantments.THORNS));
+    int fire = stack.getEnchantmentLevel(enchantments.getOrThrow(Enchantments.FIRE_ASPECT));
+    int knockback = stack.getEnchantmentLevel(enchantments.getOrThrow(Enchantments.KNOCKBACK));
     if (thorns == 0 && fire == 0 && knockback == 0) {
       return;
     }
 
-    DamageSource source = event.getSource();
+    DamageSource source = event.getDamageSource();
     Entity attacker = source.getDirectEntity();
     // Apply shield enchantments if the player can be hurt by the source,
     // and they are have blocked it.
-    if (attacker != null && !target.isInvulnerableTo(source) && target.isDamageSourceBlocked(source)) {
-      Level level = target.level();
-      if (thorns > 0 && ThornsEnchantment.shouldHit(thorns, level.random)) {
-        attacker.hurt(level.damageSources().thorns(target), ThornsEnchantment.getDamage(thorns, level.random));
-        stack.hurtAndBreak(1, target, (play) -> play.broadcastBreakEvent(target.getUsedItemHand()));
+    if (attacker != null && !target.isInvulnerableTo(source)) {
+      // the chance and damage of 1.20 ThornsEnchantment, enchantments are data in 1.21
+      if (thorns > 0 && level.random.nextFloat() < 0.15F * thorns) {
+        attacker.hurt(level.damageSources().thorns(target), thorns > 10 ? thorns - 10 : 1 + level.random.nextInt(4));
+        stack.hurtAndBreak(1, target, target.getUsedItemHand() == InteractionHand.MAIN_HAND ? EquipmentSlot.MAINHAND : EquipmentSlot.OFFHAND);
       }
       if (fire > 0) {
         attacker.igniteForSeconds(fire * 4);
