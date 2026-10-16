@@ -4,7 +4,7 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.core.cauldron.CauldronInteraction;
 import net.minecraft.tags.TagKey;
 import net.minecraft.world.InteractionHand;
-import net.minecraft.world.InteractionResult;
+import net.minecraft.world.ItemInteractionResult;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.BucketItem;
 import net.minecraft.world.item.Item;
@@ -13,7 +13,6 @@ import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.material.Fluid;
-import slimeknights.mantle.util.RegistryHelper;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -39,18 +38,18 @@ public class CauldronRegistry {
 	}
 
 	/** Tries all overrides, returns the first one that both matches and consumes acton */
-	public static InteractionResult attemptOverride(BlockState state, Level level, BlockPos pos, Player player, InteractionHand hand, ItemStack stack) {
+	public static ItemInteractionResult attemptOverride(BlockState state, Level level, BlockPos pos, Player player, InteractionHand hand, ItemStack stack) {
 		Block block = state.getBlock();
 		Item item = stack.getItem();
 		for (CauldronOverride override : CAULDRON_OVERRIDES) {
 			if (override.matches(block, item)) {
-				InteractionResult result = override.interaction().interact(state, level, pos, player, hand, stack);
+				ItemInteractionResult result = override.interaction().interact(state, level, pos, player, hand, stack);
 				if (result.consumesAction()) {
 					return result;
 				}
 			}
 		}
-		return InteractionResult.PASS;
+		return ItemInteractionResult.PASS_TO_DEFAULT_BLOCK_INTERACTION;
 	}
 
 	/** Creates an entry for a fluid tag */
@@ -60,7 +59,7 @@ public class CauldronRegistry {
 
 	/** Creates an entry for a item tag */
 	public static Predicate<Item> itemTag(TagKey<Item> tag) {
-		return item -> RegistryHelper.contains(tag, item);
+		return item -> item.builtInRegistryHolder().is(tag);
 	}
 
 	/** Creates an entry for a block tag */

@@ -21,17 +21,17 @@ import net.minecraft.world.item.Items;
 import net.minecraft.world.item.enchantment.Enchantment;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.entity.BlockEntityType;
-import net.minecraftforge.api.distmarker.Dist;
-import net.minecraftforge.client.event.EntityRenderersEvent;
-import net.minecraftforge.client.event.ModelEvent.RegisterGeometryLoaders;
-import net.minecraftforge.client.event.RegisterColorHandlersEvent;
-import net.minecraftforge.common.MinecraftForge;
-import net.minecraftforge.event.entity.player.ItemTooltipEvent;
-import net.minecraftforge.eventbus.api.SubscribeEvent;
-import net.minecraftforge.fml.common.Mod.EventBusSubscriber;
-import net.minecraftforge.fml.common.Mod.EventBusSubscriber.Bus;
-import net.minecraftforge.fml.event.lifecycle.FMLClientSetupEvent;
-import net.minecraftforge.registries.ForgeRegistries;
+import net.neoforged.api.distmarker.Dist;
+import net.neoforged.neoforge.client.event.EntityRenderersEvent;
+import net.neoforged.neoforge.client.event.ModelEvent.RegisterGeometryLoaders;
+import net.neoforged.neoforge.client.event.RegisterColorHandlersEvent;
+import net.neoforged.neoforge.common.NeoForge;
+import net.neoforged.neoforge.event.entity.player.ItemTooltipEvent;
+import net.neoforged.bus.api.SubscribeEvent;
+import net.neoforged.fml.common.EventBusSubscriber;
+import net.neoforged.fml.common.EventBusSubscriber.Bus;
+import net.neoforged.fml.event.lifecycle.FMLClientSetupEvent;
+import net.minecraft.core.registries.BuiltInRegistries;
 
 import java.util.List;
 
@@ -39,7 +39,7 @@ import java.util.List;
 public class TweaksClientEvents extends AbstractClientEvents {
   @SubscribeEvent
   static void clientSetup(FMLClientSetupEvent event) {
-    MinecraftForge.EVENT_BUS.addListener(TweaksClientEvents::fixShieldTooltip);
+    NeoForge.EVENT_BUS.addListener(TweaksClientEvents::fixShieldTooltip);
   }
 
   @SubscribeEvent
@@ -81,8 +81,8 @@ public class TweaksClientEvents extends AbstractClientEvents {
         Enchantment.Rarity rarity = Enchantment.Rarity.COMMON;
         for (Tag tag : EnchantedBookItem.getEnchantments(stack)) {
           if (tag.getId() == Tag.TAG_COMPOUND) {
-            ResourceLocation id = new ResourceLocation(((CompoundTag)tag).getString("id"));
-            Enchantment enchantment = ForgeRegistries.ENCHANTMENTS.getValue(id);
+            ResourceLocation id = ResourceLocation.parse(((CompoundTag)tag).getString("id"));
+            Enchantment enchantment = BuiltInRegistries.ENCHANTMENT.getValue(id);
             if (enchantment != null) {
               Enchantment.Rarity newRarity = enchantment.getRarity();
               if (newRarity.getWeight() < rarity.getWeight()) {

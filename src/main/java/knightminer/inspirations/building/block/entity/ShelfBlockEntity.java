@@ -22,16 +22,16 @@ import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.Vec3;
-import net.minecraftforge.client.model.data.ModelData;
-import net.minecraftforge.client.model.data.ModelProperty;
-import net.minecraftforge.common.capabilities.Capability;
-import net.minecraftforge.common.capabilities.ForgeCapabilities;
-import net.minecraftforge.common.util.LazyOptional;
-import net.minecraftforge.items.IItemHandler;
-import net.minecraftforge.items.ItemHandlerHelper;
-import slimeknights.mantle.block.entity.IRetexturedBlockEntity;
-import slimeknights.mantle.block.entity.NameableBlockEntity;
-import slimeknights.mantle.util.RetexturedHelper;
+import net.neoforged.neoforge.client.model.data.ModelData;
+import net.neoforged.neoforge.client.model.data.ModelProperty;
+
+import net.neoforged.neoforge.capabilities.Capabilities;
+
+import net.neoforged.neoforge.items.IItemHandler;
+import net.neoforged.neoforge.items.ItemHandlerHelper;
+import dev.vladeezyy.kilnwork.retexture.IRetexturedBlockEntity;
+import dev.vladeezyy.kilnwork.block.NameableBlockEntity;
+import dev.vladeezyy.kilnwork.retexture.RetexturedHelper;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
@@ -206,7 +206,7 @@ public class ShelfBlockEntity extends NameableBlockEntity implements IRetextured
   @Nonnull
   @Override
   public <T> LazyOptional<T> getCapability(Capability<T> cap, @Nullable Direction side) {
-    if (cap == ForgeCapabilities.ITEM_HANDLER) {
+    if (cap == Capabilities.ITEM_HANDLER) {
       return itemCapability.cast();
     }
     return super.getCapability(cap, side);

@@ -30,15 +30,15 @@ import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.minecraft.world.level.block.state.BlockBehaviour;
 import net.minecraft.world.level.block.state.properties.NoteBlockInstrument;
 import net.minecraft.world.level.material.MapColor;
-import net.minecraftforge.data.event.GatherDataEvent;
-import net.minecraftforge.eventbus.api.SubscribeEvent;
-import net.minecraftforge.registries.ForgeRegistries;
-import net.minecraftforge.registries.RegisterEvent;
-import slimeknights.mantle.registration.adapter.BlockEntityTypeRegistryAdapter;
-import slimeknights.mantle.registration.adapter.BlockRegistryAdapter;
-import slimeknights.mantle.registration.adapter.ContainerTypeRegistryAdapter;
-import slimeknights.mantle.registration.adapter.ItemRegistryAdapter;
-import slimeknights.mantle.registration.object.EnumObject;
+import net.neoforged.neoforge.data.event.GatherDataEvent;
+import net.neoforged.bus.api.SubscribeEvent;
+import net.minecraft.core.registries.BuiltInRegistries;
+import net.neoforged.neoforge.registries.RegisterEvent;
+import knightminer.inspirations.common.registration.BlockEntityTypeRegistryAdapter;
+import knightminer.inspirations.common.registration.BlockRegistryAdapter;
+import knightminer.inspirations.common.registration.ContainerTypeRegistryAdapter;
+import knightminer.inspirations.common.registration.ItemRegistryAdapter;
+import knightminer.inspirations.common.registration.EnumObject;
 
 public class InspirationsUtility extends ModuleBase {
   // blocks
@@ -69,7 +69,7 @@ public class InspirationsUtility extends ModuleBase {
   public void register(RegisterEvent event) {
     ResourceKey<? extends Registry<?>> resourceKey = event.getRegistryKey();
     if (resourceKey == Registries.BLOCK) {
-      BlockRegistryAdapter registry = new BlockRegistryAdapter(ForgeRegistries.BLOCKS);
+      BlockRegistryAdapter registry = new BlockRegistryAdapter(BuiltInRegistries.BLOCK);
 
       torchLeverFloor = registry.register(new TorchLeverBlock(
           BlockBehaviour.Properties.copy(Blocks.TORCH).sound(SoundType.WOOD),
@@ -108,20 +108,20 @@ public class InspirationsUtility extends ModuleBase {
       ), "pipe");
     }
     else if (resourceKey == Registries.BLOCK_ENTITY_TYPE) {
-      BlockEntityTypeRegistryAdapter registry = new BlockEntityTypeRegistryAdapter(ForgeRegistries.BLOCK_ENTITY_TYPES);
+      BlockEntityTypeRegistryAdapter registry = new BlockEntityTypeRegistryAdapter(BuiltInRegistries.BLOCK_ENTITY_TYPE);
 
       tileCollector = registry.register(CollectorBlockEntity::new, collector, "collector");
       tilePipe = registry.register(PipeBlockEntity::new, pipe, "pipe");
     }
     else if (resourceKey == Registries.MENU) {
-      ContainerTypeRegistryAdapter registry = new ContainerTypeRegistryAdapter(ForgeRegistries.MENU_TYPES);
+      ContainerTypeRegistryAdapter registry = new ContainerTypeRegistryAdapter(BuiltInRegistries.MENU);
 
       contCollector = registry.registerType(CollectorContainerMenu::new, "collector");
       contPipe = registry.registerType(PipeContainerMenu::new, "pipe");
     }
     else if (resourceKey == Registries.ITEM) {
       Item.Properties props = new Item.Properties();
-      ItemRegistryAdapter registry = new ItemRegistryAdapter(ForgeRegistries.ITEMS, props);
+      ItemRegistryAdapter registry = new ItemRegistryAdapter(BuiltInRegistries.ITEM, props);
 
       // itemblocks
       torchLeverItem = registry.register(new StandingAndWallBlockItem(InspirationsUtility.torchLeverFloor, InspirationsUtility.torchLeverWall, props, Direction.DOWN), "torch_lever");

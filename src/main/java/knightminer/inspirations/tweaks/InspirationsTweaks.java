@@ -42,18 +42,18 @@ import net.minecraft.world.level.block.DispenserBlock;
 import net.minecraft.world.level.block.HopperBlock;
 import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.minecraft.world.level.block.state.BlockBehaviour;
-import net.minecraftforge.common.MinecraftForge;
-import net.minecraftforge.common.PlantType;
-import net.minecraftforge.common.brewing.BrewingRecipeRegistry;
-import net.minecraftforge.data.event.GatherDataEvent;
-import net.minecraftforge.event.LootTableLoadEvent;
-import net.minecraftforge.eventbus.api.SubscribeEvent;
-import net.minecraftforge.fml.event.lifecycle.FMLCommonSetupEvent;
-import net.minecraftforge.registries.ForgeRegistries;
-import net.minecraftforge.registries.RegisterEvent;
-import slimeknights.mantle.registration.adapter.BlockRegistryAdapter;
-import slimeknights.mantle.registration.adapter.ItemRegistryAdapter;
-import slimeknights.mantle.registration.object.EnumObject;
+import net.neoforged.neoforge.common.NeoForge;
+import net.neoforged.neoforge.common.PlantType;
+import net.neoforged.neoforge.common.brewing.BrewingRecipeRegistry;
+import net.neoforged.neoforge.data.event.GatherDataEvent;
+import net.neoforged.neoforge.event.LootTableLoadEvent;
+import net.neoforged.bus.api.SubscribeEvent;
+import net.neoforged.fml.event.lifecycle.FMLCommonSetupEvent;
+import net.minecraft.core.registries.BuiltInRegistries;
+import net.neoforged.neoforge.registries.RegisterEvent;
+import knightminer.inspirations.common.registration.BlockRegistryAdapter;
+import knightminer.inspirations.common.registration.ItemRegistryAdapter;
+import knightminer.inspirations.common.registration.EnumObject;
 
 import java.util.Objects;
 
@@ -77,7 +77,7 @@ public class InspirationsTweaks extends ModuleBase {
   void register(RegisterEvent event) {
     ResourceKey<? extends Registry<?>> registryKey = event.getRegistryKey();
     if (registryKey == Registries.BLOCK) {
-      BlockRegistryAdapter registry = new BlockRegistryAdapter(ForgeRegistries.BLOCKS);
+      BlockRegistryAdapter registry = new BlockRegistryAdapter(BuiltInRegistries.BLOCK);
 
       boolean replaceVanilla = Config.enableFittedCarpets.getAsBoolean();
       EnumObject.Builder<DyeColor,Block> flatBuilder = new EnumObject.Builder<>(DyeColor.class);
@@ -104,7 +104,7 @@ public class InspirationsTweaks extends ModuleBase {
       cactus = registry.register(new CactusCropBlock(() -> Blocks.CACTUS, PlantType.DESERT, BlockBehaviour.Properties.copy(Blocks.CACTUS)), "cactus");
       sugarCane = registry.register(new SugarCaneCropBlock(() -> Blocks.SUGAR_CANE, PlantType.BEACH, BlockBehaviour.Properties.copy(Blocks.SUGAR_CANE)), "sugar_cane");
     } else if (registryKey == Registries.ITEM) {
-      ItemRegistryAdapter registry = new ItemRegistryAdapter(ForgeRegistries.ITEMS);
+      ItemRegistryAdapter registry = new ItemRegistryAdapter(BuiltInRegistries.ITEM);
       Item.Properties props = new Item.Properties();
 
       if (Config.enableFittedCarpets.getAsBoolean()) {
@@ -151,8 +151,8 @@ public class InspirationsTweaks extends ModuleBase {
     event.enqueueWork(this::registerCompostables);
     registerDispenserBehavior();
 
-    MinecraftForge.EVENT_BUS.addListener(new SmoothGrowthListener(Blocks.CACTUS, cactus));
-    MinecraftForge.EVENT_BUS.addListener(new SmoothGrowthListener(Blocks.SUGAR_CANE, sugarCane));
+    NeoForge.EVENT_BUS.addListener(new SmoothGrowthListener(Blocks.CACTUS, cactus));
+    NeoForge.EVENT_BUS.addListener(new SmoothGrowthListener(Blocks.SUGAR_CANE, sugarCane));
   }
 
   @SubscribeEvent

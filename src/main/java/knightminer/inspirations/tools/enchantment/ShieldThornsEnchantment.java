@@ -5,7 +5,7 @@ import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.enchantment.Enchantment;
 import net.minecraft.world.item.enchantment.Enchantments;
 import net.minecraft.world.item.enchantment.ThornsEnchantment;
-import net.minecraftforge.common.ToolActions;
+import net.neoforged.neoforge.common.ItemAbilities;
 
 public class ShieldThornsEnchantment extends ThornsEnchantment {
   public ShieldThornsEnchantment(Rarity rarityIn, EquipmentSlot... slots) {
@@ -14,7 +14,7 @@ public class ShieldThornsEnchantment extends ThornsEnchantment {
 
   @Override
   public boolean canApplyAtEnchantingTable(ItemStack stack) {
-    return stack.canPerformAction(ToolActions.SHIELD_BLOCK) || super.canApplyAtEnchantingTable(stack);
+    return stack.canPerformAction(ItemAbilities.SHIELD_BLOCK) || super.canApplyAtEnchantingTable(stack);
   }
 
   @Override

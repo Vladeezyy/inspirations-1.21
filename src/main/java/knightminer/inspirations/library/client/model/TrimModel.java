@@ -4,6 +4,7 @@ import com.google.gson.JsonDeserializationContext;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonSyntaxException;
 import com.mojang.datafixers.util.Pair;
+import org.apache.commons.lang3.mutable.MutableObject;
 import net.minecraft.client.renderer.block.model.BlockElement;
 import net.minecraft.client.renderer.block.model.BlockElementFace;
 import net.minecraft.client.renderer.block.model.BlockFaceUV;
@@ -18,11 +19,11 @@ import net.minecraft.core.Direction;
 import net.minecraft.core.Direction.Axis;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.util.GsonHelper;
-import net.minecraftforge.client.model.geometry.IGeometryBakingContext;
-import net.minecraftforge.client.model.geometry.IGeometryLoader;
-import net.minecraftforge.client.model.geometry.IUnbakedGeometry;
+import net.neoforged.neoforge.client.model.geometry.IGeometryBakingContext;
+import net.neoforged.neoforge.client.model.geometry.IGeometryLoader;
+import net.neoforged.neoforge.client.model.geometry.IUnbakedGeometry;
 import org.joml.Vector3f;
-import slimeknights.mantle.client.model.util.SimpleBlockModel;
+import dev.vladeezyy.kilnwork.client.model.SimpleBlockModel;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -59,7 +60,7 @@ public class TrimModel implements IUnbakedGeometry<TrimModel> {
   }
 
   @Override
-  public BakedModel bake(IGeometryBakingContext owner, ModelBaker bakery, Function<Material,TextureAtlasSprite> spriteGetter, ModelState transform, ItemOverrides overrides, ResourceLocation location) {
+  public BakedModel bake(IGeometryBakingContext owner, ModelBaker bakery, Function<Material,TextureAtlasSprite> spriteGetter, ModelState transform, ItemOverrides overrides) {
     // first, determine the highest pixel for each xz location, this is needed as there may be multiple elements in a column
     List<BlockElement> originalElements = model.getElements();
     // map of XZ to highest height
@@ -137,12 +138,12 @@ public class TrimModel implements IUnbakedGeometry<TrimModel> {
           }
 
           // add the updated element
-          elements.add(new BlockElement(part.from, to, faces, part.rotation, part.shade));
+          elements.add(new BlockElement(part.from, to, faces, part.rotation, part.shade, part.getFaceData()));
         }
       }
     }
     // bake the final model
-    return SimpleBlockModel.bakeModel(owner, elements, spriteGetter, transform, overrides, location);
+    return SimpleBlockModel.bakeModel(owner, elements, spriteGetter, transform, overrides);
   }
 
   /**
@@ -152,7 +153,7 @@ public class TrimModel implements IUnbakedGeometry<TrimModel> {
    */
   private static BlockElementFace trimUV(BlockElementFace face, float amount) {
     // if no UV is set, we can return the original face, auto UV will handle it
-    BlockFaceUV uv = face.uv;
+    BlockFaceUV uv = face.uv();
     //noinspection ConstantValue  no it's not
     if (uv.uvs == null) {
       return face;
@@ -165,7 +166,7 @@ public class TrimModel implements IUnbakedGeometry<TrimModel> {
       case 90 -> trim(uvs, amount, 0, 2);
       case 270 -> trim(uvs, amount, 2, 0);
     }
-    return new BlockElementFace(face.cullForDirection, face.tintIndex, face.texture, new BlockFaceUV(uvs, uv.rotation));
+    return new BlockElementFace(face.cullForDirection(), face.tintIndex(), face.texture(), new BlockFaceUV(uvs, uv.rotation), face.faceData(), new MutableObject<>());
   }
 
   /**

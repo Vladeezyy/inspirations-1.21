@@ -8,8 +8,8 @@ import net.minecraft.client.renderer.blockentity.BlockEntityRenderer;
 import net.minecraft.client.renderer.blockentity.BlockEntityRendererProvider;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.block.state.BlockState;
-import net.minecraftforge.items.IItemHandlerModifiable;
-import slimeknights.mantle.client.render.RenderItem;
+import net.neoforged.neoforge.items.IItemHandlerModifiable;
+import dev.vladeezyy.kilnwork.client.render.RenderItem;
 import slimeknights.mantle.client.render.RenderingHelper;
 
 import java.util.List;

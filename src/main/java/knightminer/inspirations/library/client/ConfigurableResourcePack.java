@@ -1,7 +1,6 @@
 package knightminer.inspirations.library.client;
 
 import knightminer.inspirations.Inspirations;
-import net.minecraft.SharedConstants;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.packs.AbstractPackResources;
@@ -13,8 +12,14 @@ import net.minecraft.server.packs.resources.IoSupplier;
 import net.minecraft.world.flag.FeatureFlags;
 import net.minecraft.world.level.ItemLike;
 import net.minecraft.world.level.block.Block;
-import net.minecraftforge.common.ForgeConfigSpec.BooleanValue;
-import slimeknights.mantle.data.loadable.Loadables;
+import net.neoforged.neoforge.common.ModConfigSpec.BooleanValue;
+import net.minecraft.core.registries.BuiltInRegistries;
+import net.minecraft.server.packs.PackLocationInfo;
+import net.minecraft.server.packs.PackResources;
+import net.minecraft.server.packs.PackSelectionConfig;
+import net.minecraft.server.packs.repository.PackCompatibility;
+import java.util.List;
+import java.util.Optional;
 
 import javax.annotation.Nullable;
 import java.io.FileNotFoundException;
@@ -60,6 +65,11 @@ public class ConfigurableResourcePack extends AbstractPackResources implements R
     this(resourceLoader, packId.toString(), String.format(Locale.ROOT, "/%s/%s/%s/", PackType.CLIENT_RESOURCES.getDirectory(), packId.getNamespace(), packId.getPath()), displayName, description, namespaces);
   }
 
+  /** Location info of the pack, built in and always on */
+  private static PackLocationInfo locationInfo(String packId, Component displayName) {
+    return new PackLocationInfo(packId, displayName, PackSource.BUILT_IN, Optional.empty());
+  }
+
   /**
    * Internal method for constructing
    * @param resourceLoader  Class context for resource loading
@@ -68,7 +78,7 @@ public class ConfigurableResourcePack extends AbstractPackResources implements R
    * @param namespaces      List of namepsaces that have resources replaced
    */
   private ConfigurableResourcePack(Class<?> resourceLoader, String packId, String pathPrefix, Component displayName, Component description, Set<String> namespaces) {
-    super(packId, true);
+    super(locationInfo(packId, displayName));
     this.resourceLoader = resourceLoader;
     this.packId = packId;
     this.displayName = displayName;
@@ -154,13 +164,18 @@ public class ConfigurableResourcePack extends AbstractPackResources implements R
   @Override
   public void loadPacks(Consumer<Pack> consumer) {
     // add a new always enabled pack. Config is how you disable the replacements
-    consumer.accept(Pack.create(packId, displayName, true, id -> this, new Pack.Info(
-      description,
-      SharedConstants.getCurrentVersion().getPackVersion(PackType.SERVER_DATA),
-      SharedConstants.getCurrentVersion().getPackVersion(PackType.CLIENT_RESOURCES),
-      FeatureFlags.REGISTRY.allFlags(),
-      false
-    ), PackType.CLIENT_RESOURCES, Pack.Position.TOP, false, PackSource.BUILT_IN));
+    consumer.accept(new Pack(location(), new Pack.ResourcesSupplier() {
+      @Override
+      public PackResources openPrimary(PackLocationInfo location) {
+        return ConfigurableResourcePack.this;
+      }
+
+      @Override
+      public PackResources openFull(PackLocationInfo location, Pack.Metadata metadata) {
+        return ConfigurableResourcePack.this;
+      }
+    }, new Pack.Metadata(description, PackCompatibility.COMPATIBLE, FeatureFlags.REGISTRY.allFlags(), List.of(), false),
+      new PackSelectionConfig(true, Pack.Position.TOP, false)));
   }
 
 
@@ -196,7 +211,7 @@ public class ConfigurableResourcePack extends AbstractPackResources implements R
    * @param resource   Name of blockstate replacement
    */
   public void addBlockstateReplacement(BooleanSupplier condition, Block block, String resource) {
-    addReplacement(condition, makePath(Loadables.BLOCK.getKey(block), "blockstates", "json"), "blockstates/" + resource + ".json");
+    addReplacement(condition, makePath(BuiltInRegistries.BLOCK.getKey(block), "blockstates", "json"), "blockstates/" + resource + ".json");
   }
 
   /**
@@ -216,7 +231,7 @@ public class ConfigurableResourcePack extends AbstractPackResources implements R
    * @param resource   New name supplier
    */
   public void addItemModelReplacement(BooleanSupplier condition, ItemLike item, String resource) {
-    addReplacement(condition, makePath(Loadables.ITEM.getKey(item.asItem()), "models/item", "json"), "item_models/" + resource + ".json");
+    addReplacement(condition, makePath(BuiltInRegistries.ITEM.getKey(item.asItem()), "models/item", "json"), "item_models/" + resource + ".json");
   }
 
   /**

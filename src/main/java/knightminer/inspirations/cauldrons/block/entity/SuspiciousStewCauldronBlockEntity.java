@@ -8,8 +8,8 @@ import net.minecraft.nbt.Tag;
 import net.minecraft.world.effect.MobEffect;
 import net.minecraft.world.item.SuspiciousStewItem;
 import net.minecraft.world.level.block.state.BlockState;
-import net.minecraftforge.common.ForgeHooks;
-import slimeknights.mantle.block.entity.MantleBlockEntity;
+import net.neoforged.neoforge.common.CommonHooks;
+import dev.vladeezyy.kilnwork.block.SyncedBlockEntity;
 
 import javax.annotation.Nullable;
 import java.util.HashMap;
@@ -19,7 +19,7 @@ import static net.minecraft.world.item.SuspiciousStewItem.EFFECT_DURATION_TAG;
 import static net.minecraft.world.item.SuspiciousStewItem.EFFECT_ID_TAG;
 
 /** Block entity for cauldron suspicious stew contents */
-public class SuspiciousStewCauldronBlockEntity extends MantleBlockEntity {
+public class SuspiciousStewCauldronBlockEntity extends SyncedBlockEntity {
 	/** Effect name */
 	private static final String EFFECT_NAME = "forge:effect_id";
 
@@ -43,7 +43,7 @@ public class SuspiciousStewCauldronBlockEntity extends MantleBlockEntity {
 	public void addEffect(MobEffect effect, int duration) {
 		CompoundTag effectTag = new CompoundTag();
 		effectTag.putByte(EFFECT_ID_TAG, (byte)MobEffect.getId(effect));
-		ForgeHooks.saveMobEffect(effectTag, "forge:effect_id", effect);
+		CommonHooks.saveMobEffect(effectTag, "forge:effect_id", effect);
 		effectTag.putInt(EFFECT_DURATION_TAG, duration);
 		effects.add(effectTag);
 		this.setChangedFast();
@@ -53,7 +53,7 @@ public class SuspiciousStewCauldronBlockEntity extends MantleBlockEntity {
 	@Nullable
 	private static MobEffect getEffect(CompoundTag tag) {
 		MobEffect effect = MobEffect.byId(tag.getByte(EFFECT_ID_TAG));
-		return ForgeHooks.loadMobEffect(tag, EFFECT_NAME, effect);
+		return CommonHooks.loadMobEffect(tag, EFFECT_NAME, effect);
 	}
 
 	/** Scale the effect down */

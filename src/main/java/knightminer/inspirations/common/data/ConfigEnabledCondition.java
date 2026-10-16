@@ -1,21 +1,16 @@
 package knightminer.inspirations.common.data;
 
-import com.google.gson.JsonDeserializationContext;
-import com.google.gson.JsonObject;
-import com.google.gson.JsonSerializationContext;
-import com.google.gson.JsonSyntaxException;
+import com.mojang.serialization.Codec;
+import com.mojang.serialization.DataResult;
+import com.mojang.serialization.MapCodec;
 import knightminer.inspirations.Inspirations;
 import knightminer.inspirations.common.Config;
 import knightminer.inspirations.common.InspirationsCommons;
-import net.minecraft.resources.ResourceLocation;
-import net.minecraft.util.GsonHelper;
 import net.minecraft.world.level.storage.loot.LootContext;
-import net.minecraft.world.level.storage.loot.Serializer;
 import net.minecraft.world.level.storage.loot.predicates.LootItemCondition;
 import net.minecraft.world.level.storage.loot.predicates.LootItemConditionType;
-import net.minecraftforge.common.ForgeConfigSpec.BooleanValue;
-import net.minecraftforge.common.crafting.conditions.ICondition;
-import net.minecraftforge.common.crafting.conditions.IConditionSerializer;
+import net.neoforged.neoforge.common.ModConfigSpec.BooleanValue;
+import net.neoforged.neoforge.common.conditions.ICondition;
 
 import java.util.HashMap;
 import java.util.Locale;
@@ -24,9 +19,13 @@ import java.util.function.BooleanSupplier;
 
 // Reuse code for both a recipe and loot table condition.
 public class ConfigEnabledCondition implements ICondition, LootItemCondition {
-  private static final ResourceLocation ID = Inspirations.getResource("config");
   /* Map of config names to condition cache */
   private static final Map<String,ConfigEnabledCondition> PROPS = new HashMap<>();
+  /** Codec for both condition types: {@code {"type": "inspirations:config", "prop": "<name>"}} */
+  public static final MapCodec<ConfigEnabledCondition> CODEC = Codec.STRING.comapFlatMap(prop -> {
+    ConfigEnabledCondition config = PROPS.get(prop.toLowerCase(Locale.ROOT));
+    return config != null ? DataResult.success(config) : DataResult.error(() -> "Invalid property name '" + prop + "'");
+  }, condition -> condition.configName).fieldOf("prop");
 
   private final String configName;
   private final BooleanSupplier supplier;
@@ -34,11 +33,6 @@ public class ConfigEnabledCondition implements ICondition, LootItemCondition {
   private ConfigEnabledCondition(String configName, BooleanSupplier supplier) {
     this.configName = configName;
     this.supplier = supplier;
-  }
-
-  @Override
-  public ResourceLocation getID() {
-    return ID;
   }
 
   @Override
@@ -57,40 +51,18 @@ public class ConfigEnabledCondition implements ICondition, LootItemCondition {
   }
 
   @Override
+  public MapCodec<? extends ICondition> codec() {
+    return CODEC;
+  }
+
+  @Override
   public LootItemConditionType getType() {
     return InspirationsCommons.lootConfig;
   }
 
-  public static class ConditionSerializer implements Serializer<ConfigEnabledCondition>, IConditionSerializer<ConfigEnabledCondition> {
-    @Override
-    public ResourceLocation getID() {
-      return ID;
-    }
-
-    @Override
-    public void write(JsonObject json, ConfigEnabledCondition value) {
-      json.addProperty("prop", value.configName);
-    }
-
-    @Override
-    public ConfigEnabledCondition read(JsonObject json) {
-      String prop = GsonHelper.getAsString(json, "prop");
-      ConfigEnabledCondition config = PROPS.get(prop.toLowerCase(Locale.ROOT));
-      if (config == null) {
-        throw new JsonSyntaxException("Invalid property name '" + prop + "'");
-      }
-      return config;
-    }
-
-    @Override
-    public void serialize(JsonObject json, ConfigEnabledCondition condition, JsonSerializationContext context) {
-      write(json, condition);
-    }
-
-    @Override
-    public ConfigEnabledCondition deserialize(JsonObject json, JsonDeserializationContext context) {
-      return read(json);
-    }
+  @Override
+  public String toString() {
+    return "config(" + configName + ")";
   }
 
   /**
@@ -112,7 +84,7 @@ public class ConfigEnabledCondition implements ICondition, LootItemCondition {
    * @return Added condition
    */
   private static ConfigEnabledCondition add(String prop, BooleanValue supplier) {
-    return add(prop, supplier::get);
+    return add(prop, () -> Config.get(supplier));
   }
 
   /* Config conditions available */

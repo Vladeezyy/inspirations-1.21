@@ -6,9 +6,8 @@ import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import slimeknights.mantle.util.RegistryHelper;
 
-import java.util.HashMap;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.Map;
 
 // This is an API.
@@ -18,7 +17,7 @@ public class InspirationsRegistry {
   /*
    * Books
    */
-  private static final Map<Item,Float> bookCache = new HashMap<>();
+  private static final Map<Item,Float> bookCache = new ConcurrentHashMap<>();
 
   /**
    * Checks if the given item stack is a book
@@ -46,9 +45,14 @@ public class InspirationsRegistry {
    * @param item The item.
    * @return The enchantment power, or -1F.
    */
+  /** Clears cached book data, tags may have changed */
+  public static void clearBookCache() {
+    bookCache.clear();
+  }
+
   private static Float bookPower(Item item) {
     // TODO: custom enchanting power
-    if (RegistryHelper.contains(InspirationsTags.Items.SHELF_BOOKS, item)) {
+    if (item.builtInRegistryHolder().is(InspirationsTags.Items.SHELF_BOOKS)) {
       return Config.defaultEnchantingPower.get().floatValue();
     }
     return -1f;

@@ -4,7 +4,6 @@ import knightminer.inspirations.Inspirations;
 import knightminer.inspirations.building.InspirationsBuilding;
 import knightminer.inspirations.cauldrons.InspirationsCaudrons;
 import knightminer.inspirations.common.data.ConfigEnabledCondition;
-import knightminer.inspirations.library.recipe.ModItemList;
 import knightminer.inspirations.library.recipe.crafting.ShapelessNoContainerRecipe;
 import knightminer.inspirations.tools.InspirationsTools;
 import knightminer.inspirations.tweaks.InspirationsTweaks;
@@ -24,13 +23,12 @@ import net.minecraft.world.level.ItemLike;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.storage.loot.predicates.LootItemConditionType;
-import net.minecraftforge.common.crafting.CraftingHelper;
-import net.minecraftforge.event.BuildCreativeModeTabContentsEvent;
-import net.minecraftforge.eventbus.api.SubscribeEvent;
-import net.minecraftforge.registries.ForgeRegistries;
-import net.minecraftforge.registries.RegisterEvent;
-import slimeknights.mantle.registration.object.EnumObject;
-import slimeknights.mantle.util.RetexturedHelper;
+import net.neoforged.neoforge.registries.NeoForgeRegistries;
+import net.neoforged.neoforge.event.BuildCreativeModeTabContentsEvent;
+import net.neoforged.bus.api.SubscribeEvent;
+import net.neoforged.neoforge.registries.RegisterEvent;
+import knightminer.inspirations.common.registration.EnumObject;
+import dev.vladeezyy.kilnwork.retexture.RetexturedHelper;
 
 import java.util.function.Predicate;
 
@@ -66,19 +64,16 @@ public class InspirationsCommons extends ModuleBase {
   @SubscribeEvent
   void register(RegisterEvent event) {
     // recipe serializers
-    ResourceKey<? extends Registry<?>> key = event.getRegistryKey();
-    if (key == Registries.RECIPE_SERIALIZER) {
-      shapelessNoContainer = register(ForgeRegistries.RECIPE_SERIALIZERS, "shapeless_no_container", new ShapelessNoContainerRecipe.Serializer());
-
-      // recipe ingredient type
-      CraftingHelper.register(Inspirations.getResource("mod_item_list"), ModItemList.SERIALIZER);
-    }
-    // config condition
-    else if (key == Registries.LOOT_CONDITION_TYPE) {
-      ConfigEnabledCondition.ConditionSerializer confEnabled = new ConfigEnabledCondition.ConditionSerializer();
-      CraftingHelper.register(confEnabled);
-      lootConfig = register(BuiltInRegistries.LOOT_CONDITION_TYPE, "config", new LootItemConditionType(confEnabled));
-    }
+    event.register(Registries.RECIPE_SERIALIZER, helper -> {
+      shapelessNoContainer = new ShapelessNoContainerRecipe.Serializer();
+      helper.register(Inspirations.getResource("shapeless_no_container"), shapelessNoContainer);
+    });
+    // config condition, for recipes and loot tables
+    event.register(NeoForgeRegistries.Keys.CONDITION_CODECS, helper -> helper.register(Inspirations.getResource("config"), ConfigEnabledCondition.CODEC));
+    event.register(Registries.LOOT_CONDITION_TYPE, helper -> {
+      lootConfig = new LootItemConditionType(ConfigEnabledCondition.CODEC);
+      helper.register(Inspirations.getResource("config"), lootConfig);
+    });
   }
 
   @SubscribeEvent
@@ -110,7 +105,9 @@ public class InspirationsCommons extends ModuleBase {
         event.accept(InspirationsBuilding.vine);
       }
       if (Config.enableBookshelf.getAsBoolean()) {
-        accept(event, InspirationsBuilding.shelf, ItemTags.PLANKS);
+        // 1.20 listed planks here while the recipe takes the texture from slabs, so creative and crafted shelves
+        // never matched and JEI could not find the recipe of a creative shelf (original issue #247)
+        accept(event, InspirationsBuilding.shelf, ItemTags.WOODEN_SLABS);
       }
       if (Config.enableColoredBooks.getAsBoolean()) {
         InspirationsBuilding.coloredBook.addVariants(event::accept);
@@ -201,7 +198,7 @@ public class InspirationsCommons extends ModuleBase {
     Predicate<ItemStack> acceptor =stack -> {
       event.accept(stack);
       // TODO: worth making this a JEI only thing?
-      return !Config.showAllVariants.get();
+      return !Config.get(Config.showAllVariants);
     };
     object.forEach(item -> RetexturedHelper.addTagVariants(acceptor, item, textures));
   }

@@ -12,8 +12,8 @@ import net.minecraft.world.level.block.BeetrootBlock;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.storage.loot.predicates.BonusLevelTableCondition;
 import net.minecraft.world.level.storage.loot.predicates.LootItemBlockStatePropertyCondition;
-import net.minecraftforge.common.data.GlobalLootModifierProvider;
-import net.minecraftforge.common.loot.LootTableIdCondition;
+import net.neoforged.neoforge.common.data.GlobalLootModifierProvider;
+import net.neoforged.neoforge.common.loot.LootTableIdCondition;
 import slimeknights.mantle.loot.ReplaceItemLootModifier;
 import slimeknights.mantle.recipe.helper.ItemOutput;
 
@@ -25,7 +25,7 @@ public class GlobalLootProvider extends GlobalLootModifierProvider {
   @Override
   protected void start() {
     add("heartbeet", ReplaceItemLootModifier.builder(Ingredient.of(Items.BEETROOT), ItemOutput.fromItem(InspirationsTweaks.heartbeet))
-        .addCondition(LootTableIdCondition.builder(new ResourceLocation("minecraft:blocks/beetroots")).build())
+        .addCondition(LootTableIdCondition.builder(ResourceLocation.parse("minecraft:blocks/beetroots")).build())
         .addCondition(ConfigEnabledCondition.HEARTBEETS)
         .addCondition(new LootItemBlockStatePropertyCondition.Builder(Blocks.BEETROOTS).setProperties(StatePropertiesPredicate.Builder.properties().hasProperty(BeetrootBlock.AGE, 3)).build())
         .addCondition(BonusLevelTableCondition.bonusLevelFlatChance(Enchantments.BLOCK_FORTUNE, 0.05f, 0.0625f, 0.083333336f, 0.1f).build())

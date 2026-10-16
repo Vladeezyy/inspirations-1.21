@@ -1,39 +1,36 @@
 package knightminer.inspirations.common.network;
 
-import knightminer.inspirations.Inspirations;
 import knightminer.inspirations.tweaks.network.LecternBookPacket;
 import knightminer.inspirations.tweaks.network.RequestLecternBookPacket;
 import net.minecraft.core.BlockPos;
 import net.minecraft.network.protocol.Packet;
+import net.minecraft.network.protocol.common.custom.CustomPacketPayload;
 import net.minecraft.server.level.ServerLevel;
+import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.entity.Entity;
+import net.minecraft.world.level.ChunkPos;
 import net.minecraft.world.level.Level;
-import net.minecraftforge.network.NetworkDirection;
-import slimeknights.mantle.network.NetworkWrapper;
-import slimeknights.mantle.network.packet.ISimplePacket;
+import net.neoforged.neoforge.network.PacketDistributor;
+import net.neoforged.neoforge.network.event.RegisterPayloadHandlersEvent;
+import net.neoforged.neoforge.network.registration.PayloadRegistrar;
 
 import javax.annotation.Nullable;
 
-public class InspirationsNetwork extends NetworkWrapper {
-  public static final InspirationsNetwork INSTANCE = new InspirationsNetwork();
+/** Packets of Inspirations, NeoForge payloads in place of Mantle's network wrapper of 1.20 */
+public class InspirationsNetwork {
+  private InspirationsNetwork() {}
 
-  private InspirationsNetwork() {
-    super(Inspirations.getResource("network"));
-  }
-
-  /**
-   * Called during mod construction to register all packets
-   */
-  public void setup() {
-    registerPacket(InventorySlotSyncPacket.class, InventorySlotSyncPacket::new, NetworkDirection.PLAY_TO_CLIENT);
-    registerPacket(MilkablePacket.class, MilkablePacket::new, NetworkDirection.PLAY_TO_CLIENT);
-    registerPacket(CauldronColorUpdatePacket.class, CauldronColorUpdatePacket::new, NetworkDirection.PLAY_TO_CLIENT);
-    registerPacket(CauldronPotionUpdatePacket.class, CauldronPotionUpdatePacket::new, NetworkDirection.PLAY_TO_CLIENT);
-    registerPacket(DimensionCompassPositionPacket.class, DimensionCompassPositionPacket::new, NetworkDirection.PLAY_TO_CLIENT);
-
+  /** Registers all packets */
+  public static void register(RegisterPayloadHandlersEvent event) {
+    PayloadRegistrar registrar = event.registrar("1");
+    registrar.playToClient(InventorySlotSyncPacket.TYPE, InventorySlotSyncPacket.STREAM_CODEC, InventorySlotSyncPacket::handle);
+    registrar.playToClient(MilkablePacket.TYPE, MilkablePacket.STREAM_CODEC, MilkablePacket::handle);
+    registrar.playToClient(CauldronColorUpdatePacket.TYPE, CauldronColorUpdatePacket.STREAM_CODEC, CauldronColorUpdatePacket::handle);
+    registrar.playToClient(CauldronPotionUpdatePacket.TYPE, CauldronPotionUpdatePacket.STREAM_CODEC, CauldronPotionUpdatePacket::handle);
+    registrar.playToClient(DimensionCompassPositionPacket.TYPE, DimensionCompassPositionPacket.STREAM_CODEC, DimensionCompassPositionPacket::handle);
     // lectern syncing
-    registerPacket(RequestLecternBookPacket.class, RequestLecternBookPacket::new, NetworkDirection.PLAY_TO_SERVER);
-    registerPacket(LecternBookPacket.class, LecternBookPacket::new, NetworkDirection.PLAY_TO_CLIENT);
+    registrar.playToServer(RequestLecternBookPacket.TYPE, RequestLecternBookPacket.STREAM_CODEC, RequestLecternBookPacket::handle);
+    registrar.playToClient(LecternBookPacket.TYPE, LecternBookPacket.STREAM_CODEC, LecternBookPacket::handle);
   }
 
   /**
@@ -42,7 +39,19 @@ public class InspirationsNetwork extends NetworkWrapper {
    * @param packet Packet
    */
   public static void sendPacket(Entity player, Packet<?> packet) {
-    INSTANCE.sendVanillaPacket(packet, player);
+    if (player instanceof ServerPlayer serverPlayer) {
+      serverPlayer.connection.send(packet);
+    }
+  }
+
+  /** Sends a packet to one player */
+  public static void sendTo(CustomPacketPayload packet, ServerPlayer player) {
+    PacketDistributor.sendToPlayer(player, packet);
+  }
+
+  /** Sends a packet to the server */
+  public static void sendToServer(CustomPacketPayload packet) {
+    PacketDistributor.sendToServer(packet);
   }
 
   /**
@@ -51,19 +60,19 @@ public class InspirationsNetwork extends NetworkWrapper {
    * @param pos    Players too far from this position will not receive the packet
    * @param packet Packet
    */
-  public static void sendToClients(@Nullable Level world, BlockPos pos, ISimplePacket packet) {
-    if (world instanceof ServerLevel) {
-      sendToClients((ServerLevel)world, pos, packet);
+  public static void sendToClients(@Nullable Level world, BlockPos pos, CustomPacketPayload packet) {
+    if (world instanceof ServerLevel serverLevel) {
+      sendToClients(serverLevel, pos, packet);
     }
   }
 
   /**
-   * Sends a packet to all clients near a location
+   * Sends a packet to all clients tracking the chunk of a location
    * @param world  World
-   * @param pos    Players too far from this position will not receive the packet
+   * @param pos    Position
    * @param packet Packet
    */
-  public static void sendToClients(ServerLevel world, BlockPos pos, ISimplePacket packet) {
-    INSTANCE.sendToClientsAround(packet, world, pos);
+  public static void sendToClients(ServerLevel world, BlockPos pos, CustomPacketPayload packet) {
+    PacketDistributor.sendToPlayersTrackingChunk(world, new ChunkPos(pos), packet);
   }
 }

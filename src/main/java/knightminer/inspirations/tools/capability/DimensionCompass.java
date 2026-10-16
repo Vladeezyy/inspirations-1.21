@@ -13,19 +13,19 @@ import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.level.Level;
-import net.minecraftforge.common.MinecraftForge;
-import net.minecraftforge.common.capabilities.Capability;
-import net.minecraftforge.common.capabilities.CapabilityManager;
-import net.minecraftforge.common.capabilities.CapabilityToken;
-import net.minecraftforge.common.capabilities.ICapabilitySerializable;
-import net.minecraftforge.common.capabilities.RegisterCapabilitiesEvent;
-import net.minecraftforge.common.util.LazyOptional;
-import net.minecraftforge.event.AttachCapabilitiesEvent;
-import net.minecraftforge.event.entity.EntityTravelToDimensionEvent;
-import net.minecraftforge.event.entity.player.PlayerEvent.PlayerChangedDimensionEvent;
-import net.minecraftforge.event.entity.player.PlayerEvent.PlayerLoggedInEvent;
-import net.minecraftforge.eventbus.api.EventPriority;
-import net.minecraftforge.fml.javafmlmod.FMLJavaModLoadingContext;
+import net.neoforged.neoforge.common.NeoForge;
+
+import net.neoforged.neoforge.common.capabilities.CapabilityManager;
+import net.neoforged.neoforge.common.capabilities.CapabilityToken;
+import net.neoforged.neoforge.common.capabilities.ICapabilitySerializable;
+import net.neoforged.neoforge.common.capabilities.RegisterCapabilitiesEvent;
+
+import net.neoforged.neoforge.event.AttachCapabilitiesEvent;
+import net.neoforged.neoforge.event.entity.EntityTravelToDimensionEvent;
+import net.neoforged.neoforge.event.entity.player.PlayerEvent.PlayerChangedDimensionEvent;
+import net.neoforged.neoforge.event.entity.player.PlayerEvent.PlayerLoggedInEvent;
+import net.neoforged.bus.api.EventPriority;
+
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
@@ -43,10 +43,10 @@ public class DimensionCompass implements ICapabilitySerializable<CompoundTag>, I
 
 	public static void register() {
 		FMLJavaModLoadingContext.get().getModEventBus().addListener(EventPriority.NORMAL, false, RegisterCapabilitiesEvent.class, event -> event.register(IDimensionCompass.class));
-		MinecraftForge.EVENT_BUS.addGenericListener(Entity.class, DimensionCompass::attachCapability);
-		MinecraftForge.EVENT_BUS.addListener(DimensionCompass::dimensionChange);
-		MinecraftForge.EVENT_BUS.addListener(DimensionCompass::playerLoggedIn);
-		MinecraftForge.EVENT_BUS.addListener(EventPriority.LOWEST, DimensionCompass::dimensionTravel);
+		NeoForge.EVENT_BUS.addGenericListener(Entity.class, DimensionCompass::attachCapability);
+		NeoForge.EVENT_BUS.addListener(DimensionCompass::dimensionChange);
+		NeoForge.EVENT_BUS.addListener(DimensionCompass::playerLoggedIn);
+		NeoForge.EVENT_BUS.addListener(EventPriority.LOWEST, DimensionCompass::dimensionTravel);
 	}
 
 	private final LazyOptional<IDimensionCompass> capabilityInstance = LazyOptional.of(() -> this);

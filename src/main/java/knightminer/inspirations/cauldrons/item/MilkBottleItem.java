@@ -16,9 +16,9 @@ import net.minecraft.world.item.ItemUtils;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.item.UseAnim;
 import net.minecraft.world.level.Level;
-import net.minecraftforge.common.ForgeMod;
-import net.minecraftforge.common.capabilities.ICapabilityProvider;
-import net.minecraftforge.fluids.FluidStack;
+import net.neoforged.neoforge.common.NeoForgeMod;
+import net.neoforged.neoforge.common.capabilities.ICapabilityProvider;
+import net.neoforged.neoforge.fluids.FluidStack;
 import org.jetbrains.annotations.Nullable;
 import slimeknights.mantle.item.ConstantFluidContainerWrapper;
 
@@ -85,8 +85,8 @@ public class MilkBottleItem extends Item {
 	@Nullable
 	@Override
 	public ICapabilityProvider initCapabilities(ItemStack stack, @Nullable CompoundTag nbt) {
-		if (ForgeMod.MILK.isPresent()) {
-			return new ConstantFluidContainerWrapper(new FluidStack(ForgeMod.MILK.get(), 250), stack);
+		if (NeoForgeMod.MILK.isPresent()) {
+			return new ConstantFluidContainerWrapper(new FluidStack(NeoForgeMod.MILK.get(), 250), stack);
 		}
 		return null;
 	}

@@ -25,13 +25,13 @@ import net.minecraft.world.level.block.VineBlock;
 import net.minecraft.world.level.block.entity.BaseContainerBlockEntity;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
-import net.minecraftforge.common.ToolActions;
-import net.minecraftforge.event.entity.living.LivingAttackEvent;
-import net.minecraftforge.event.entity.player.PlayerInteractEvent.RightClickBlock;
-import net.minecraftforge.event.level.BlockEvent.BreakEvent;
-import net.minecraftforge.eventbus.api.EventPriority;
-import net.minecraftforge.eventbus.api.SubscribeEvent;
-import net.minecraftforge.items.ItemHandlerHelper;
+import net.neoforged.neoforge.common.ItemAbilities;
+import net.neoforged.neoforge.event.entity.living.LivingAttackEvent;
+import net.neoforged.neoforge.event.entity.player.PlayerInteractEvent.RightClickBlock;
+import net.neoforged.neoforge.event.level.BlockEvent.BreakEvent;
+import net.neoforged.bus.api.EventPriority;
+import net.neoforged.bus.api.SubscribeEvent;
+import net.neoforged.neoforge.items.ItemHandlerHelper;
 
 public class ToolsEvents {
   @SubscribeEvent
@@ -122,7 +122,7 @@ public class ToolsEvents {
       return;
     }
     ItemStack shears = player.getMainHandItem();
-    if (shears.canPerformAction(ToolActions.SHEARS_DIG)) {
+    if (shears.canPerformAction(ItemAbilities.SHEARS_DIG)) {
       return;
     }
 
@@ -222,7 +222,7 @@ public class ToolsEvents {
         stack.hurtAndBreak(1, target, (play) -> play.broadcastBreakEvent(target.getUsedItemHand()));
       }
       if (fire > 0) {
-        attacker.setSecondsOnFire(fire * 4);
+        attacker.igniteForSeconds(fire * 4);
       }
       if (knockback > 0) {
         if (attacker instanceof LivingEntity) {

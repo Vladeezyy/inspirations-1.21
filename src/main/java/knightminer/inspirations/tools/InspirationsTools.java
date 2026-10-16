@@ -45,16 +45,16 @@ import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.DispenserBlock;
 import net.minecraft.world.level.material.MapColor;
 import net.minecraft.world.level.material.PushReaction;
-import net.minecraftforge.common.MinecraftForge;
-import net.minecraftforge.data.event.GatherDataEvent;
-import net.minecraftforge.eventbus.api.SubscribeEvent;
-import net.minecraftforge.fml.event.lifecycle.FMLCommonSetupEvent;
-import net.minecraftforge.registries.ForgeRegistries;
-import net.minecraftforge.registries.RegisterEvent;
-import slimeknights.mantle.registration.adapter.BlockRegistryAdapter;
-import slimeknights.mantle.registration.adapter.EntityTypeRegistryAdapter;
-import slimeknights.mantle.registration.adapter.ItemRegistryAdapter;
-import slimeknights.mantle.registration.adapter.RegistryAdapter;
+import net.neoforged.neoforge.common.NeoForge;
+import net.neoforged.neoforge.data.event.GatherDataEvent;
+import net.neoforged.bus.api.SubscribeEvent;
+import net.neoforged.fml.event.lifecycle.FMLCommonSetupEvent;
+import net.minecraft.core.registries.BuiltInRegistries;
+import net.neoforged.neoforge.registries.RegisterEvent;
+import knightminer.inspirations.common.registration.BlockRegistryAdapter;
+import knightminer.inspirations.common.registration.EntityTypeRegistryAdapter;
+import knightminer.inspirations.common.registration.ItemRegistryAdapter;
+import knightminer.inspirations.common.registration.RegistryAdapter;
 
 public class InspirationsTools extends ModuleBase {
   // items
@@ -78,7 +78,7 @@ public class InspirationsTools extends ModuleBase {
 
   @SubscribeEvent
   public void setup(FMLCommonSetupEvent event) {
-    MinecraftForge.EVENT_BUS.register(ToolsEvents.class);
+    NeoForge.EVENT_BUS.register(ToolsEvents.class);
     DimensionCompass.register();
     registerDispenserBehavior();
   }
@@ -87,13 +87,13 @@ public class InspirationsTools extends ModuleBase {
   public void register(RegisterEvent event) {
     ResourceKey<? extends Registry<?>> registryKey = event.getRegistryKey();
     if (registryKey == Registries.BLOCK) {
-      BlockRegistryAdapter registry = new BlockRegistryAdapter(ForgeRegistries.BLOCKS);
+      BlockRegistryAdapter registry = new BlockRegistryAdapter(BuiltInRegistries.BLOCK);
       redstoneCharge = registry.register(new RedstoneChargeBlock(
         Block.Properties.of().mapColor(MapColor.NONE).pushReaction(PushReaction.DESTROY).strength(0).lightLevel((state) -> 2)
       ), "redstone_charge");
     }
     else if (registryKey == Registries.ITEM) {
-      ItemRegistryAdapter registry = new ItemRegistryAdapter(ForgeRegistries.ITEMS);
+      ItemRegistryAdapter registry = new ItemRegistryAdapter(BuiltInRegistries.ITEM);
       Item.Properties props = new Item.Properties();
 
       redstoneArrow = registry.register(new RedstoneArrowItem(props), "charged_arrow");
@@ -113,7 +113,7 @@ public class InspirationsTools extends ModuleBase {
       }
     }
     else if (registryKey == Registries.ENTITY_TYPE) {
-      EntityTypeRegistryAdapter registry = new EntityTypeRegistryAdapter(ForgeRegistries.ENTITY_TYPES);
+      EntityTypeRegistryAdapter registry = new EntityTypeRegistryAdapter(BuiltInRegistries.ENTITY_TYPE);
       entRSArrow = registry.register(EntityType.Builder
                                          .<RedstoneArrow>of(RedstoneArrow::new, MobCategory.MISC)
                                          .sized(0.5F, 0.5F)
@@ -123,7 +123,7 @@ public class InspirationsTools extends ModuleBase {
                                      "redstone_arrow");
     }
     else if (registryKey == Registries.ENCHANTMENT) {
-      RegistryAdapter<Enchantment> registry = new RegistryAdapter<>(ForgeRegistries.ENCHANTMENTS);
+      RegistryAdapter<Enchantment> registry = new RegistryAdapter<>(BuiltInRegistries.ENCHANTMENT);
 
       if (Config.moreShieldEnchantments.getAsBoolean()) {
         EquipmentSlot[] slots = new EquipmentSlot[]{

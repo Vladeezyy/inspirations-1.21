@@ -1,24 +1,16 @@
 package knightminer.inspirations.library;
 
-import com.google.gson.JsonObject;
-import com.google.gson.JsonSyntaxException;
+import javax.annotation.Nullable;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
-import net.minecraft.core.NonNullList;
+import net.minecraft.core.component.DataComponents;
 import net.minecraft.core.particles.ParticleOptions;
-import net.minecraft.nbt.CompoundTag;
-import net.minecraft.nbt.Tag;
-import net.minecraft.resources.ResourceLocation;
-import net.minecraft.util.GsonHelper;
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.DyeColor;
-import net.minecraft.world.item.DyeableLeatherItem;
-import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
-import net.minecraft.world.item.Items;
-import net.minecraft.world.item.enchantment.Enchantments;
+import net.minecraft.world.item.component.DyedItemColor;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.entity.BlockEntity;
@@ -26,10 +18,6 @@ import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.Vec3;
 import net.minecraft.world.phys.shapes.Shapes;
 import net.minecraft.world.phys.shapes.VoxelShape;
-import net.minecraftforge.registries.ForgeRegistries;
-
-import javax.annotation.Nullable;
-import java.util.Arrays;
 
 public class MiscUtil {
   private static final String TAG_DISPLAY = "display";
@@ -45,26 +33,6 @@ public class MiscUtil {
     return Shapes.box(
         0.5 + Math.min(first.x, second.x) / 16.0, 0.5 + Math.min(first.y, second.y) / 16.0, 0.5 + Math.min(first.z, second.z) / 16.0,
         0.5 + Math.max(first.x, second.x) / 16.0, 0.5 + Math.max(first.y, second.y) / 16.0, 0.5 + Math.max(first.z, second.z) / 16.0);
-  }
-
-  // An item with Silk Touch, to make blocks drop their silk touch items if they have any.
-  // Using a Stick makes sure it won't be damaged.
-  private static final ItemStack silkTouchItem = new ItemStack(Items.STICK);
-  static {
-    silkTouchItem.enchant(Enchantments.SILK_TOUCH, 1);
-  }
-
-  /**
-   * Creates a NonNullList from the specified elements, using the class as the type
-   * @param elements Elements for the list
-   * @return New NonNullList
-   */
-  @SafeVarargs
-  @Deprecated
-  public static <E> NonNullList<E> createNonNullList(E... elements) {
-    NonNullList<E> list = NonNullList.create();
-    list.addAll(Arrays.asList(elements));
-    return list;
   }
 
   /**
@@ -101,7 +69,7 @@ public class MiscUtil {
   static {
     DYE_COLORS = new int[16];
     for (DyeColor color : DyeColor.values()) {
-      DYE_COLORS[color.getId()] = getColorInteger(color.getTextureDiffuseColors());
+      DYE_COLORS[color.getId()] = color.getTextureDiffuseColor() & 0xFFFFFF;
     }
   }
 
@@ -137,26 +105,13 @@ public class MiscUtil {
   }
 
   /**
-   * Gets the color from the given stack
+   * Gets the color from the given stack, the {@code minecraft:dyed_color} component
    * @param stack  Stack
-   * @return  Stack color
+   * @return  Stack color, -1 if none
    */
   public static int getColor(ItemStack stack) {
-    Item item = stack.getItem();
-    // use the interface if present
-    if (item instanceof DyeableLeatherItem) {
-      return ((DyeableLeatherItem) item).getColor(stack);
-    }
-
-    // default to NBT
-    CompoundTag tags = stack.getTag();
-    if (tags != null) {
-      CompoundTag display = tags.getCompound(TAG_DISPLAY);
-      if (display.contains(TAG_COLOR, Tag.TAG_INT)) {
-        return display.getInt(TAG_COLOR);
-      }
-    }
-    return -1;
+    DyedItemColor color = stack.get(DataComponents.DYED_COLOR);
+    return color != null ? color.rgb() : -1;
   }
 
   /**
@@ -165,13 +120,7 @@ public class MiscUtil {
    * @return  True if it has color
    */
   public static boolean hasColor(ItemStack stack) {
-    Item item = stack.getItem();
-    // use the interface if present
-    if (item instanceof DyeableLeatherItem) {
-      return ((DyeableLeatherItem) item).hasCustomColor(stack);
-    }
-    CompoundTag tags = stack.getTagElement(TAG_COLOR);
-    return tags != null && tags.contains(TAG_COLOR, Tag.TAG_ANY_NUMERIC);
+    return stack.has(DataComponents.DYED_COLOR);
   }
 
   /**
@@ -181,13 +130,7 @@ public class MiscUtil {
    * @return  Stack with color
    */
   public static ItemStack setColor(ItemStack stack, int color) {
-    Item item = stack.getItem();
-    // use the interface if present
-    if (item instanceof DyeableLeatherItem) {
-      ((DyeableLeatherItem) item).setColor(stack, color);
-    } else {
-      stack.getOrCreateTagElement(TAG_DISPLAY).putInt(TAG_COLOR, color);
-    }
+    stack.set(DataComponents.DYED_COLOR, new DyedItemColor(color & 0xFFFFFF, true));
     return stack;
   }
 
@@ -197,33 +140,8 @@ public class MiscUtil {
    * @return  Stack without color
    */
   public static ItemStack clearColor(ItemStack stack) {
-    Item item = stack.getItem();
-    // use the interface if present
-    if (item instanceof DyeableLeatherItem dyeable) {
-      dyeable.clearColor(stack);
-    } else {
-      CompoundTag displayTag = stack.getTagElement(TAG_DISPLAY);
-      if (displayTag != null && displayTag.contains(TAG_COLOR)) {
-        displayTag.remove(TAG_COLOR);
-      }
-    }
+    stack.remove(DataComponents.DYED_COLOR);
     return stack;
-  }
-
-  /**
-   * Reads an iem from a string
-   * @param parent  Parent object
-   * @param key     JSON key of object
-   * @return  Item
-   * @throws JsonSyntaxException  If item is invalid or missing
-   */
-  public static Item deserializeItem(JsonObject parent, String key) {
-    String name = GsonHelper.getAsString(parent, key);
-    Item item = ForgeRegistries.ITEMS.getValue(new ResourceLocation(name));
-    if (item == null) {
-      throw new JsonSyntaxException("Invalid " + key + ": Unknown item " + name + "'");
-    }
-    return item;
   }
 
   /**

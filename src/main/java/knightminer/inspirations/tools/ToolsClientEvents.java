@@ -11,13 +11,13 @@ import knightminer.inspirations.tools.client.RedstoneArrowRenderer;
 import net.minecraft.client.color.item.ItemColors;
 import net.minecraft.client.renderer.item.ItemProperties;
 import net.minecraft.resources.ResourceLocation;
-import net.minecraftforge.api.distmarker.Dist;
-import net.minecraftforge.client.event.RegisterColorHandlersEvent;
-import net.minecraftforge.client.event.EntityRenderersEvent;
-import net.minecraftforge.eventbus.api.SubscribeEvent;
-import net.minecraftforge.fml.common.Mod.EventBusSubscriber;
-import net.minecraftforge.fml.common.Mod.EventBusSubscriber.Bus;
-import net.minecraftforge.fml.event.lifecycle.FMLClientSetupEvent;
+import net.neoforged.api.distmarker.Dist;
+import net.neoforged.neoforge.client.event.RegisterColorHandlersEvent;
+import net.neoforged.neoforge.client.event.EntityRenderersEvent;
+import net.neoforged.bus.api.SubscribeEvent;
+import net.neoforged.fml.common.EventBusSubscriber;
+import net.neoforged.fml.common.EventBusSubscriber.Bus;
+import net.neoforged.fml.event.lifecycle.FMLClientSetupEvent;
 
 @SuppressWarnings("unused")
 @EventBusSubscriber(modid = Inspirations.modID, value = Dist.CLIENT, bus = Bus.MOD)
@@ -32,7 +32,7 @@ public class ToolsClientEvents extends AbstractClientEvents {
     registerModelProperty(InspirationsTools.dimensionCompass, "angle", new DimensionCompassPropertyGetter());
     // re-register shield blocking with registry sub shield, not strictly needed unless certain mods decide to register their properties before regsitry events
     if (InspirationsTools.shield != null) {
-      ItemProperties.register(InspirationsTools.shield, new ResourceLocation("blocking"),
+      ItemProperties.register(InspirationsTools.shield, ResourceLocation.parse("blocking"),
                            (stack, world, entity, seed) -> entity != null && entity.isUsingItem() && entity.getUseItem() == stack ? 1.0F : 0.0F);
     }
   }

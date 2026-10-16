@@ -86,30 +86,30 @@ import net.minecraft.world.level.block.state.BlockBehaviour;
 import net.minecraft.world.level.block.state.BlockBehaviour.Properties;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.material.MapColor;
-import net.minecraftforge.common.ForgeMod;
-import net.minecraftforge.common.SoundActions;
-import net.minecraftforge.common.Tags;
-import net.minecraftforge.common.brewing.BrewingRecipeRegistry;
-import net.minecraftforge.data.event.GatherDataEvent;
-import net.minecraftforge.eventbus.api.SubscribeEvent;
-import net.minecraftforge.fluids.FluidStack;
-import net.minecraftforge.fluids.FluidType;
-import net.minecraftforge.fluids.ForgeFlowingFluid;
-import net.minecraftforge.fml.event.lifecycle.FMLCommonSetupEvent;
-import net.minecraftforge.registries.ForgeRegistries;
-import net.minecraftforge.registries.GameData;
-import net.minecraftforge.registries.RegisterEvent;
+import net.neoforged.neoforge.common.NeoForgeMod;
+import net.neoforged.neoforge.common.SoundActions;
+import net.neoforged.neoforge.common.Tags;
+import net.neoforged.neoforge.common.brewing.BrewingRecipeRegistry;
+import net.neoforged.neoforge.data.event.GatherDataEvent;
+import net.neoforged.bus.api.SubscribeEvent;
+import net.neoforged.neoforge.fluids.FluidStack;
+import net.neoforged.neoforge.fluids.FluidType;
+import net.neoforged.neoforge.fluids.BaseFlowingFluid;
+import net.neoforged.fml.event.lifecycle.FMLCommonSetupEvent;
+import net.minecraft.core.registries.BuiltInRegistries;
+import net.neoforged.neoforge.registries.GameData;
+import net.neoforged.neoforge.registries.RegisterEvent;
 import slimeknights.mantle.datagen.MantleTags;
 import slimeknights.mantle.datagen.MantleValues;
 import slimeknights.mantle.fluid.TextureFluidType;
 import slimeknights.mantle.item.ContainerFoodItem.FluidContainerFoodItem;
-import slimeknights.mantle.registration.FluidBuilder;
-import slimeknights.mantle.registration.adapter.BlockEntityTypeRegistryAdapter;
-import slimeknights.mantle.registration.adapter.BlockRegistryAdapter;
-import slimeknights.mantle.registration.adapter.FluidRegistryAdapter;
-import slimeknights.mantle.registration.adapter.ItemRegistryAdapter;
-import slimeknights.mantle.registration.adapter.RegistryAdapter;
-import slimeknights.mantle.registration.object.EnumObject;
+import knightminer.inspirations.common.registration.FluidBuilder;
+import knightminer.inspirations.common.registration.BlockEntityTypeRegistryAdapter;
+import knightminer.inspirations.common.registration.BlockRegistryAdapter;
+import knightminer.inspirations.common.registration.FluidRegistryAdapter;
+import knightminer.inspirations.common.registration.ItemRegistryAdapter;
+import knightminer.inspirations.common.registration.RegistryAdapter;
+import knightminer.inspirations.common.registration.EnumObject;
 
 import javax.annotation.Nullable;
 import java.util.ArrayList;
@@ -169,34 +169,34 @@ public class InspirationsCaudrons extends ModuleBase {
   // fluids
   // mushroom
   public static FluidType mushroomStewType;
-  public static ForgeFlowingFluid mushroomStew;
+  public static BaseFlowingFluid mushroomStew;
   public static BucketItem mushroomStewBucket;
   public static LiquidBlock mushroomStewBlock;
   // beetroot
   public static FluidType beetrootSoupType;
-  public static ForgeFlowingFluid beetrootSoup;
+  public static BaseFlowingFluid beetrootSoup;
   public static BucketItem beetrootSoupBucket;
   public static LiquidBlock beetrootSoupBlock;
   // rabbit
   public static FluidType rabbitStewType;
-  public static ForgeFlowingFluid rabbitStew;
+  public static BaseFlowingFluid rabbitStew;
   public static BucketItem rabbitStewBucket;
   public static LiquidBlock rabbitStewBlock;
   // potato
   public static FluidType potatoSoupType;
-  public static ForgeFlowingFluid potatoSoup;
+  public static BaseFlowingFluid potatoSoup;
   public static BucketItem potatoSoupBucket;
   public static LiquidBlock potatoSoupBlock;
   // honey
   public static FluidType honeyType;
-  public static ForgeFlowingFluid honey;
+  public static BaseFlowingFluid honey;
   public static BucketItem honeyBucket;
   public static LiquidBlock honeyFluidBlock;
 
   public static SimpleParticleType boilingParticle;
 
   public InspirationsCaudrons() {
-    ForgeMod.enableMilkFluid();
+    NeoForgeMod.enableMilkFluid();
   }
 
   @SubscribeEvent
@@ -211,7 +211,7 @@ public class InspirationsCaudrons extends ModuleBase {
       honeyType = adapter.register(new TextureFluidType(fluidBuilder("honey").temperature(373).viscosity(4000)), "honey");
     }
     else if (registryKey == Registries.FLUID) {
-      FluidRegistryAdapter adapter = new FluidRegistryAdapter(ForgeRegistries.FLUIDS);
+      FluidRegistryAdapter adapter = new FluidRegistryAdapter(BuiltInRegistries.FLUID);
 
       mushroomStew = adapter.register(FluidBuilder.create(() -> mushroomStewType).block(() -> mushroomStewBlock).bucket(() -> mushroomStewBucket), "mushroom_stew");
       beetrootSoup = adapter.register(FluidBuilder.create(() -> beetrootSoupType).block(() -> beetrootSoupBlock).bucket(() -> beetrootSoupBucket), "beetroot_soup");
@@ -220,7 +220,7 @@ public class InspirationsCaudrons extends ModuleBase {
       honey = adapter.register(FluidBuilder.create(() -> honeyType).block(() -> honeyFluidBlock).bucket(() -> honeyBucket), "honey");
     }
     else if (registryKey == Registries.BLOCK) {
-      BlockRegistryAdapter registry = new BlockRegistryAdapter(ForgeRegistries.BLOCKS);
+      BlockRegistryAdapter registry = new BlockRegistryAdapter(BuiltInRegistries.BLOCK);
 
       BlockBehaviour.Properties cauldronProps = Properties.copy(Blocks.CAULDRON);
       mushroomStewCauldron = registry.register(new BoilingFourLayerCauldronBlock(cauldronProps, MUSHROOM_STEW_CAULDRON_INTERACTIONS), "mushroom_stew_cauldron");
@@ -245,14 +245,14 @@ public class InspirationsCaudrons extends ModuleBase {
       }
     }
     else if (registryKey == Registries.BLOCK_ENTITY_TYPE) {
-      BlockEntityTypeRegistryAdapter registry = new BlockEntityTypeRegistryAdapter(ForgeRegistries.BLOCK_ENTITY_TYPES);
+      BlockEntityTypeRegistryAdapter registry = new BlockEntityTypeRegistryAdapter(BuiltInRegistries.BLOCK_ENTITY_TYPE);
 
       dyeCauldronEntity = registry.register(DyeCauldronBlockEntity::new, dyeCauldron, "dye_cauldron");
       potionCauldronEntity = registry.register(PotionCauldronBlockEntity::new, potionCauldron, "potion_cauldron");
       suspiciousStewCauldronEntity = registry.register(SuspiciousStewCauldronBlockEntity::new, suspiciousStewCauldron, "suspicious_stew_cauldron");
     }
     else if (registryKey == Registries.ITEM) {
-      ItemRegistryAdapter registry = new ItemRegistryAdapter(ForgeRegistries.ITEMS);
+      ItemRegistryAdapter registry = new ItemRegistryAdapter(BuiltInRegistries.ITEM);
 
       // buckets
       mushroomStewBucket = registry.registerBucket(() -> mushroomStew, "mushroom_stew");
@@ -279,7 +279,7 @@ public class InspirationsCaudrons extends ModuleBase {
       mixedDyedWaterBottle = registry.register(new MixedDyedBottleItem(bottleProps), "mixed_dyed_bottle");
     }
     else if (registryKey == Registries.PARTICLE_TYPE) {
-      RegistryAdapter<ParticleType<?>> registry = new RegistryAdapter<>(ForgeRegistries.PARTICLE_TYPES);
+      RegistryAdapter<ParticleType<?>> registry = new RegistryAdapter<>(BuiltInRegistries.PARTICLE_TYPE);
       boilingParticle = registry.register(new SimpleParticleType(false), "boiling");
     }
   }
@@ -299,7 +299,7 @@ public class InspirationsCaudrons extends ModuleBase {
   void commonSetup(FMLCommonSetupEvent event) {
     // get a list of all cauldrons
     List<AbstractCauldronBlock> allCauldrons = new ArrayList<>();
-    for (Block block : ForgeRegistries.BLOCKS) {
+    for (Block block : BuiltInRegistries.BLOCK) {
       if (block instanceof AbstractCauldronBlock cauldron) {
         allCauldrons.add(cauldron);
       }
@@ -602,7 +602,7 @@ public class InspirationsCaudrons extends ModuleBase {
                   }, true), Items.WHITE_SHULKER_BOX, Items.ORANGE_SHULKER_BOX, Items.MAGENTA_SHULKER_BOX, Items.LIGHT_BLUE_SHULKER_BOX, Items.YELLOW_SHULKER_BOX, Items.LIME_SHULKER_BOX, Items.PINK_SHULKER_BOX, Items.GRAY_SHULKER_BOX,
                   Items.LIGHT_GRAY_SHULKER_BOX, Items.CYAN_SHULKER_BOX, Items.PURPLE_SHULKER_BOX, Items.BLUE_SHULKER_BOX, Items.BROWN_SHULKER_BOX, Items.GREEN_SHULKER_BOX, Items.RED_SHULKER_BOX, Items.BLACK_SHULKER_BOX);
         // dye the leather
-        addToList(DYE_CAULDRON_INTERACTIONS, DyeLeatherItemCauldronInteraction.INSTANCE, ForgeRegistries.ITEMS.getValues().stream().filter(item -> item instanceof DyeableLeatherItem).toArray(Item[]::new));
+        addToList(DYE_CAULDRON_INTERACTIONS, DyeLeatherItemCauldronInteraction.INSTANCE, BuiltInRegistries.ITEM.getValues().stream().filter(item -> item instanceof DyeableLeatherItem).toArray(Item[]::new));
       }
 
       // potion cauldrons

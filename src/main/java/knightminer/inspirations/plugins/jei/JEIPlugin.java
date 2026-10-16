@@ -12,7 +12,7 @@ import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.item.DyeableLeatherItem;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.ItemLike;
-import slimeknights.mantle.util.RetexturedHelper;
+import dev.vladeezyy.kilnwork.retexture.RetexturedHelper;
 
 import java.util.function.Consumer;
 

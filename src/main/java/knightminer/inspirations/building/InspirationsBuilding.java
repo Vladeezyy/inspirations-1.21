@@ -44,17 +44,16 @@ import net.minecraft.world.level.block.state.BlockBehaviour.Properties;
 import net.minecraft.world.level.block.state.properties.NoteBlockInstrument;
 import net.minecraft.world.level.material.MapColor;
 import net.minecraft.world.level.material.PushReaction;
-import net.minecraftforge.data.event.GatherDataEvent;
-import net.minecraftforge.event.LootTableLoadEvent;
-import net.minecraftforge.eventbus.api.SubscribeEvent;
-import net.minecraftforge.fml.event.lifecycle.FMLCommonSetupEvent;
-import net.minecraftforge.registries.ForgeRegistries;
-import net.minecraftforge.registries.RegisterEvent;
-import slimeknights.mantle.registration.adapter.BlockEntityTypeRegistryAdapter;
-import slimeknights.mantle.registration.adapter.BlockRegistryAdapter;
-import slimeknights.mantle.registration.adapter.ContainerTypeRegistryAdapter;
-import slimeknights.mantle.registration.adapter.ItemRegistryAdapter;
-import slimeknights.mantle.registration.object.EnumObject;
+import net.neoforged.neoforge.data.event.GatherDataEvent;
+import net.neoforged.neoforge.event.LootTableLoadEvent;
+import net.neoforged.bus.api.SubscribeEvent;
+import net.neoforged.fml.event.lifecycle.FMLCommonSetupEvent;
+import net.neoforged.neoforge.registries.RegisterEvent;
+import knightminer.inspirations.common.registration.BlockEntityTypeRegistryAdapter;
+import knightminer.inspirations.common.registration.BlockRegistryAdapter;
+import knightminer.inspirations.common.registration.ContainerTypeRegistryAdapter;
+import knightminer.inspirations.common.registration.ItemRegistryAdapter;
+import knightminer.inspirations.common.registration.EnumObject;
 
 import java.util.function.Supplier;
 
@@ -96,17 +95,17 @@ public class InspirationsBuilding extends ModuleBase {
   void register(RegisterEvent event) {
     ResourceKey<? extends Registry<?>> registryKey = event.getRegistryKey();
     if (registryKey == Registries.BLOCK_ENTITY_TYPE) {
-      BlockEntityTypeRegistryAdapter registry = new BlockEntityTypeRegistryAdapter(ForgeRegistries.BLOCK_ENTITY_TYPES);
+      BlockEntityTypeRegistryAdapter registry = new BlockEntityTypeRegistryAdapter(BuiltInRegistries.BLOCK_ENTITY_TYPE);
 
       shelfTileEntity = registry.register(ShelfBlockEntity::new, shelf, "bookshelf");
       enlightenedBushTileEntity = registry.register(EnlightenedBushBlockEntity::new, enlightenedBush, "enlightened_bush");
     }
     else if (registryKey == Registries.MENU) {
-      ContainerTypeRegistryAdapter registry = new ContainerTypeRegistryAdapter(ForgeRegistries.MENU_TYPES);
+      ContainerTypeRegistryAdapter registry = new ContainerTypeRegistryAdapter(BuiltInRegistries.MENU);
       shelfContainer = registry.registerType(ShelfContainerMenu::new, "shelf");
     }
     else if (registryKey == Registries.BLOCK) {
-      BlockRegistryAdapter registry = new BlockRegistryAdapter(ForgeRegistries.BLOCKS);
+      BlockRegistryAdapter registry = new BlockRegistryAdapter(BuiltInRegistries.BLOCK);
 
       // normal shelf uses a less regular naming
       BlockBehaviour.Properties shelfProps = Block.Properties.of().mapColor(MapColor.WOOD).ignitedByLava().instrument(NoteBlockInstrument.BASS).strength(2.0F, 5.0F).sound(SoundType.WOOD).noOcclusion();
@@ -161,7 +160,7 @@ public class InspirationsBuilding extends ModuleBase {
       }, "potted", FlowerType.values());
     }
     else if (registryKey == Registries.ITEM) {
-      ItemRegistryAdapter registry = new ItemRegistryAdapter(ForgeRegistries.ITEMS);
+      ItemRegistryAdapter registry = new ItemRegistryAdapter(BuiltInRegistries.ITEM);
       // common props
       Item.Properties props = new Item.Properties();
 

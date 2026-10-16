@@ -11,11 +11,11 @@ import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.item.alchemy.Potion;
 import net.minecraft.world.item.alchemy.Potions;
 import net.minecraft.world.level.block.state.BlockState;
-import slimeknights.mantle.block.entity.MantleBlockEntity;
+import dev.vladeezyy.kilnwork.block.SyncedBlockEntity;
 import slimeknights.mantle.data.loadable.Loadables;
 
 /** Block entity for a cauldron that also holds a potion */
-public class PotionCauldronBlockEntity extends MantleBlockEntity {
+public class PotionCauldronBlockEntity extends SyncedBlockEntity {
 	private static final String TAG_POTION = "potion";
 	private Potion potion = Potions.EMPTY;
 	public PotionCauldronBlockEntity(BlockPos pos, BlockState state) {

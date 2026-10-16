@@ -36,9 +36,9 @@ import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.phys.shapes.CollisionContext;
 import net.minecraft.world.phys.shapes.Shapes;
 import net.minecraft.world.phys.shapes.VoxelShape;
-import net.minecraftforge.network.NetworkHooks;
-import slimeknights.mantle.block.InventoryBlock;
-import slimeknights.mantle.util.BlockEntityHelper;
+import net.neoforged.neoforge.network.NetworkHooks;
+import dev.vladeezyy.kilnwork.block.InventoryBlock;
+import dev.vladeezyy.kilnwork.util.BlockEntityHelper;
 
 import javax.annotation.Nullable;
 

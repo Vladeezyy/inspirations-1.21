@@ -8,12 +8,12 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.world.item.DyeColor;
 import net.minecraft.world.level.block.state.BlockState;
-import slimeknights.mantle.block.entity.MantleBlockEntity;
+import dev.vladeezyy.kilnwork.block.SyncedBlockEntity;
 
 import javax.annotation.Nullable;
 
 /** Block entity for a cauldron that also holds a color */
-public class DyeCauldronBlockEntity extends MantleBlockEntity {
+public class DyeCauldronBlockEntity extends SyncedBlockEntity {
 	private static final String TAG_COLOR = "color";
 	private int color;
 	private boolean dyeDirty = true;

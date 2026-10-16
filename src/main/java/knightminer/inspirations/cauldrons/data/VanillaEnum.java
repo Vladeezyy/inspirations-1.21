@@ -4,7 +4,7 @@ import knightminer.inspirations.common.InspirationsCommons;
 import net.minecraft.world.item.DyeColor;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.Blocks;
-import slimeknights.mantle.registration.object.EnumObject;
+import knightminer.inspirations.common.registration.EnumObject;
 
 /**
  * Class containing {@link EnumObject} instances for many colored vanilla blocks.

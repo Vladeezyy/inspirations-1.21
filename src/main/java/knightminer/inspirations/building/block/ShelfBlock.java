@@ -30,8 +30,8 @@ import net.minecraft.world.phys.shapes.BooleanOp;
 import net.minecraft.world.phys.shapes.CollisionContext;
 import net.minecraft.world.phys.shapes.Shapes;
 import net.minecraft.world.phys.shapes.VoxelShape;
-import slimeknights.mantle.block.InventoryBlock;
-import slimeknights.mantle.block.RetexturedBlock;
+import dev.vladeezyy.kilnwork.block.InventoryBlock;
+import dev.vladeezyy.kilnwork.retexture.RetexturedBlock;
 
 import javax.annotation.Nullable;
 import java.util.Map;

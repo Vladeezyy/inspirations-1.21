@@ -1,23 +1,23 @@
 package knightminer.inspirations.common;
 
 import knightminer.inspirations.Inspirations;
-import net.minecraftforge.common.ForgeConfigSpec;
-import net.minecraftforge.common.ForgeConfigSpec.BooleanValue;
-import net.minecraftforge.common.ForgeConfigSpec.Builder;
-import net.minecraftforge.common.ForgeConfigSpec.ConfigValue;
-import net.minecraftforge.fml.config.IConfigSpec;
-import net.minecraftforge.fml.config.ModConfig;
-import net.minecraftforge.fml.event.config.ModConfigEvent;
+import net.neoforged.neoforge.common.ModConfigSpec;
+import net.neoforged.neoforge.common.ModConfigSpec.BooleanValue;
+import net.neoforged.neoforge.common.ModConfigSpec.Builder;
+import net.neoforged.neoforge.common.ModConfigSpec.ConfigValue;
+import net.neoforged.fml.config.IConfigSpec;
+import net.neoforged.fml.config.ModConfig;
+import net.neoforged.fml.event.config.ModConfigEvent;
 
 import java.util.function.BooleanSupplier;
 
 public class Config {
   /** Config for anything that affects gameplay */
-  public static final ForgeConfigSpec SERVER_SPEC;
+  public static final ModConfigSpec SERVER_SPEC;
   /** Config for anything that is visual only */
-  public static final ForgeConfigSpec CLIENT_SPEC;
+  public static final ModConfigSpec CLIENT_SPEC;
   /** Config for things affecting gameplay that must load before registration */
-  public static final ForgeConfigSpec COMMON_SPEC;
+  public static final ModConfigSpec COMMON_SPEC;
 
   // modules
   public static final BooleanValue buildingModule;
@@ -419,10 +419,10 @@ public class Config {
    * Function called when the config changes to update internal properties
    * @param configEvent  Event
    */
-  public static void configChanged(final ModConfigEvent configEvent) {
+  public static void configChanged(final ModConfigEvent.Loading configEvent) {
     ModConfig config = configEvent.getConfig();
     if (config.getModId().equals(Inspirations.modID)) {
-      IConfigSpec<?> spec = config.getSpec();
+      IConfigSpec spec = config.getSpec();
       if (spec == Config.SERVER_SPEC) {
         loaded = true;
       }
@@ -433,13 +433,25 @@ public class Config {
   /* Helpers */
 
   /**
+   * Reads a value, or its default if the config is not loaded yet. Server configs load after the datapacks of a new
+   * world and are synced to clients only when they join, so recipe conditions and creative tabs may run before.
+   */
+  public static boolean get(BooleanValue value) {
+    try {
+      return value.get();
+    } catch (IllegalStateException e) {
+      return value.getDefault();
+    }
+  }
+
+  /**
    * Creates a cached config value by anding two config values
    * @param first   First config value, typically a module
    * @param second  Property config value
    * @return  Cached config value
    */
   private static BooleanSupplier and(BooleanValue first, BooleanValue second) {
-    return () -> first.get() && second.get();
+    return () -> get(first) && get(second);
   }
 
   /**
@@ -449,7 +461,7 @@ public class Config {
    * @return  Cached config value
    */
   private static BooleanSupplier and(BooleanSupplier first, BooleanValue second) {
-    return () -> first.getAsBoolean() && second.get();
+    return () -> first.getAsBoolean() && get(second);
   }
 
   /**
@@ -470,7 +482,7 @@ public class Config {
    * @return  Cached config value
    */
   private static BooleanSupplier and(BooleanValue first, BooleanValue second, BooleanValue third) {
-    return () -> first.get() && second.get() && third.get();
+    return () -> get(first) && get(second) && get(third);
   }
 
   /**
@@ -481,6 +493,6 @@ public class Config {
    * @return  Cached config value
    */
   private static BooleanSupplier and(BooleanSupplier first, BooleanValue second, BooleanValue third) {
-    return () -> first.getAsBoolean() && second.get() && third.get();
+    return () -> first.getAsBoolean() && get(second) && get(third);
   }
 }

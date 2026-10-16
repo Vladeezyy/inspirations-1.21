@@ -1,9 +1,5 @@
 package knightminer.inspirations.library.client;
 
-import com.mojang.blaze3d.vertex.BufferBuilder;
-import com.mojang.blaze3d.vertex.DefaultVertexFormat;
-import com.mojang.blaze3d.vertex.Tesselator;
-import com.mojang.blaze3d.vertex.VertexFormat.Mode;
 import knightminer.inspirations.Inspirations;
 import knightminer.inspirations.library.InspirationsRegistry;
 import net.minecraft.client.Minecraft;
@@ -21,10 +17,9 @@ import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.BlockAndTintGetter;
 import net.minecraft.world.level.block.state.BlockState;
-import net.minecraftforge.client.model.data.ModelData;
+import net.neoforged.neoforge.client.model.data.ModelData;
 import org.apache.commons.lang3.math.NumberUtils;
-import org.apache.commons.lang3.text.WordUtils;
-import slimeknights.mantle.data.loadable.Loadables;
+import net.minecraft.core.registries.BuiltInRegistries;
 
 import javax.annotation.Nullable;
 import java.awt.Color;
@@ -76,7 +71,8 @@ public final class ClientUtil {
           int cb = argb >> 16 & 0xFF;
           int ca = argb >> 24 & 0xFF;
           if (ca > 0x7F && NumberUtils.max(cr, cg, cb) > 0x1F) {
-            Color.RGBtoHSB(ca, cr, cg, hsb);
+            // 1.20 passed (alpha, red, green), weighting pixels by the wrong saturation
+            Color.RGBtoHSB(cr, cg, cb, hsb);
             float weight = hsb[1];
             r += cr * weight;
             g += cg * weight;
@@ -88,7 +84,7 @@ public final class ClientUtil {
     } catch (Exception e) {
       // there is a random bug where models do not properly load, leading to a null frame data
       // so just catch that and treat it as another error state
-      InspirationsRegistry.log.error("Caught exception reading sprite for {}", Loadables.ITEM.getKey(key), e);
+      InspirationsRegistry.log.error("Caught exception reading sprite for {}", BuiltInRegistries.ITEM.getKey(key), e);
       return -1;
     }
     if (count > 0) {
@@ -108,33 +104,6 @@ public final class ClientUtil {
       return atlas.getSprite(MissingTextureAtlasSprite.getLocation());
     }
     return atlas.getSprite(location);
-  }
-
-  /**
-   * Used to render fluid sprites in the JEI interface
-   * @param sprite Sprite to render
-   * @param x      Sprite X position
-   * @param y      Sprite Y position
-   * @param size   Sprite size in pixels
-   * @param filled Amount of sprite filled in pixels
-   */
-  public static void renderFilledSprite(TextureAtlasSprite sprite, final int x, final int y, final int size, final int filled) {
-    float uMin = sprite.getU0();
-    float uMax = sprite.getU1();
-    float vMin = sprite.getV0();
-    float vMax = sprite.getV1();
-    uMax = uMax - (16 - size) / 16.0f * (uMax - uMin);
-    vMax = vMax - (16 - filled) / 16.0f * (vMax - vMin);
-
-    Tesselator tessellator = Tesselator.getInstance();
-    BufferBuilder bufferBuilder = tessellator.getBuilder();
-
-    bufferBuilder.begin(Mode.QUADS, DefaultVertexFormat.POSITION_TEX);
-    bufferBuilder.vertex(x, y + size, 100).uv(uMin, vMax).endVertex();
-    bufferBuilder.vertex(x + size, y + size, 100).uv(uMax, vMax).endVertex();
-    bufferBuilder.vertex(x + size, y + size - filled, 100).uv(uMax, vMin).endVertex();
-    bufferBuilder.vertex(x, y + size - filled, 100).uv(uMin, vMin).endVertex();
-    tessellator.end();
   }
 
   /**
@@ -162,7 +131,7 @@ public final class ClientUtil {
         return getStackBlockColors(stack, world, pos, index);
       } catch (Exception e) {
         // catch and log possible exceptions. Most likely exception is ClassCastException if they do not perform safety checks
-        Inspirations.log.error("Caught exception getting block colors for {}", Loadables.ITEM.getKey(item), e);
+        Inspirations.log.error("Caught exception getting block colors for {}", BuiltInRegistries.ITEM.getKey(item), e);
         UNSAFE_COLORS.add(item);
       }
     }
@@ -185,17 +154,6 @@ public final class ClientUtil {
     }
     BlockState state = item.getBlock().defaultBlockState();
     return mc.getBlockColors().getColor(state, world, pos, index);
-  }
-
-  private static final Map<String,String> NORMALIZED_NAMES = new HashMap<>();
-
-  /**
-   * Normalizes a name by replacing underscores with spaces and capitalizing first letters
-   * @param name Name to normalize
-   * @return Normalized name
-   */
-  public static String normalizeName(String name) {
-    return NORMALIZED_NAMES.computeIfAbsent(name, (s) -> WordUtils.capitalizeFully(name.replace('_', ' ')));
   }
 
   /** Reload listener for client utils */

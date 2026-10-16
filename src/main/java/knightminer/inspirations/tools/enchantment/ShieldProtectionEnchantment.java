@@ -5,7 +5,7 @@ import net.minecraft.world.entity.EquipmentSlot;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.enchantment.ProtectionEnchantment;
-import net.minecraftforge.common.ToolActions;
+import net.neoforged.neoforge.common.ItemAbilities;
 
 import java.util.Map;
 
@@ -16,7 +16,7 @@ public class ShieldProtectionEnchantment extends ProtectionEnchantment {
 
   @Override
   public boolean canApplyAtEnchantingTable(ItemStack stack) {
-    return stack.canPerformAction(ToolActions.SHIELD_BLOCK) || super.canApplyAtEnchantingTable(stack);
+    return stack.canPerformAction(ItemAbilities.SHIELD_BLOCK) || super.canApplyAtEnchantingTable(stack);
   }
 
   @Override

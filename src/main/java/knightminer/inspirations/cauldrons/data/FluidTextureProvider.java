@@ -4,7 +4,7 @@ import knightminer.inspirations.Inspirations;
 import knightminer.inspirations.cauldrons.InspirationsCaudrons;
 import net.minecraft.data.PackOutput;
 import net.minecraft.resources.ResourceLocation;
-import net.minecraftforge.fluids.FluidType;
+import net.neoforged.neoforge.fluids.FluidType;
 import slimeknights.mantle.fluid.texture.AbstractFluidTextureProvider;
 import slimeknights.mantle.fluid.texture.FluidTexture;
 

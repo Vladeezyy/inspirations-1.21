@@ -8,7 +8,7 @@ import net.minecraft.tags.TagKey;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.material.Fluid;
-import slimeknights.mantle.Mantle;
+import net.minecraft.resources.ResourceLocation;
 
 public class InspirationsTags {
   public static class Blocks {
@@ -74,18 +74,18 @@ public class InspirationsTags {
       return ItemTags.create(Inspirations.getResource(name));
     }
     private static TagKey<Item> commonTag(String name) {
-      return ItemTags.create(Mantle.commonResource(name));
+      return ItemTags.create(ResourceLocation.fromNamespaceAndPath("c", name));
     }
   }
 
   public static class Fluids {
-    /** Contains Inspirations honey fluids (still and flowing)). See {@link slimeknights.mantle.datagen.MantleTags} for common. */
+    /** Contains Inspirations honey fluids (still and flowing)). The common tag is {@code c:<name>}. */
     public static final TagKey<Fluid> HONEY = tag("honey");
-    /** Contains Inspirations beetroot soup fluids (still and flowing)). See {@link slimeknights.mantle.datagen.MantleTags} for common. */
+    /** Contains Inspirations beetroot soup fluids (still and flowing)). The common tag is {@code c:<name>}. */
     public static final TagKey<Fluid> BEETROOT_SOUP = tag("beetroot_soup");
-    /** Contains Inspirations mushroom stew fluids (still and flowing)). See {@link slimeknights.mantle.datagen.MantleTags} for common. */
+    /** Contains Inspirations mushroom stew fluids (still and flowing)). The common tag is {@code c:<name>}. */
     public static final TagKey<Fluid> MUSHROOM_STEW = tag("mushroom_stew");
-    /** Contains Inspirations rabbit stew fluids (still and flowing). See {@link slimeknights.mantle.datagen.MantleTags} for common. */
+    /** Contains Inspirations rabbit stew fluids (still and flowing). The common tag is {@code c:<name>}. */
     public static final TagKey<Fluid> RABBIT_STEW = tag("rabbit_stew");
     /** Contains Inspirations potato soup fluids (still and flowing) */
     public static final TagKey<Fluid> POTATO_SOUP = tag("potato_soup");

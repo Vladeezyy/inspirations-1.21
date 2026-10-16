@@ -17,7 +17,7 @@ import net.minecraft.world.level.storage.loot.LootPool;
 import net.minecraft.world.level.storage.loot.LootTable;
 import net.minecraft.world.level.storage.loot.entries.LootTableReference;
 import net.minecraft.world.level.storage.loot.providers.number.ConstantValue;
-import net.minecraftforge.event.LootTableLoadEvent;
+import net.neoforged.neoforge.event.LootTableLoadEvent;
 
 import javax.annotation.Nullable;
 

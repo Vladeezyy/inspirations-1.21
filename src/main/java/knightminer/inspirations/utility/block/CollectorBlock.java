@@ -23,10 +23,10 @@ import net.minecraft.world.level.block.state.StateDefinition;
 import net.minecraft.world.level.block.state.properties.BlockStateProperties;
 import net.minecraft.world.level.block.state.properties.BooleanProperty;
 import net.minecraft.world.level.block.state.properties.DirectionProperty;
-import net.minecraftforge.common.capabilities.ForgeCapabilities;
-import net.minecraftforge.items.ItemHandlerHelper;
-import net.minecraftforge.network.NetworkHooks;
-import slimeknights.mantle.block.InventoryBlock;
+import net.neoforged.neoforge.capabilities.Capabilities;
+import net.neoforged.neoforge.items.ItemHandlerHelper;
+import net.neoforged.neoforge.network.NetworkHooks;
+import dev.vladeezyy.kilnwork.block.InventoryBlock;
 
 import javax.annotation.Nullable;
 
@@ -117,7 +117,7 @@ public class CollectorBlock extends InventoryBlock {
   public int getAnalogOutputSignal(BlockState blockState, Level world, BlockPos pos) {
     BlockEntity te = world.getBlockEntity(pos);
     if (te != null) {
-      return te.getCapability(ForgeCapabilities.ITEM_HANDLER, null).map(
+      return te.getCapability(Capabilities.ITEM_HANDLER, null).map(
           ItemHandlerHelper::calcRedstoneFromInventory
                                                                        ).orElse(0);
     }

@@ -5,7 +5,7 @@ import knightminer.inspirations.utility.block.entity.PipeBlockEntity;
 import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.inventory.Slot;
-import slimeknights.mantle.inventory.BaseContainerMenu;
+import dev.vladeezyy.kilnwork.inventory.BaseContainerMenu;
 
 import javax.annotation.Nullable;
 

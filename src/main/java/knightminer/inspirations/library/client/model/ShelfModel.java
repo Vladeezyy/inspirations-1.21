@@ -30,16 +30,15 @@ import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.state.BlockState;
-import net.minecraftforge.client.model.data.ModelData;
-import net.minecraftforge.client.model.geometry.IGeometryBakingContext;
-import net.minecraftforge.client.model.geometry.IGeometryLoader;
-import net.minecraftforge.client.model.geometry.IUnbakedGeometry;
-import slimeknights.mantle.client.model.RetexturedModel;
-import slimeknights.mantle.client.model.RetexturedModel.RetexturedContext;
-import slimeknights.mantle.client.model.util.DynamicBakedWrapper;
-import slimeknights.mantle.client.model.util.ModelHelper;
-import slimeknights.mantle.client.model.util.SimpleBlockModel;
-import slimeknights.mantle.util.RetexturedHelper;
+import net.neoforged.neoforge.client.model.data.ModelData;
+import net.neoforged.neoforge.client.model.geometry.IGeometryBakingContext;
+import net.neoforged.neoforge.client.model.geometry.IGeometryLoader;
+import net.neoforged.neoforge.client.model.geometry.IUnbakedGeometry;
+import dev.vladeezyy.kilnwork.client.model.RetexturedModel;
+import dev.vladeezyy.kilnwork.client.model.DynamicBakedWrapper;
+import dev.vladeezyy.kilnwork.client.model.ModelHelpers;
+import dev.vladeezyy.kilnwork.client.model.SimpleBlockModel;
+import dev.vladeezyy.kilnwork.retexture.RetexturedHelper;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
@@ -73,9 +72,9 @@ public class ShelfModel implements IUnbakedGeometry<ShelfModel> {
   }
 
   @Override
-  public BakedModel bake(IGeometryBakingContext owner, ModelBaker bakery, Function<Material,TextureAtlasSprite> spriteGetter, ModelState transforms, ItemOverrides overrides, ResourceLocation location) {
+  public BakedModel bake(IGeometryBakingContext owner, ModelBaker bakery, Function<Material,TextureAtlasSprite> spriteGetter, ModelState transforms, ItemOverrides overrides) {
     Shelf model = new Shelf(owner, this.model, transforms, this.books);
-    BakedModel baked = model.bake(spriteGetter, location);
+    BakedModel baked = model.bake(spriteGetter);
     return new Baked(baked, model, RetexturedModel.getAllRetextured(owner, this.model, retextured));
   }
 
@@ -121,13 +120,12 @@ public class ShelfModel implements IUnbakedGeometry<ShelfModel> {
     /**
      * Bakes and caches the model using the given properties
      * @param spriteGetter  Sprite getter function
-     * @param location      Bake location
      * @return  Baked model
      */
-    public BakedModel bake(Function<Material,TextureAtlasSprite> spriteGetter, ResourceLocation location) {
+    public BakedModel bake(Function<Material,TextureAtlasSprite> spriteGetter) {
       List<BlockElement> elements = Lists.newArrayList(model.getElements());
       books.forEach(elements::addAll);
-      baked = SimpleBlockModel.bakeModel(owner, elements, spriteGetter, transform, ItemOverrides.EMPTY, location);
+      baked = SimpleBlockModel.bakeModel(owner, elements, spriteGetter, transform, ItemOverrides.EMPTY);
       return baked;
     }
 
@@ -151,7 +149,7 @@ public class ShelfModel implements IUnbakedGeometry<ShelfModel> {
      * @return  Bookshelf textured with the given texture
      */
     public Shelf withTexture(Set<String> retextured, ResourceLocation texture) {
-      return new Shelf(new RetexturedContext(owner, retextured, texture), model, transform, books);
+      return new Shelf(RetexturedModel.retexture(owner, retextured, texture), model, transform, books);
     }
 
     /**
@@ -217,7 +215,7 @@ public class ShelfModel implements IUnbakedGeometry<ShelfModel> {
      * @return  Textured shelf
      */
     private Shelf getTexturedShelf(Block texture) {
-      return getTexturedShelf(ModelHelper.getParticleTexture(texture));
+      return getTexturedShelf(ModelHelpers.getParticleTexture(texture));
     }
 
     @Override
@@ -243,7 +241,7 @@ public class ShelfModel implements IUnbakedGeometry<ShelfModel> {
       Block block = data.get(RetexturedHelper.BLOCK_PROPERTY);
       ResourceLocation texture = null;
       if (block != null && block != Blocks.AIR) {
-        texture = ModelHelper.getParticleTexture(block);
+        texture = ModelHelpers.getParticleTexture(block);
       }
 
       // if books unset, default to 0 (no books)
@@ -274,7 +272,7 @@ public class ShelfModel implements IUnbakedGeometry<ShelfModel> {
       @Nullable
       @Override
       public BakedModel resolve(BakedModel originalModel, ItemStack stack, @Nullable ClientLevel world, @Nullable LivingEntity entity, int seed) {
-        if (stack.isEmpty() || !stack.hasTag()) {
+        if (stack.isEmpty()) {
           return originalModel;
         }
         // get the block first, ensuring its valid

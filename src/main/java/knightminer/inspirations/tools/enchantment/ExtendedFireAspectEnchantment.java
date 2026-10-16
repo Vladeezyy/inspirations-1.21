@@ -9,7 +9,7 @@ import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.enchantment.Enchantment;
 import net.minecraft.world.item.enchantment.Enchantments;
 import net.minecraft.world.item.enchantment.FireAspectEnchantment;
-import net.minecraftforge.common.ToolActions;
+import net.neoforged.neoforge.common.ItemAbilities;
 
 import java.util.Map;
 
@@ -21,7 +21,7 @@ public class ExtendedFireAspectEnchantment extends FireAspectEnchantment {
   @Override
   public boolean canApplyAtEnchantingTable(ItemStack stack) {
     Item item = stack.getItem();
-    return (Config.moreShieldEnchantments.getAsBoolean() && stack.canPerformAction(ToolActions.SHIELD_BLOCK))
+    return (Config.moreShieldEnchantments.getAsBoolean() && stack.canPerformAction(ItemAbilities.SHIELD_BLOCK))
            || (Config.axeEnchantmentTable.getAsBoolean() && Config.axeWeaponEnchants.getAsBoolean() && item instanceof AxeItem)
            || super.canApplyAtEnchantingTable(stack);
   }
@@ -37,7 +37,7 @@ public class ExtendedFireAspectEnchantment extends FireAspectEnchantment {
     // shields in hand should not give knockback, just on hit
     Map<EquipmentSlot,ItemStack> items = super.getSlotItems(entity);
     for (EquipmentSlot slot : EquipmentSlot.values()) {
-      if (items.containsKey(slot) && items.get(slot).canPerformAction(ToolActions.SHIELD_BLOCK)) {
+      if (items.containsKey(slot) && items.get(slot).canPerformAction(ItemAbilities.SHIELD_BLOCK)) {
         items.put(slot, ItemStack.EMPTY);
       }
     }

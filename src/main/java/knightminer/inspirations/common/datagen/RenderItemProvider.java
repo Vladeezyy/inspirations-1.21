@@ -4,7 +4,7 @@ import knightminer.inspirations.Inspirations;
 import knightminer.inspirations.building.InspirationsBuilding;
 import net.minecraft.data.PackOutput;
 import net.minecraft.data.PackOutput.Target;
-import slimeknights.mantle.client.render.RenderItem;
+import dev.vladeezyy.kilnwork.client.render.RenderItem;
 import slimeknights.mantle.data.datamap.BlockStateDataMapProvider;
 
 import java.util.ArrayList;

@@ -1,34 +1,30 @@
 package knightminer.inspirations.library.recipe.crafting;
 
-import com.google.gson.JsonObject;
+import com.mojang.serialization.MapCodec;
 import knightminer.inspirations.common.InspirationsCommons;
 import net.minecraft.core.NonNullList;
 import net.minecraft.core.RegistryAccess;
-import net.minecraft.network.FriendlyByteBuf;
-import net.minecraft.resources.ResourceLocation;
-import net.minecraft.world.inventory.CraftingContainer;
+import net.minecraft.network.RegistryFriendlyByteBuf;
+import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.crafting.CraftingBookCategory;
+import net.minecraft.world.item.crafting.CraftingInput;
 import net.minecraft.world.item.crafting.Ingredient;
 import net.minecraft.world.item.crafting.RecipeSerializer;
 import net.minecraft.world.item.crafting.ShapelessRecipe;
-import slimeknights.mantle.recipe.helper.LoggingRecipeSerializer;
-
-import javax.annotation.Nullable;
 
 /**
- * Shapeless recipe variant that suppresses container returns. Use {@link slimeknights.mantle.recipe.data.ConsumerWrapperBuilder} for data gen.
+ * Shapeless recipe variant that suppresses container returns.
  */
 public class ShapelessNoContainerRecipe extends ShapelessRecipe {
   /**
    * Creates a new recipe using all required properties
-   * @param id      Recipe ID
    * @param group   Recipe group
    * @param result  Recipe result
    * @param inputs  Recipe inputs
    */
-  public ShapelessNoContainerRecipe(ResourceLocation id, String group, CraftingBookCategory category, ItemStack result, NonNullList<Ingredient> inputs) {
-    super(id, group, category, result, inputs);
+  public ShapelessNoContainerRecipe(String group, CraftingBookCategory category, ItemStack result, NonNullList<Ingredient> inputs) {
+    super(group, category, result, inputs);
   }
 
   /**
@@ -36,12 +32,12 @@ public class ShapelessNoContainerRecipe extends ShapelessRecipe {
    * @param orig  Shapeless recipe to copy
    */
   private ShapelessNoContainerRecipe(ShapelessRecipe orig) {
-    super(orig.getId(), orig.getGroup(), orig.category(), orig.getResultItem(RegistryAccess.EMPTY), orig.getIngredients());
+    super(orig.getGroup(), orig.category(), orig.getResultItem(RegistryAccess.EMPTY), orig.getIngredients());
   }
 
   @Override
-  public NonNullList<ItemStack> getRemainingItems(CraftingContainer inv) {
-    return NonNullList.withSize(inv.getContainerSize(), ItemStack.EMPTY);
+  public NonNullList<ItemStack> getRemainingItems(CraftingInput input) {
+    return NonNullList.withSize(input.size(), ItemStack.EMPTY);
   }
 
   @Override
@@ -50,27 +46,20 @@ public class ShapelessNoContainerRecipe extends ShapelessRecipe {
   }
 
   /**
-   * Serializer to redirect to the shapeless serializer
+   * Serializer reading the shapeless format
    */
-  public static class Serializer implements LoggingRecipeSerializer<ShapelessNoContainerRecipe> {
-    @Nullable
+  public static class Serializer implements RecipeSerializer<ShapelessNoContainerRecipe> {
+    private static final MapCodec<ShapelessNoContainerRecipe> CODEC = RecipeSerializer.SHAPELESS_RECIPE.codec().xmap(ShapelessNoContainerRecipe::new, recipe -> recipe);
+    private static final StreamCodec<RegistryFriendlyByteBuf, ShapelessNoContainerRecipe> STREAM_CODEC = RecipeSerializer.SHAPELESS_RECIPE.streamCodec().map(ShapelessNoContainerRecipe::new, recipe -> recipe);
+
     @Override
-    public ShapelessNoContainerRecipe fromNetworkSafe(ResourceLocation recipeID, FriendlyByteBuf buffer) {
-      ShapelessRecipe recipe = SHAPELESS_RECIPE.fromNetwork(recipeID, buffer);
-      if (recipe != null) {
-        return new ShapelessNoContainerRecipe(recipe);
-      }
-      return null;
+    public MapCodec<ShapelessNoContainerRecipe> codec() {
+      return CODEC;
     }
 
     @Override
-    public ShapelessNoContainerRecipe fromJson(ResourceLocation recipeID, JsonObject json) {
-      return new ShapelessNoContainerRecipe(SHAPELESS_RECIPE.fromJson(recipeID, json));
-    }
-
-    @Override
-    public void toNetworkSafe(FriendlyByteBuf buffer, ShapelessNoContainerRecipe recipe) {
-      Serializer.SHAPELESS_RECIPE.toNetwork(buffer, recipe);
+    public StreamCodec<RegistryFriendlyByteBuf, ShapelessNoContainerRecipe> streamCodec() {
+      return STREAM_CODEC;
     }
   }
 }

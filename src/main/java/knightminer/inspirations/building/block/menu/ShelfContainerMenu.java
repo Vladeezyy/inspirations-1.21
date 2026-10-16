@@ -6,8 +6,8 @@ import knightminer.inspirations.building.block.entity.ShelfInventory;
 import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.item.ItemStack;
-import slimeknights.mantle.inventory.BaseContainerMenu;
-import slimeknights.mantle.inventory.SmartItemHandlerSlot;
+import dev.vladeezyy.kilnwork.inventory.BaseContainerMenu;
+import dev.vladeezyy.kilnwork.inventory.SmartItemHandlerSlot;
 
 import javax.annotation.Nullable;
 

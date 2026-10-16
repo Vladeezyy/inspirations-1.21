@@ -16,12 +16,12 @@ import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.entity.BlockEntityTicker;
 import net.minecraft.world.level.block.entity.HopperBlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
-import net.minecraftforge.common.capabilities.ForgeCapabilities;
-import net.minecraftforge.common.util.LazyOptional;
-import net.minecraftforge.common.util.NonNullConsumer;
-import net.minecraftforge.items.IItemHandler;
-import net.minecraftforge.items.ItemHandlerHelper;
-import slimeknights.mantle.block.entity.InventoryBlockEntity;
+import net.neoforged.neoforge.capabilities.Capabilities;
+
+import net.neoforged.neoforge.common.util.NonNullConsumer;
+import net.neoforged.neoforge.items.IItemHandler;
+import net.neoforged.neoforge.items.ItemHandlerHelper;
+import dev.vladeezyy.kilnwork.block.InventoryBlockEntity;
 import slimeknights.mantle.util.WeakConsumerWrapper;
 
 import javax.annotation.Nullable;
@@ -93,7 +93,7 @@ public class PipeBlockEntity extends InventoryBlockEntity {
     assert level != null;
     BlockEntity te = level.getBlockEntity(worldPosition.relative(facing));
     if (te != null) {
-      LazyOptional<IItemHandler> handler = te.getCapability(ForgeCapabilities.ITEM_HANDLER, facing.getOpposite());
+      LazyOptional<IItemHandler> handler = te.getCapability(Capabilities.ITEM_HANDLER, facing.getOpposite());
       if (handler.isPresent()) {
         // add the invalidator
         handler.addListener(facingInvalidator);

@@ -18,8 +18,8 @@ import net.minecraft.tags.ItemTags;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.level.block.Block;
-import net.minecraftforge.common.Tags;
-import net.minecraftforge.common.data.ExistingFileHelper;
+import net.neoforged.neoforge.common.Tags;
+import net.neoforged.neoforge.common.data.ExistingFileHelper;
 import slimeknights.mantle.datagen.MantleTags;
 
 import java.util.concurrent.CompletableFuture;
@@ -72,8 +72,8 @@ public class InspirationsItemTagsProvider extends ItemTagsProvider {
     VanillaEnum.TERRACOTTA.forEach(block -> terracottaBuilder.add(block.asItem()));
 
     this.tag(InspirationsTags.Items.MILK_CONTAINERS).add(Items.BUCKET, Items.GLASS_BOTTLE, Items.BOWL)
-        .addOptional(new ResourceLocation("ceramics:clay_bucket"))
-        .addOptional(new ResourceLocation("simplytea:teapot"));
+        .addOptional(ResourceLocation.parse("ceramics:clay_bucket"))
+        .addOptional(ResourceLocation.parse("simplytea:teapot"));
   }
 
   private void registerForgeTags() {

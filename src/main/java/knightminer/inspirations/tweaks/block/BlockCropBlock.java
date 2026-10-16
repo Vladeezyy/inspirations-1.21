@@ -12,9 +12,9 @@ import net.minecraft.world.level.block.CropBlock;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.StateDefinition;
 import net.minecraft.world.level.block.state.properties.IntegerProperty;
-import net.minecraftforge.common.ForgeHooks;
-import net.minecraftforge.common.IPlantable;
-import net.minecraftforge.common.PlantType;
+import net.neoforged.neoforge.common.CommonHooks;
+import net.neoforged.neoforge.common.IPlantable;
+import net.neoforged.neoforge.common.PlantType;
 
 import java.util.function.Supplier;
 
@@ -70,7 +70,7 @@ public abstract class BlockCropBlock extends CropBlock implements IPlantable {
     int age = this.getAge(state);
     int max = this.getMaxAge();
     if (age < max) {
-      if (ForgeHooks.onCropsGrowPre(world, pos, state, true)) {
+      if (CommonHooks.onCropsGrowPre(world, pos, state, true)) {
         age++;
         BlockState newState = this.getStateForAge(age);
         // update again if max age, for the sake of cactus placement
@@ -82,7 +82,7 @@ public abstract class BlockCropBlock extends CropBlock implements IPlantable {
         } else {
           world.setBlock(pos, newState, 2);
         }
-        ForgeHooks.onCropsGrowPost(world, pos, state);
+        CommonHooks.onCropsGrowPost(world, pos, state);
       }
     }
   }
