@@ -317,7 +317,8 @@ public class ShelfBlockEntity extends NameableBlockEntity implements IRetextured
   @Nonnull
   @Override
   public ModelData getModelData() {
-    return ModelData.builder().with(BOOKS, books).with(RetexturedHelper.BLOCK_PROPERTY, getTexture()).build();
+    // the texture property refuses air: untextured shelves leave it out
+    return RetexturedHelper.getModelDataBuilder(getTexture()).with(BOOKS, books).build();
   }
 
 

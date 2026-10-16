@@ -6,6 +6,11 @@
 cd "$(dirname "$0")/.."
 rm -rf run/saves/insp_scene run/saves/insp_stress run/screenshots/scene_*.png build-scene.log
 rm -f run/config/inspirations-*.toml
+case "$*" in *scene=stress*)
+	# the stress scene starts from a broken common config
+	mkdir -p run/config
+	printf '[modules]\n\tbuilding = "maybe"\n[building]\n\tshelf = 42\n\tbookshelf = "yes"\n' > run/config/inspirations-common.toml ;;
+esac
 perl -e 'alarm 900; exec @ARGV' ./gradlew runScene --console=plain "$@" > build-scene.log 2>&1 &
 gradle_pid=$!
 while kill -0 $gradle_pid 2>/dev/null; do

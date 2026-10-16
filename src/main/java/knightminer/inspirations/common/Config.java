@@ -161,7 +161,9 @@ public class Config {
     server.push("building");
     {
       // bookshelves
-      enableBookshelf = and(buildingModule, common.comment("Enables the shelf: a decorative block to display books and other items").worldRestart().define("bookshelf.enable", true));
+      // 1.20 used "bookshelf.enable" next to the "bookshelf" value below, so the file could keep only one and the shelf
+      // could not be turned off
+      enableBookshelf = and(buildingModule, common.comment("Enables the shelf: a decorative block to display books and other items").worldRestart().define("shelf", true));
       enableColoredBooks = and(enableBookshelf, common.comment("Enables colored books: basically colored versions of the vanilla book to decorate shelves").worldRestart().define("bookshelf", true));
       bookshelvesBoostEnchanting = and(buildingModule, server.comment("If true, shelves will increase enchanting table power.").define("bookshelf.boostEnchanting", true));
       defaultEnchantingPower = server.comment("Default power for a book for enchanting, can be overridden in the book overrides.").defineInRange("bookshelf.defaultEnchanting", 1.5f, 0.0f, 15.0f);
