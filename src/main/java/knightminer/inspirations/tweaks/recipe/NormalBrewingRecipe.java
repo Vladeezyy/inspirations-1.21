@@ -4,7 +4,9 @@ import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.item.alchemy.Potion;
-import net.minecraft.world.item.alchemy.PotionUtils;
+import net.minecraft.world.item.alchemy.PotionContents;
+import net.minecraft.core.Holder;
+import net.minecraft.core.component.DataComponents;
 import net.minecraft.world.item.crafting.Ingredient;
 import net.neoforged.neoforge.common.brewing.IBrewingRecipe;
 
@@ -15,11 +17,11 @@ import java.util.function.BooleanSupplier;
  */
 public class NormalBrewingRecipe implements IBrewingRecipe {
   private final BooleanSupplier enabled;
-  private final Potion start;
+  private final Holder<Potion> start;
   private final Ingredient catalyst;
-  private final Potion output;
+  private final Holder<Potion> output;
 
-  public NormalBrewingRecipe(Potion start, Ingredient catalyst, Potion output, BooleanSupplier enabledFunc) {
+  public NormalBrewingRecipe(Holder<Potion> start, Ingredient catalyst, Holder<Potion> output, BooleanSupplier enabledFunc) {
     this.start = start;
     this.catalyst = catalyst;
     this.output = output;
@@ -30,11 +32,11 @@ public class NormalBrewingRecipe implements IBrewingRecipe {
     return catalyst;
   }
 
-  public Potion getStart() {
+  public Holder<Potion> getStart() {
     return start;
   }
 
-  public Potion getOutput() {
+  public Holder<Potion> getOutput() {
     return output;
   }
 
@@ -42,7 +44,7 @@ public class NormalBrewingRecipe implements IBrewingRecipe {
   public boolean isInput(ItemStack input) {
     Item item = input.getItem();
     if (item == Items.POTION || item == Items.SPLASH_POTION || item == Items.LINGERING_POTION) {
-      return PotionUtils.getPotion(input) == start;
+      return input.getOrDefault(DataComponents.POTION_CONTENTS, PotionContents.EMPTY).is(start);
     }
     return false;
   }
@@ -62,7 +64,7 @@ public class NormalBrewingRecipe implements IBrewingRecipe {
     }
     Item item = input.getItem();
     if (isInput(input)) {
-      return PotionUtils.setPotion(new ItemStack(item), output);
+      return PotionContents.createItemStack(item, output);
     }
     return ItemStack.EMPTY;
   }

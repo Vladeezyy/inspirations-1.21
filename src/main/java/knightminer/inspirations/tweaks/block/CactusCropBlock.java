@@ -14,7 +14,7 @@ import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.shapes.CollisionContext;
 import net.minecraft.world.phys.shapes.VoxelShape;
-import net.neoforged.neoforge.common.PlantType;
+import net.neoforged.neoforge.common.util.TriState;
 
 import java.util.function.Supplier;
 import java.util.stream.IntStream;
@@ -23,8 +23,8 @@ public class CactusCropBlock extends BlockCropBlock {
 
   private static final VoxelShape[] BOUNDS = IntStream.range(1, 16).mapToObj(i -> box(1, 0, 1, 15, i, 15)).toArray(VoxelShape[]::new);
 
-  public CactusCropBlock(Supplier<Block> base, PlantType plant, Block.Properties properties) {
-    super(base, plant, properties);
+  public CactusCropBlock(Supplier<Block> base, Block.Properties properties) {
+    super(base, properties);
   }
 
   @Override
@@ -47,7 +47,7 @@ public class CactusCropBlock extends BlockCropBlock {
   @Override
   public boolean canSurvive(BlockState state, LevelReader world, BlockPos pos) {
     // if true, vanilla cactus farms will now produce cactus seeds rather than full blocks
-    if (Config.nerfCactusFarms.get()) {
+    if (Config.get(Config.nerfCactusFarms)) {
       return super.canSurvive(state, world, pos);
     }
 
@@ -60,6 +60,7 @@ public class CactusCropBlock extends BlockCropBlock {
     }
 
     // otherwise, do cactus logic, but without the horizontal checks
-    return soil.canSustainPlant(world, down, Direction.UP, getPlant()) && !world.getBlockState(pos.above()).liquid();
+    TriState sustain = soil.canSustainPlant(world, down, Direction.UP, block.get().defaultBlockState());
+    return (sustain.isDefault() || sustain.isTrue()) && !world.getBlockState(pos.above()).liquid();
   }
 }

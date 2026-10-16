@@ -29,16 +29,14 @@ import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.BushBlock;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.Vec3;
-import net.neoforged.neoforge.event.entity.living.LivingEvent.LivingTickEvent;
+import net.neoforged.neoforge.event.tick.EntityTickEvent;
 import net.neoforged.neoforge.event.entity.living.LivingFallEvent;
 import net.neoforged.neoforge.event.entity.player.BonemealEvent;
 import net.neoforged.neoforge.event.entity.player.PlayerInteractEvent.EntityInteract;
-import net.neoforged.bus.api.Event;
 import net.neoforged.bus.api.EventPriority;
 import net.neoforged.bus.api.SubscribeEvent;
 import net.neoforged.fml.common.EventBusSubscriber;
 import net.neoforged.neoforge.items.ItemHandlerHelper;
-import slimeknights.mantle.util.RegistryHelper;
 
 @SuppressWarnings({"unused"})
 @EventBusSubscriber(modid = Inspirations.modID)
@@ -83,14 +81,17 @@ public class TweaksEvents {
     BlockState state = world.getBlockState(pos);
     Block block = state.getBlock();
     // block must be mycelium for mushrooms or sand for dead bushes
-    if ((Config.bonemealMushrooms.getAsBoolean() && block == Blocks.MYCELIUM) || (Config.bonemealDeadBush.getAsBoolean() && RegistryHelper.contains(BlockTags.SAND, block))) {
+    // 1.21: a successful event no longer uses up the bone meal by itself
+    if ((Config.bonemealMushrooms.getAsBoolean() && block == Blocks.MYCELIUM) || (Config.bonemealDeadBush.getAsBoolean() && state.is(BlockTags.SAND))) {
       bonemealPlants(block, world, pos);
-      event.setResult(Event.Result.ALLOW);
+      event.setSuccessful(true);
+      event.getStack().shrink(1);
     }
     // block must be dirt for grass/mycelium spread
     else if ((Config.bonemealGrassSpread.getAsBoolean() || Config.bonemealMyceliumSpread.getAsBoolean()) && block == Blocks.DIRT) {
       if (bonemealDirt(world, pos)) {
-        event.setResult(Event.Result.ALLOW);
+        event.setSuccessful(true);
+        event.getStack().shrink(1);
       }
     }
   }
@@ -121,7 +122,7 @@ public class TweaksEvents {
                 state = bush.defaultBlockState();
               }
               // if it can be planted here, plant it
-              if (bush.canSurvive(state, world, next)) {
+              if (state.canSurvive(world, next)) {
                 world.setBlockAndUpdate(next, state);
               }
             }
@@ -275,7 +276,7 @@ public class TweaksEvents {
 
     // ensure client world
     LivingEntity entity = event.getEntity();
-    Level world = entity.getCommandSenderWorld();
+    Level world = entity.level();
     if (world.isClientSide) {
       return;
     }
@@ -335,7 +336,7 @@ public class TweaksEvents {
 
   @SubscribeEvent
   static void milkCow(EntityInteract event) {
-    if (!Config.milkCooldown.get() && !Config.enableMilkBottles.getAsBoolean()) {
+    if (!Config.get(Config.milkCooldown) && !Config.enableMilkBottles.getAsBoolean()) {
       return;
     }
 
@@ -349,7 +350,7 @@ public class TweaksEvents {
     Player player = event.getEntity();
     InteractionHand hand = event.getHand();
     ItemStack stack = player.getItemInHand(hand);
-    if (Config.milkCooldown.get() && stack.is(InspirationsTags.Items.MILK_CONTAINERS)) {
+    if (Config.get(Config.milkCooldown) && stack.is(InspirationsTags.Items.MILK_CONTAINERS)) {
       CompoundTag tags = target.getPersistentData();
       if (tags.getShort(TAG_MILKCOOLDOWN) > 0) {
         event.setCancellationResult(InteractionResult.PASS);
@@ -373,16 +374,18 @@ public class TweaksEvents {
   }
 
   @SubscribeEvent
-  static void updateMilkCooldown(LivingTickEvent event) {
-    LivingEntity entity = event.getEntity();
-    Level world = entity.getCommandSenderWorld();
+  static void updateMilkCooldown(EntityTickEvent.Post event) {
+    if (!(event.getEntity() instanceof LivingEntity entity) || !(entity instanceof Cow || entity instanceof Goat)) {
+      return;
+    }
+    Level world = entity.level();
     // only run every 20 ticks on serverside
     if (world.isClientSide || (world.getGameTime() % 20) != 0) {
       return;
     }
 
-    // runs for both adult cows and squids, based on config
-    if ((Config.milkCooldown.get() && (entity instanceof Cow || entity instanceof Goat) && !entity.isBaby())) {
+    // runs for adult cows and goats, based on config
+    if (Config.get(Config.milkCooldown) && !entity.isBaby()) {
       // if not already cooled down, cool down
       CompoundTag tags = entity.getPersistentData();
       short cooldown = tags.getShort(TAG_MILKCOOLDOWN);

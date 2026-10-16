@@ -19,6 +19,7 @@ import net.minecraft.client.renderer.blockentity.BlockEntityRendererProvider;
 import net.minecraft.client.renderer.blockentity.EnchantTableRenderer;
 import net.minecraft.client.resources.model.Material;
 import net.minecraft.nbt.CompoundTag;
+import net.minecraft.util.FastColor;
 import net.minecraft.world.inventory.InventoryMenu;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
@@ -63,7 +64,7 @@ public class TintedLecternRenderer implements BlockEntityRenderer<LecternBlockEn
       CompoundTag persistent = lectern.getPersistentData();
       if (!persistent.getBoolean(TAG_REQUESTED)) {
         persistent.putBoolean(TAG_REQUESTED, true);
-        InspirationsNetwork.INSTANCE.sendToServer(new RequestLecternBookPacket(lectern.getBlockPos()));
+        InspirationsNetwork.sendToServer(new RequestLecternBookPacket(lectern.getBlockPos()));
       }
 
       // check if we care about this book, use default for vanilla or unfetched
@@ -82,19 +83,17 @@ public class TintedLecternRenderer implements BlockEntityRenderer<LecternBlockEn
             color = MiscUtil.combineColors(color, itemColors, 3);
           }
 
-          // calculate final tint
-          float r = (color >> 16 & 0xff) / 255f;
-          float g = (color >>  8 & 0xff) / 255f;
-          float b = (color       & 0xff) / 255f;
+          // calculate final tint, ARGB in 1.21
+          int tint = FastColor.ARGB32.opaque(color);
           // render the cover with the tint
-          this.leftLid.render(poseStack, vertexConsumer, pPackedLight, pPackedOverlay, r, g, b, 1.0F);
-          this.rightLid.render(poseStack, vertexConsumer, pPackedLight, pPackedOverlay, r, g, b, 1.0F);
-          this.seam.render(poseStack, vertexConsumer, pPackedLight, pPackedOverlay, r, g, b, 1.0F);
+          this.leftLid.render(poseStack, vertexConsumer, pPackedLight, pPackedOverlay, tint);
+          this.rightLid.render(poseStack, vertexConsumer, pPackedLight, pPackedOverlay, tint);
+          this.seam.render(poseStack, vertexConsumer, pPackedLight, pPackedOverlay, tint);
           // render the rest of the book
           this.leftLid.visible = false;
           this.rightLid.visible = false;
           this.seam.visible = false;
-          this.book.render(poseStack, vertexConsumer, pPackedLight, pPackedOverlay, 1, 1, 1, 1);
+          this.book.render(poseStack, vertexConsumer, pPackedLight, pPackedOverlay);
           poseStack.popPose();
           return;
         }
@@ -102,7 +101,7 @@ public class TintedLecternRenderer implements BlockEntityRenderer<LecternBlockEn
 
       // render with default settings
       VertexConsumer vertexConsumer = EnchantTableRenderer.BOOK_LOCATION.buffer(pBuffer, RenderType::entitySolid);
-      this.book.render(poseStack, vertexConsumer, pPackedLight, pPackedOverlay, 1, 1, 1, 1);
+      this.book.render(poseStack, vertexConsumer, pPackedLight, pPackedOverlay);
       poseStack.popPose();
     } else {
       // mark the book as not requested so changing books requests it again

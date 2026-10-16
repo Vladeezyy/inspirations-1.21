@@ -8,7 +8,6 @@ import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.shapes.CollisionContext;
 import net.minecraft.world.phys.shapes.VoxelShape;
-import net.neoforged.neoforge.common.PlantType;
 
 import java.util.function.Supplier;
 import java.util.stream.IntStream;
@@ -16,8 +15,8 @@ import java.util.stream.IntStream;
 public class SugarCaneCropBlock extends BlockCropBlock {
 
   private static final VoxelShape[] BOUNDS = IntStream.range(1, 16).mapToObj(i -> box(2, 0, 2, 14, i, 14)).toArray(VoxelShape[]::new);
-  public SugarCaneCropBlock(Supplier<Block> block, PlantType type, Properties props) {
-    super(block, type, props);
+  public SugarCaneCropBlock(Supplier<Block> block, Properties props) {
+    super(block, props);
   }
 
   @Override

@@ -13,20 +13,16 @@ import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.StateDefinition;
 import net.minecraft.world.level.block.state.properties.IntegerProperty;
 import net.neoforged.neoforge.common.CommonHooks;
-import net.neoforged.neoforge.common.IPlantable;
-import net.neoforged.neoforge.common.PlantType;
 
 import java.util.function.Supplier;
 
-public abstract class BlockCropBlock extends CropBlock implements IPlantable {
+public abstract class BlockCropBlock extends CropBlock {
   public static final IntegerProperty LARGE_AGE = IntegerProperty.create("age", 0, 14);
 
   protected Supplier<Block> block;
-  protected PlantType type;
-  public BlockCropBlock(Supplier<Block> block, PlantType type, Properties props) {
+  public BlockCropBlock(Supplier<Block> block, Properties props) {
     super(props);
     this.block = block;
-    this.type = type;
   }
 
 
@@ -39,7 +35,7 @@ public abstract class BlockCropBlock extends CropBlock implements IPlantable {
   }
 
   @Override
-  public IntegerProperty getAgeProperty() {
+  protected IntegerProperty getAgeProperty() {
     return LARGE_AGE;
   }
 
@@ -70,7 +66,7 @@ public abstract class BlockCropBlock extends CropBlock implements IPlantable {
     int age = this.getAge(state);
     int max = this.getMaxAge();
     if (age < max) {
-      if (CommonHooks.onCropsGrowPre(world, pos, state, true)) {
+      if (CommonHooks.canCropGrow(world, pos, state, true)) {
         age++;
         BlockState newState = this.getStateForAge(age);
         // update again if max age, for the sake of cactus placement
@@ -82,17 +78,12 @@ public abstract class BlockCropBlock extends CropBlock implements IPlantable {
         } else {
           world.setBlock(pos, newState, 2);
         }
-        CommonHooks.onCropsGrowPost(world, pos, state);
+        CommonHooks.fireCropGrowPost(world, pos, state);
       }
     }
   }
 
   /* Crop logic */
-
-  @Override
-  public PlantType getPlantType(BlockGetter world, BlockPos pos) {
-    return type;
-  }
 
   @Deprecated
   @Override
@@ -104,25 +95,14 @@ public abstract class BlockCropBlock extends CropBlock implements IPlantable {
   /* Bonemeal */
 
   @Override
-  public boolean isValidBonemealTarget(LevelReader pLevel, BlockPos pPos, BlockState pState, boolean pIsClient) {
-    return Config.bonemealBlockCrop.get();
+  public boolean isValidBonemealTarget(LevelReader pLevel, BlockPos pPos, BlockState pState) {
+    return Config.get(Config.bonemealBlockCrop);
   }
 
   @Override
   public boolean isBonemealSuccess(Level worldIn, RandomSource rand, BlockPos pos, BlockState state) {
-    return Config.bonemealBlockCrop.get();
+    return Config.get(Config.bonemealBlockCrop);
   }
 
 
-  /**
-   * Gets an IPlantable for this plant
-   * @return The base block's plantable, or this if the base block is not plantable
-   */
-  protected IPlantable getPlant() {
-    Block block = this.block.get();
-    if (block instanceof IPlantable plantable) {
-      return plantable;
-    }
-    return this;
-  }
 }

@@ -9,7 +9,6 @@ import net.minecraft.world.level.block.state.BlockState;
 import net.neoforged.neoforge.common.CommonHooks;
 import net.neoforged.neoforge.event.level.BlockEvent;
 import net.neoforged.neoforge.event.level.BlockEvent.CropGrowEvent.Pre;
-import net.neoforged.bus.api.Event.Result;
 
 import java.util.function.Consumer;
 
@@ -62,12 +61,12 @@ public class SmoothGrowthListener implements Consumer<Pre> {
     }
 
     // prevent normal growth logic
-    event.setResult(Result.DENY);
+    event.setResult(Pre.Result.DO_NOT_GROW);
 
     // update the block above and fire relevant events
     if (world instanceof Level casted) {
       state.neighborChanged(casted, dest, seed, source, false);
-      CommonHooks.onCropsGrowPost(casted, source, state);
+      CommonHooks.fireCropGrowPost(casted, source, state);
     }
   }
 }

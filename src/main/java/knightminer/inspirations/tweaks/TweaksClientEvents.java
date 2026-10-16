@@ -15,7 +15,13 @@ import net.minecraft.nbt.Tag;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.contents.TranslatableContents;
 import net.minecraft.resources.ResourceLocation;
-import net.minecraft.world.item.EnchantedBookItem;
+import net.minecraft.core.Holder;
+import net.minecraft.core.component.DataComponents;
+import net.minecraft.util.FastColor;
+import net.minecraft.world.item.component.Fireworks;
+import net.minecraft.world.item.enchantment.ItemEnchantments;
+import net.minecraft.world.level.block.entity.BannerPatternLayers;
+import it.unimi.dsi.fastutil.ints.IntList;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.item.enchantment.Enchantment;
@@ -45,13 +51,14 @@ public class TweaksClientEvents extends AbstractClientEvents {
   @SubscribeEvent
   static void registerRenderers(EntityRenderersEvent.RegisterRenderers event) {
     if (Config.tintLecternBook.getAsBoolean()) {
+      // replaces the vanilla lectern renderer
       event.registerBlockEntityRenderer(BlockEntityType.LECTERN, TintedLecternRenderer::new);
     }
   }
 
   @SubscribeEvent
   static void registerModelLoaders(RegisterGeometryLoaders event) {
-    event.register("trim", TrimModel.LOADER);
+    event.register(Inspirations.getResource("trim"), TrimModel.LOADER);
   }
 
   @SubscribeEvent
@@ -76,78 +83,62 @@ public class TweaksClientEvents extends AbstractClientEvents {
 
     // colored ribbons on enchanted books
     registerItemColors(itemColors, (stack, tintIndex) -> {
-      if (tintIndex == 0 && Config.coloredEnchantedRibbons.get()) {
-        // find the rarest enchantment we have
-        Enchantment.Rarity rarity = Enchantment.Rarity.COMMON;
-        for (Tag tag : EnchantedBookItem.getEnchantments(stack)) {
-          if (tag.getId() == Tag.TAG_COMPOUND) {
-            ResourceLocation id = ResourceLocation.parse(((CompoundTag)tag).getString("id"));
-            Enchantment enchantment = BuiltInRegistries.ENCHANTMENT.getValue(id);
-            if (enchantment != null) {
-              Enchantment.Rarity newRarity = enchantment.getRarity();
-              if (newRarity.getWeight() < rarity.getWeight()) {
-                rarity = newRarity;
-              }
-            }
-          }
+      if (tintIndex == 0 && Config.get(Config.coloredEnchantedRibbons)) {
+        // find the rarest enchantment we have; 1.21 has weights instead of rarities: 10 common, 5 uncommon, 2 rare, 1 very rare
+        int weight = Integer.MAX_VALUE;
+        for (Holder<Enchantment> enchantment : stack.getOrDefault(DataComponents.STORED_ENCHANTMENTS, ItemEnchantments.EMPTY).keySet()) {
+          weight = Math.min(weight, enchantment.value().getWeight());
         }
 
         // color by that rarity
-        return switch (rarity) {
-          case COMMON -> 0xFF2151;
-          case UNCOMMON -> 0xE2882D;
-          case RARE -> 0x00FF21;
-          case VERY_RARE -> 0x9F7FFF;
-        };
+        int color;
+        if (weight >= 10) {
+          color = 0xFF2151;
+        } else if (weight >= 5) {
+          color = 0xE2882D;
+        } else if (weight >= 2) {
+          color = 0x00FF21;
+        } else {
+          color = 0x9F7FFF;
+        }
+        return FastColor.ARGB32.opaque(color);
       }
       return -1;
     }, Items.ENCHANTED_BOOK);
 
     registerItemColors(itemColors, (stack, tintIndex) -> {
-      if (!Config.coloredFireworkItems.get()) {
+      if (!Config.get(Config.coloredFireworkItems)) {
         return -1;
       }
-      CompoundTag nbt = stack.getTagElement("Fireworks");
+      Fireworks fireworks = stack.get(DataComponents.FIREWORKS);
       // string is darker with more gunpowder
       if (tintIndex == 2) {
-        if (nbt != null && nbt.contains("Flight", Tag.TAG_ANY_NUMERIC)) {
-          byte flight = nbt.getByte("Flight");
-          switch (flight) {
-            case 1:
-              return 0x808080;
-            case 2:
-              return 0x606060;
-            case 3:
-              return 0x303030;
-          }
-          if (flight > 3) {
-            return 0x000000;
+        int color = 0xA0A0A0;
+        if (fireworks != null) {
+          int flight = fireworks.flightDuration();
+          if (flight == 1) {
+            color = 0x808080;
+          } else if (flight == 2) {
+            color = 0x606060;
+          } else if (flight == 3) {
+            color = 0x303030;
+          } else if (flight > 3) {
+            color = 0x000000;
           }
         }
-        return 0xA0A0A0;
+        return FastColor.ARGB32.opaque(color);
       }
       // color the stripes and the top
       if (tintIndex == 0 || tintIndex == 1) {
-        // no NBT?
-        int missing = tintIndex == 1 ? 0xCCA190 : 0xC0C0C0;
-        if (nbt == null) {
-          return missing;
-        }
-
-        ListTag stars = nbt.getList("Explosions", 10);
-        // not enough stars?
-        if (tintIndex >= stars.size()) {
+        // no stars?
+        int missing = FastColor.ARGB32.opaque(tintIndex == 1 ? 0xCCA190 : 0xC0C0C0);
+        if (fireworks == null || tintIndex >= fireworks.explosions().size()) {
           return missing;
         }
 
         // grab the proper star's first color
-        CompoundTag star = stars.getCompound(tintIndex);
-        int[] colors = star.getIntArray("Colors");
-        if (colors.length > 0) {
-          return colors[0];
-        }
-
-        return missing;
+        IntList colors = fireworks.explosions().get(tintIndex).colors();
+        return colors.isEmpty() ? missing : FastColor.ARGB32.opaque(colors.getInt(0));
       }
 
       return -1;
@@ -161,8 +152,7 @@ public class TweaksClientEvents extends AbstractClientEvents {
     if (stack.getItem() != Items.SHIELD) return;
 
     // only need to run if it has patterns and is enchanted
-    CompoundTag tags = stack.getTagElement("BlockEntityTag");
-    if (tags != null && tags.contains("Patterns") && stack.isEnchanted()) {
+    if (!stack.getOrDefault(DataComponents.BANNER_PATTERNS, BannerPatternLayers.EMPTY).layers().isEmpty() && stack.isEnchanted()) {
       // find the last banner pattern line in the tooltip
       List<Component> text = event.getToolTip();
       int i = text.size() - 1;

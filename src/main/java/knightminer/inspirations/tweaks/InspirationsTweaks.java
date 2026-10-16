@@ -43,14 +43,13 @@ import net.minecraft.world.level.block.HopperBlock;
 import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.minecraft.world.level.block.state.BlockBehaviour;
 import net.neoforged.neoforge.common.NeoForge;
-import net.neoforged.neoforge.common.PlantType;
-import net.neoforged.neoforge.common.brewing.BrewingRecipeRegistry;
 import net.neoforged.neoforge.data.event.GatherDataEvent;
 import net.neoforged.neoforge.event.LootTableLoadEvent;
 import net.neoforged.bus.api.SubscribeEvent;
 import net.neoforged.fml.event.lifecycle.FMLCommonSetupEvent;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.neoforged.neoforge.registries.RegisterEvent;
+import net.neoforged.neoforge.event.brewing.RegisterBrewingRecipesEvent;
 import knightminer.inspirations.common.registration.BlockRegistryAdapter;
 import knightminer.inspirations.common.registration.ItemRegistryAdapter;
 import knightminer.inspirations.common.registration.EnumObject;
@@ -75,84 +74,67 @@ public class InspirationsTweaks extends ModuleBase {
 
   @SubscribeEvent
   void register(RegisterEvent event) {
-    ResourceKey<? extends Registry<?>> registryKey = event.getRegistryKey();
-    if (registryKey == Registries.BLOCK) {
-      BlockRegistryAdapter registry = new BlockRegistryAdapter(BuiltInRegistries.BLOCK);
+    event.register(Registries.BLOCK, helper -> {
+      BlockRegistryAdapter registry = new BlockRegistryAdapter(helper);
 
-      boolean replaceVanilla = Config.enableFittedCarpets.getAsBoolean();
+      // vanilla carpets turn into fitted carpets through a mixin (WoolCarpetBlockMixin), NeoForge cannot replace them
       EnumObject.Builder<DyeColor,Block> flatBuilder = new EnumObject.Builder<>(DyeColor.class);
       EnumObject.Builder<DyeColor,FittedCarpetBlock> fittedBuilder = new EnumObject.Builder<>(DyeColor.class);
       for (DyeColor color : DyeColor.values()) {
         Block original = InspirationsCommons.VANILLA_CARPETS.get(color);
-        Block.Properties props = Block.Properties.copy(original);
-        if (replaceVanilla) {
-          flatBuilder.put(color, registry.register(new FlatCarpetBlock(color, props), original));
-        } else {
-          flatBuilder.put(color, original);
-        }
+        Block.Properties props = Block.Properties.ofFullCopy(original);
+        flatBuilder.put(color, original);
         // bounding box messes with sprinting on stairs, so disable
         fittedBuilder.put(color, registry.register(new FittedCarpetBlock(color, props.noCollission()), color.getSerializedName() + "_fitted_carpet"));
       }
       flatCarpets = flatBuilder.build();
       fitCarpets = fittedBuilder.build();
 
-      if (Config.waterlogHopper.getAsBoolean()) {
-        dryHopper = registry.registerOverride(DryHopperBlock::new, Blocks.HOPPER);
-        wetHopper = registry.register(new WetHopperBlock(Block.Properties.copy(Blocks.HOPPER)), "wet_hopper");
-      }
+      // the vanilla hopper takes water through a mixin (HopperBlockMixin) and turns into this block
+      dryHopper = (HopperBlock) Blocks.HOPPER;
+      wetHopper = registry.register(new WetHopperBlock(Block.Properties.ofFullCopy(Blocks.HOPPER)), "wet_hopper");
 
-      cactus = registry.register(new CactusCropBlock(() -> Blocks.CACTUS, PlantType.DESERT, BlockBehaviour.Properties.copy(Blocks.CACTUS)), "cactus");
-      sugarCane = registry.register(new SugarCaneCropBlock(() -> Blocks.SUGAR_CANE, PlantType.BEACH, BlockBehaviour.Properties.copy(Blocks.SUGAR_CANE)), "sugar_cane");
-    } else if (registryKey == Registries.ITEM) {
-      ItemRegistryAdapter registry = new ItemRegistryAdapter(BuiltInRegistries.ITEM);
+      cactus = registry.register(new CactusCropBlock(() -> Blocks.CACTUS, BlockBehaviour.Properties.ofFullCopy(Blocks.CACTUS)), "cactus");
+      sugarCane = registry.register(new SugarCaneCropBlock(() -> Blocks.SUGAR_CANE, BlockBehaviour.Properties.ofFullCopy(Blocks.SUGAR_CANE)), "sugar_cane");
+    });
+    event.register(Registries.ITEM, helper -> {
+      ItemRegistryAdapter registry = new ItemRegistryAdapter(helper);
       Item.Properties props = new Item.Properties();
-
-      if (Config.enableFittedCarpets.getAsBoolean()) {
-        for (DyeColor color : DyeColor.values()) {
-          Block carpet = InspirationsCommons.VANILLA_CARPETS.get(color);
-          BlockItem item = registry.registerBlockItem(carpet, props);
-          Item.BY_BLOCK.put(carpet, item);
-          Item.BY_BLOCK.put(Objects.requireNonNull(flatCarpets.get(color)), item);
-        }
-      }
-
-      if (Config.waterlogHopper.getAsBoolean()) {
-        registry.register(new BlockItem(dryHopper, props), Items.HOPPER);
-      }
 
       cactusSeeds = registry.register(new ItemNameBlockItem(cactus, props), "cactus_seeds");
       sugarCaneSeeds = registry.register(new ItemNameBlockItem(sugarCane, props), "sugar_cane_seeds");
       heartbeet = registry.register(
-        new Item.Properties().food(new FoodProperties.Builder().nutrition(2).saturationMod(2.4f).effect(() -> new MobEffectInstance(MobEffects.REGENERATION, 100), 1).build()),
+        new Item.Properties().food(new FoodProperties.Builder().nutrition(2).saturationModifier(2.4f).effect(() -> new MobEffectInstance(MobEffects.REGENERATION, 100), 1).build()),
         "heartbeet");
-
-    } else if (registryKey == Registries.BLOCK_ENTITY_TYPE) {
-      if (Config.waterlogHopper.getAsBoolean()) {
-        // We need to inject our replacement hopper blocks into the valid ones for the TE type.
-        // It's an immutable set, so we need to replace it entirely.
-        synchronized (BlockEntityType.HOPPER) {
-          BlockEntityType.HOPPER.validBlocks = new ImmutableSet.Builder<Block>()
-              .addAll(BlockEntityType.HOPPER.validBlocks)
-              .add(dryHopper)
-              .add(wetHopper)
-              .build();
-        }
+    });
+    event.register(Registries.BLOCK_ENTITY_TYPE, helper -> {
+      // The wet hopper keeps the hopper block entity. It's an immutable set, so we need to replace it entirely.
+      synchronized (BlockEntityType.HOPPER) {
+        BlockEntityType.HOPPER.validBlocks = new ImmutableSet.Builder<Block>()
+            .addAll(BlockEntityType.HOPPER.validBlocks)
+            .add(wetHopper)
+            .build();
       }
-    }
+    });
   }
 
   @SubscribeEvent
   public void setup(FMLCommonSetupEvent event) {
-    // brew heartbeets into regen potions
-    Ingredient heartbeet = Ingredient.of(InspirationsTweaks.heartbeet);
-    BrewingRecipeRegistry.addRecipe(new NormalBrewingRecipe(Potions.WATER, heartbeet, Potions.MUNDANE, Config.brewHeartbeet));
-    BrewingRecipeRegistry.addRecipe(new NormalBrewingRecipe(Potions.AWKWARD, heartbeet, Potions.REGENERATION, Config.brewHeartbeet));
-
     event.enqueueWork(this::registerCompostables);
-    registerDispenserBehavior();
+    event.enqueueWork(this::registerDispenserBehavior);
 
     NeoForge.EVENT_BUS.addListener(new SmoothGrowthListener(Blocks.CACTUS, cactus));
     NeoForge.EVENT_BUS.addListener(new SmoothGrowthListener(Blocks.SUGAR_CANE, sugarCane));
+    // 1.20 had this listener static on the module, which is registered as an instance on the mod bus, so it never ran
+    NeoForge.EVENT_BUS.addListener(InspirationsTweaks::loadLoot);
+    NeoForge.EVENT_BUS.addListener(InspirationsTweaks::registerBrewing);
+  }
+
+  /** Brew heartbeets into regen potions */
+  private static void registerBrewing(RegisterBrewingRecipesEvent event) {
+    Ingredient heartbeet = Ingredient.of(InspirationsTweaks.heartbeet);
+    event.getBuilder().addRecipe(new NormalBrewingRecipe(Potions.WATER, heartbeet, Potions.MUNDANE, Config.brewHeartbeet));
+    event.getBuilder().addRecipe(new NormalBrewingRecipe(Potions.AWKWARD, heartbeet, Potions.REGENERATION, Config.brewHeartbeet));
   }
 
   @SubscribeEvent
@@ -162,8 +144,7 @@ public class InspirationsTweaks extends ModuleBase {
   }
 
 
-  @SubscribeEvent
-  public static void loadLoot(LootTableLoadEvent event) {
+  private static void loadLoot(LootTableLoadEvent event) {
     addToVanillaLoot(event, "entities/cave_spider");
     addToVanillaLoot(event, "entities/skeleton");
   }
@@ -171,24 +152,26 @@ public class InspirationsTweaks extends ModuleBase {
   private static final DispenseItemBehavior DEFAULT = new DefaultDispenseItemBehavior();
 
   private void registerCompostables() {
-    ComposterBlock.add(0.3F, cactusSeeds);
-    ComposterBlock.add(0.3F, sugarCaneSeeds);
-    ComposterBlock.add(0.8F, heartbeet);
+    ComposterBlock.COMPOSTABLES.put(cactusSeeds, 0.3F);
+    ComposterBlock.COMPOSTABLES.put(sugarCaneSeeds, 0.3F);
+    ComposterBlock.COMPOSTABLES.put(heartbeet, 0.8F);
   }
 
   private void registerDispenserBehavior() {
     DispenseItemBehavior behavior = (source, stack) -> {
+      // 1.20 did not return here, so a disabled config both dropped an anvil and placed one
       if (!Config.dispensersPlaceAnvils.getAsBoolean()) {
-        DEFAULT.dispense(source, stack);
+        return DEFAULT.dispense(source, stack);
       }
       // get basic data
-      Direction facing = source.getBlockState().getValue(DispenserBlock.FACING);
-      Level world = source.getLevel();
-      BlockPos pos = source.getPos().relative(facing);
+      Direction facing = source.state().getValue(DispenserBlock.FACING);
+      Level world = source.level();
+      BlockPos pos = source.pos().relative(facing);
 
       DirectionalPlaceContext context = new DirectionalPlaceContext(world, pos, facing, stack, facing.getOpposite());
 
-      if (((BlockItem)stack.getItem()).place(context) == InteractionResult.SUCCESS) {
+      // place() gives CONSUME on the server, 1.20 compared with SUCCESS and also dropped a second anvil every time
+      if (((BlockItem)stack.getItem()).place(context).consumesAction()) {
         return stack;
       } else {
         // if we cannot place it, toss the item

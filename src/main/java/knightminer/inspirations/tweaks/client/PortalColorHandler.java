@@ -4,6 +4,7 @@ import knightminer.inspirations.Inspirations;
 import knightminer.inspirations.common.Config;
 import knightminer.inspirations.library.MiscUtil;
 import net.minecraft.client.Minecraft;
+import net.minecraft.util.FastColor;
 import net.minecraft.client.color.block.BlockColor;
 import net.minecraft.client.renderer.chunk.RenderChunkRegion;
 import net.minecraft.core.BlockPos;
@@ -31,11 +32,11 @@ public class PortalColorHandler implements BlockColor {
 
   @Override
   public int getColor(BlockState state, @Nullable BlockAndTintGetter world, @Nullable BlockPos pos, int tintValue) {
-    if (!Config.customPortalColor.get()) {
+    if (!Config.get(Config.customPortalColor)) {
       return -1;
     }
     if (world == null || pos == null) {
-      return DEFAULT_COLOR;
+      return FastColor.ARGB32.opaque(DEFAULT_COLOR);
     }
 
     // Get the real world, not the fake one so we can look at the blocks far enough below us.
@@ -60,7 +61,7 @@ public class PortalColorHandler implements BlockColor {
       pos = pos.below();
     }
 
-    return getColorValue(world, pos.below());
+    return FastColor.ARGB32.opaque(getColorValue(world, pos.below()));
   }
 
   /**
@@ -79,9 +80,9 @@ public class PortalColorHandler implements BlockColor {
     if (!BEACON_COLOR_BLACKLIST.contains(block)) {
       if (access instanceof LevelReader world) {
         try {
-          float[] color = block.getBeaconColorMultiplier(state, world, pos, pos);
-          if (color != null && color.length == 3) {
-            return MiscUtil.getColorInteger(color);
+          Integer color = block.getBeaconColorMultiplier(state, world, pos, pos);
+          if (color != null) {
+            return MiscUtil.rgb(color);
           }
         } catch (ClassCastException e) {
           Inspirations.log.error("Error getting beacon color for block", e);

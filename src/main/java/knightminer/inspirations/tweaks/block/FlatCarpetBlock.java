@@ -9,6 +9,7 @@ import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.DyeColor;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.BlockGetter;
+import net.minecraft.world.level.LevelReader;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.LevelAccessor;
 import net.minecraft.world.level.block.Block;
@@ -25,10 +26,10 @@ import javax.annotation.Nullable;
 
 @SuppressWarnings("WeakerAccess")
 public class FlatCarpetBlock extends WoolCarpetBlock {
-  protected static final BooleanProperty NORTHWEST = BooleanProperty.create("northwest");
-  protected static final BooleanProperty NORTHEAST = BooleanProperty.create("northeast");
-  protected static final BooleanProperty SOUTHWEST = BooleanProperty.create("southwest");
-  protected static final BooleanProperty SOUTHEAST = BooleanProperty.create("southeast");
+  public static final BooleanProperty NORTHWEST = BooleanProperty.create("northwest");
+  public static final BooleanProperty NORTHEAST = BooleanProperty.create("northeast");
+  public static final BooleanProperty SOUTHWEST = BooleanProperty.create("southwest");
+  public static final BooleanProperty SOUTHEAST = BooleanProperty.create("southeast");
 
   // No bits set.
   private static final int SHAPE_FLAT = 0;
@@ -39,20 +40,28 @@ public class FlatCarpetBlock extends WoolCarpetBlock {
 
   @Override
   public BlockState updateShape(BlockState state, Direction facing, BlockState facingState, LevelAccessor world, BlockPos pos, BlockPos facingPos) {
+    return fitToStairs(getColor(), state, world, pos);
+  }
+
+  /**
+   * Shape of a carpet of the color at the position: fitted to the stairs below, flat (vanilla carpet) otherwise, or
+   * air if it cannot stay. Used by fitted carpets and, through WoolCarpetBlockMixin, by the vanilla carpets.
+   */
+  public static BlockState fitToStairs(DyeColor color, BlockState state, LevelAccessor world, BlockPos pos) {
     if (!state.canSurvive(world, pos)) {
       return Blocks.AIR.defaultBlockState();
     }
     int shape = getStairShape(world.getBlockState(pos.below()));
 
     if (shape != SHAPE_FLAT) {
-      return InspirationsTweaks.fitCarpets.get(getColor())
+      return InspirationsTweaks.fitCarpets.get(color)
                                           .defaultBlockState()
                                           .setValue(NORTHWEST, (shape & 8) > 0)
                                           .setValue(NORTHEAST, (shape & 4) > 0)
                                           .setValue(SOUTHWEST, (shape & 2) > 0)
                                           .setValue(SOUTHEAST, (shape & 1) > 0);
     } else {
-      return InspirationsTweaks.flatCarpets.get(getColor()).defaultBlockState();
+      return InspirationsTweaks.flatCarpets.get(color).defaultBlockState();
     }
   }
 
@@ -62,7 +71,7 @@ public class FlatCarpetBlock extends WoolCarpetBlock {
   }
 
   @Override
-  public ItemStack getCloneItemStack(BlockState state, HitResult target, BlockGetter level, BlockPos pos, Player player) {
+  public ItemStack getCloneItemStack(BlockState state, HitResult target, LevelReader level, BlockPos pos, Player player) {
     return new ItemStack(InspirationsTweaks.flatCarpets.get(getColor()));
   }
 
