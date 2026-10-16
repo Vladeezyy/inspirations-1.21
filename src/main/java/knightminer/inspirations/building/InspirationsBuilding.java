@@ -1,5 +1,6 @@
 package knightminer.inspirations.building;
 
+import knightminer.inspirations.library.InspirationsRegistry;
 import knightminer.inspirations.common.datagen.IInspirationsRecipeBuilder;
 import knightminer.inspirations.building.block.EnlightenedBushBlock;
 import knightminer.inspirations.building.block.GlassDoorBlock;
@@ -52,6 +53,7 @@ import net.neoforged.neoforge.registries.RegisterEvent;
 import net.neoforged.neoforge.capabilities.Capabilities;
 import net.neoforged.neoforge.capabilities.RegisterCapabilitiesEvent;
 import net.neoforged.neoforge.common.NeoForge;
+import net.neoforged.neoforge.event.TagsUpdatedEvent;
 import knightminer.inspirations.common.registration.BlockEntityTypeRegistryAdapter;
 import knightminer.inspirations.common.registration.BlockRegistryAdapter;
 import knightminer.inspirations.common.registration.ContainerTypeRegistryAdapter;
@@ -194,6 +196,8 @@ public class InspirationsBuilding extends ModuleBase {
     event.enqueueWork(InspirationsBuilding::registerCompostables);
     // 1.20 had this listener static on the module, which is registered as an instance on the mod bus, so it never ran
     NeoForge.EVENT_BUS.addListener(InspirationsBuilding::loadLoot);
+    // books on shelves come from a tag, cached per item
+    NeoForge.EVENT_BUS.addListener((TagsUpdatedEvent tags) -> InspirationsRegistry.clearBookCache());
   }
 
   private static void loadLoot(LootTableLoadEvent event) {

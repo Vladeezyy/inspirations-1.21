@@ -23,10 +23,10 @@ import net.minecraft.core.registries.BuiltInRegistries;
 
 import javax.annotation.Nullable;
 import java.awt.Color;
-import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.function.Function;
 
 public final class ClientUtil {
@@ -34,7 +34,8 @@ public final class ClientUtil {
 
   private ClientUtil() { }
 
-  private static final Map<Item,Integer> COLOR_CACHE = new HashMap<>();
+  // chunk builder threads ask for block colors at the same time
+  private static final Map<Item,Integer> COLOR_CACHE = new ConcurrentHashMap<>();
 
   /**
    * Gets the color for an Item

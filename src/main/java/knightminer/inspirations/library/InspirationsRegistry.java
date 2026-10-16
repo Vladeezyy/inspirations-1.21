@@ -40,16 +40,16 @@ public class InspirationsRegistry {
     return bookCache.computeIfAbsent(book.getItem(), InspirationsRegistry::bookPower);
   }
 
-  /**
-   * Helper function to check if a stack is a book, used internally by the book map
-   * @param item The item.
-   * @return The enchantment power, or -1F.
-   */
   /** Clears cached book data, tags may have changed */
   public static void clearBookCache() {
     bookCache.clear();
   }
 
+  /**
+   * Helper function to check if a stack is a book, used internally by the book map
+   * @param item The item.
+   * @return The enchantment power, or -1F.
+   */
   private static Float bookPower(Item item) {
     // TODO: custom enchanting power
     if (item.builtInRegistryHolder().is(InspirationsTags.Items.SHELF_BOOKS)) {
