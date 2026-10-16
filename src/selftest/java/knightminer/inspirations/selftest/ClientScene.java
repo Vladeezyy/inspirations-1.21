@@ -23,9 +23,6 @@ import knightminer.inspirations.library.MiscUtil;
 import knightminer.inspirations.tools.InspirationsTools;
 import knightminer.inspirations.tweaks.InspirationsTweaks;
 import knightminer.inspirations.utility.InspirationsUtility;
-import mezz.jei.api.constants.RecipeTypes;
-import mezz.jei.api.constants.VanillaTypes;
-import mezz.jei.api.recipe.RecipeIngredientRole;
 import net.minecraft.client.CloudStatus;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.Screenshot;
@@ -229,7 +226,14 @@ public final class ClientScene {
       shot(mc, "hotbar");
       checkNoMissingTexture(mc, "hotbar");
     });
-    at(t += 5, ClientScene::checkJei);
+    // -Pno_jei runs (old NeoForge) have no JEI classes at all
+    at(t += 5, mc -> {
+      if (net.neoforged.fml.ModList.get().isLoaded("jei")) {
+        SceneJeiPlugin.checkJei(mc);
+      } else {
+        Inspirations.log.info("[scene] JEI is not loaded, its checks are skipped");
+      }
+    });
     at(t += 5, ClientScene::checkTranslations);
     at(t += 10, mc -> {
       Inspirations.log.info("[scene] DONE " + (checks - failures) + "/" + checks + (failures == 0 ? " passed" : " (" + failures + " failed)"));
@@ -576,28 +580,6 @@ public final class ClientScene {
     List<Component> tooltip = RetexturedHelper.setTexture(new ItemStack(InspirationsBuilding.shelf.get(ShelfType.NORMAL)), Blocks.BIRCH_SLAB)
       .getTooltipLines(net.minecraft.world.item.Item.TooltipContext.of(mc.level), mc.player, TooltipFlag.Default.NORMAL);
     check("shelf tooltip names the texture block", tooltip.stream().anyMatch(c -> c.getString().equals(Blocks.BIRCH_SLAB.getName().getString())), tooltip);
-  }
-
-  /** The recipe of a creative shelf can be looked up (original issue #247) */
-  private static void checkJei(Minecraft mc) {
-    var runtime = SceneJeiPlugin.runtime;
-    if (runtime == null) {
-      check("JEI runtime available", false, "no JEI");
-      return;
-    }
-    var focus = runtime.getJeiHelpers().getFocusFactory();
-    ItemStack creativeShelf = RetexturedHelper.setTexture(new ItemStack(InspirationsBuilding.shelf.get(ShelfType.NORMAL)), Blocks.OAK_SLAB);
-    long shelves = runtime.getRecipeManager().createRecipeLookup(RecipeTypes.CRAFTING)
-      .limitFocus(List.of(focus.createFocus(RecipeIngredientRole.OUTPUT, VanillaTypes.ITEM_STACK, creativeShelf))).get().count();
-    check("JEI finds the recipe of a creative shelf (#247)", shelves > 0, shelves);
-    ItemStack plainShelf = new ItemStack(InspirationsBuilding.shelf.get(ShelfType.RAINBOW));
-    long plain = runtime.getRecipeManager().createRecipeLookup(RecipeTypes.CRAFTING)
-      .limitFocus(List.of(focus.createFocus(RecipeIngredientRole.OUTPUT, VanillaTypes.ITEM_STACK, plainShelf))).get().count();
-    check("JEI finds the recipes of an untextured rainbow shelf", plain >= 3, plain);
-    ItemStack bush = RetexturedHelper.setTexture(new ItemStack(InspirationsBuilding.enlightenedBush.get(BushType.RED)), Blocks.OAK_LEAVES);
-    long bushes = runtime.getRecipeManager().createRecipeLookup(RecipeTypes.CRAFTING)
-      .limitFocus(List.of(focus.createFocus(RecipeIngredientRole.OUTPUT, VanillaTypes.ITEM_STACK, bush))).get().count();
-    check("JEI finds the recipe of an enlightened bush", bushes > 0, bushes);
   }
 
   /** Keys the mod shows: names of its registry entries and the texts of its code */
