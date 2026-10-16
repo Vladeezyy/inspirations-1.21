@@ -6,11 +6,15 @@ cd "$(dirname "$0")/.."
 pkill -f 'fml.modFolders=inspirations' 2>/dev/null
 rm -rf run-net/world build-netserver.log build-netclient.log
 rm -f run-net/config/inspirations-*.toml run/config/inspirations-*.toml
-mkdir -p run-net && echo "eula=true" > run-net/eula.txt
+mkdir -p run-net/defaultconfigs && echo "eula=true" > run-net/eula.txt
+# the milk cooldown is off by default, the scene checks it; a new world copies defaultconfigs into serverconfig
+printf '[tweaks.milkCooldown]\n\tenable = true\n' > run-net/defaultconfigs/inspirations-server.toml
 printf 'online-mode=false\nspawn-protection=0\ndifficulty=peaceful\n' > run-net/server.properties
 # The offline UUID of "Dev"
 uuid=$(python3 -c 'import hashlib,uuid;h=bytearray(hashlib.md5(b"OfflinePlayer:Dev").digest());h[6]=h[6]&0x0f|0x30;h[8]=h[8]&0x3f|0x80;print(uuid.UUID(bytes=bytes(h)))')
 echo "[{\"uuid\":\"$uuid\",\"name\":\"Dev\",\"level\":4,\"bypassesPlayerLimit\":false}]" > run-net/ops.json
+# the client scenes may have left another language in the options
+[ -f run/options.txt ] && sed -i '' 's/^lang:.*/lang:en_us/' run/options.txt
 ./gradlew runNetServer --console=plain "$@" > build-netserver.log 2>&1 &
 i=0
 until grep -qE 'Done \(|Minecraft Crash Report|BUILD FAILED' build-netserver.log 2>/dev/null || [ $i -gt 300 ]; do sleep 2; i=$((i+1)); done

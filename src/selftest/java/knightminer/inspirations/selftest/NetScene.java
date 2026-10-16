@@ -59,9 +59,9 @@ public final class NetScene {
     command(mc, "item replace entity @s weapon.mainhand with " + item);
   }
 
-  /** Right click on the north face of the block, as a player does */
-  private static void use(Minecraft mc, BlockPos pos, double x, double y) {
-    Vec3 hit = new Vec3(pos.getX() + x, pos.getY() + y, pos.getZ());
+  /** Right click facing south, as a player does: z is where the ray meets the block (shelves are half blocks) */
+  private static void use(Minecraft mc, BlockPos pos, double x, double y, double z) {
+    Vec3 hit = new Vec3(pos.getX() + x, pos.getY() + y, pos.getZ() + z);
     mc.gameMode.useItemOn(mc.player, InteractionHand.MAIN_HAND, new BlockHitResult(hit, Direction.NORTH, pos, false));
   }
 
@@ -95,8 +95,12 @@ public final class NetScene {
     switch (tick) {
       case 40 -> {
         check("joined the dedicated server with the mod", mc.getConnection().getConnection().isConnected() && mc.getSingleplayerServer() == null, "no connection");
-        command(mc, "gamemode survival");
         command(mc, "time set day");
+        command(mc, "gamerule doMobSpawning false");
+        command(mc, "forceload add -3 -3 10 10");
+      }
+      // the forced chunks are loaded now
+      case 50 -> {
         command(mc, "fill -3 " + (Y - 1) + " -3 10 " + (Y - 1) + " 10 minecraft:stone");
         command(mc, "fill -3 " + Y + " -3 10 " + (Y + 3) + " 10 minecraft:air");
         command(mc, "setblock " + pos(SHELF) + " inspirations:shelf[facing=north]");
@@ -104,26 +108,31 @@ public final class NetScene {
         command(mc, "setblock " + pos(EMPTY) + " minecraft:cauldron");
         command(mc, "setblock " + pos(LECTERN) + " minecraft:lectern[facing=north,has_book=true]{Book:{id:\"inspirations:colored_book\",count:1,components:{\"minecraft:dyed_color\":{rgb:65280}}}}");
         command(mc, "setblock " + pos(COLLECTOR) + " inspirations:collector");
-        command(mc, "summon minecraft:cow 4.5 " + Y + " 6.5 {NoAI:1b,Tags:[\"insp_cow\"]}");
+        command(mc, "kill @e[type=minecraft:cow]");
+        command(mc, "summon minecraft:cow 2.5 " + Y + " 1.5 {NoAI:1b,Tags:[\"insp_cow\"]}");
+      }
+      // back on the new floor, survival so items are used up
+      case 60 -> {
+        command(mc, "gamemode survival");
         command(mc, "tp @s 4.5 " + Y + " 0.5 0 20");
       }
       // a red book on the shelf
       case 80 -> hold(mc, "inspirations:colored_book[minecraft:dyed_color={rgb:16711680}]");
-      case 90 -> use(mc, SHELF, 0.2, 0.8);
+      case 90 -> use(mc, SHELF, 0.2, 0.8, 0.75);
       case 105 -> check("book put on a shelf reached the client", mc.level.getBlockEntity(SHELF) instanceof ShelfBlockEntity shelf && countBooks(shelf, 0xFF0000) == 1 && mc.player.getMainHandItem().isEmpty(),
         mc.level.getBlockEntity(SHELF) instanceof ShelfBlockEntity shelf ? countBooks(shelf, 0xFF0000) + " " + mc.player.getMainHandItem() : "no shelf");
       // red dye in water
       case 110 -> hold(mc, "minecraft:red_dye");
-      case 120 -> use(mc, WATER, 0.5, 0.9);
+      case 120 -> use(mc, WATER, 0.5, 0.9, 0);
       case 135 -> check("dyed cauldron color reached the client", mc.level.getBlockEntity(WATER) instanceof DyeCauldronBlockEntity dye && dye.getColor() == MiscUtil.getColor(DyeColor.RED),
         mc.level.getBlockEntity(WATER) instanceof DyeCauldronBlockEntity dye ? Integer.toHexString(dye.getColor()) : mc.level.getBlockState(WATER));
       // a potion in an empty cauldron, then back into a bottle
       case 140 -> hold(mc, "minecraft:potion[minecraft:potion_contents={potion:\"minecraft:swiftness\"}]");
-      case 150 -> use(mc, EMPTY, 0.5, 0.9);
+      case 150 -> use(mc, EMPTY, 0.5, 0.9, 0);
       case 165 -> {
         check("potion cauldron reached the client", mc.level.getBlockEntity(EMPTY) instanceof PotionCauldronBlockEntity potion && potion.getPotion() == Potions.SWIFTNESS && mc.player.getMainHandItem().is(Items.GLASS_BOTTLE),
           mc.level.getBlockState(EMPTY) + " " + mc.player.getMainHandItem());
-        use(mc, EMPTY, 0.5, 0.9);
+        use(mc, EMPTY, 0.5, 0.9, 0);
       }
       case 180 -> check("bottle filled back with the potion", mc.player.getMainHandItem().is(Items.POTION)
         && mc.player.getMainHandItem().getOrDefault(DataComponents.POTION_CONTENTS, PotionContents.EMPTY).is(Potions.SWIFTNESS), mc.player.getMainHandItem());
@@ -132,7 +141,7 @@ public final class NetScene {
         mc.level.getBlockEntity(LECTERN) instanceof LecternBlockEntity lectern ? lectern.getBook() : "no lectern");
       // collector screen
       case 190 -> hold(mc, "minecraft:air");
-      case 200 -> use(mc, COLLECTOR, 0.5, 0.5);
+      case 200 -> use(mc, COLLECTOR, 0.5, 0.5, 0);
       case 215 -> {
         check("collector screen opens over the network with 9 slots", mc.player.containerMenu.slots.size() == 9 + 36, mc.player.containerMenu.slots.size());
         mc.player.closeContainer();
@@ -142,7 +151,8 @@ public final class NetScene {
       case 230 -> mc.gameMode.interact(mc.player, cow(mc), InteractionHand.MAIN_HAND);
       case 245 -> {
         check("cow milked into a bucket", mc.player.getMainHandItem().is(Items.MILK_BUCKET), mc.player.getMainHandItem());
-        check("milk cooldown reached the client", cow(mc).getPersistentData().getShort(TweaksEvents.TAG_MILKCOOLDOWN) > 0, cow(mc).getPersistentData());
+        // the client marks 600 itself when milking, the server's packet sets 100
+        check("milk cooldown packet reached the client", cow(mc).getPersistentData().getShort(TweaksEvents.TAG_MILKCOOLDOWN) == 100, cow(mc).getPersistentData());
         hold(mc, "minecraft:bucket");
       }
       case 255 -> mc.gameMode.interact(mc.player, cow(mc), InteractionHand.MAIN_HAND);
@@ -168,13 +178,18 @@ public final class NetScene {
     return pos.getX() + " " + pos.getY() + " " + pos.getZ();
   }
 
+  /** The cow of the scene, the nearest one */
   private static Cow cow(Minecraft mc) {
+    Cow nearest = null;
     for (Entity entity : mc.level.entitiesForRendering()) {
-      if (entity instanceof Cow cow) {
-        return cow;
+      if (entity instanceof Cow cow && (nearest == null || cow.distanceToSqr(mc.player) < nearest.distanceToSqr(mc.player))) {
+        nearest = cow;
       }
     }
-    throw new IllegalStateException("no cow on the client");
+    if (nearest == null || nearest.distanceToSqr(mc.player) > 64) {
+      throw new IllegalStateException("no cow next to the player");
+    }
+    return nearest;
   }
 
   private static int countBooks(ShelfBlockEntity shelf, int color) {
