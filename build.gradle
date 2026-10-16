@@ -54,6 +54,7 @@ neoForge {
         scene {
             client()
             systemProperty 'inspirations.scene', project.findProperty('scene') ?: 'main'
+            systemProperty 'inspirations.scene.lang', project.findProperty('scene_lang') ?: 'en_us'
         }
         // tools/selftest.sh: functional checks on a fresh world, then stops (src/selftest)
         selftest {

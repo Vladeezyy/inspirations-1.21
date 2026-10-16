@@ -30,6 +30,12 @@ public class FittedCarpetBlock extends FlatCarpetBlock {
     builder.add(NORTHWEST, NORTHEAST, SOUTHWEST, SOUTHEAST);
   }
 
+  @Override
+  public String getDescriptionId() {
+    // the carpet's own name, as carpeted pressure plates do: other mods (Jade) show it
+    return "block.minecraft." + getColor().getSerializedName() + "_carpet";
+  }
+
 
   /* Bounds */
 

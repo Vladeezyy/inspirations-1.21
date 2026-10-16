@@ -10,6 +10,7 @@ import net.minecraft.world.item.Items;
 import net.minecraft.world.level.BlockGetter;
 import net.minecraft.world.level.LevelAccessor;
 import net.minecraft.world.level.LevelReader;
+import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.HopperBlock;
 import net.minecraft.world.level.block.SimpleWaterloggedBlock;
 import net.minecraft.world.level.block.state.BlockState;
@@ -25,6 +26,12 @@ import java.util.Optional;
 public class WetHopperBlock extends HopperBlock implements SimpleWaterloggedBlock {
   public WetHopperBlock(Properties props) {
     super(props);
+  }
+
+  @Override
+  public String getDescriptionId() {
+    // a vanilla hopper with water inside, other mods (Jade) show its name
+    return Blocks.HOPPER.getDescriptionId();
   }
 
   @Override
