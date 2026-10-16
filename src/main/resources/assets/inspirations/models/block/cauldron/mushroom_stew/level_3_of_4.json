@@ -1,0 +1,10 @@
+{
+  "loader": "mantle:colored_block",
+  "parent": "inspirations:block/cauldron/level_3_of_4",
+  "textures": {
+    "content": "inspirations:fluid/colorless_still"
+  },
+  "colors": [
+    { "color": "FFCD8C6F" }
+  ]
+}

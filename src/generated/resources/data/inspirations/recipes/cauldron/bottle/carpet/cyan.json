@@ -1,0 +1,29 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "conditions": [
+    {
+      "type": "inspirations:config",
+      "prop": "cauldron_dyeing"
+    }
+  ],
+  "group": "carpet",
+  "key": {
+    "#": {
+      "tag": "inspirations:carpets"
+    },
+    "x": {
+      "item": "inspirations:cyan_dyed_bottle"
+    }
+  },
+  "pattern": [
+    "###",
+    "#x#",
+    "###"
+  ],
+  "result": {
+    "count": 8,
+    "item": "minecraft:cyan_carpet"
+  },
+  "show_notification": true
+}

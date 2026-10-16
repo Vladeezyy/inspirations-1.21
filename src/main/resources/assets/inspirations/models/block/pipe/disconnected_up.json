@@ -1,0 +1,15 @@
+{
+	"textures": {
+		"particle": "block/hopper_outside",
+		"hopper": "block/hopper_outside"
+	},
+	"elements": [
+		{
+			"from": [6, 8, 6],
+			"to": [10, 8, 10],
+			"faces": {
+				"up": {"uv": [2, 2, 6, 6], "texture": "#hopper"}
+			}
+		}
+	]
+}

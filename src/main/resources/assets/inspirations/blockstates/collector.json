@@ -1,0 +1,10 @@
+{
+  "variants": {
+    "facing=down":  { "model": "inspirations:block/collector_vertical", "x": 180 },
+    "facing=up":    { "model": "inspirations:block/collector_vertical" },
+    "facing=north": { "model": "inspirations:block/collector" },
+    "facing=south": { "model": "inspirations:block/collector", "y": 180 },
+    "facing=west":  { "model": "inspirations:block/collector", "y": 270 },
+    "facing=east":  { "model": "inspirations:block/collector", "y": 90  }
+  }
+}

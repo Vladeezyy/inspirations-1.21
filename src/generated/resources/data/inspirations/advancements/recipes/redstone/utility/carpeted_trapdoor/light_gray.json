@@ -1,0 +1,33 @@
+{
+  "parent": "minecraft:recipes/root",
+  "criteria": {
+    "has_carpet": {
+      "conditions": {
+        "items": [
+          {
+            "tag": "inspirations:carpets"
+          }
+        ]
+      },
+      "trigger": "minecraft:inventory_changed"
+    },
+    "has_the_recipe": {
+      "conditions": {
+        "recipe": "inspirations:utility/carpeted_trapdoor/light_gray"
+      },
+      "trigger": "minecraft:recipe_unlocked"
+    }
+  },
+  "requirements": [
+    [
+      "has_carpet",
+      "has_the_recipe"
+    ]
+  ],
+  "rewards": {
+    "recipes": [
+      "inspirations:utility/carpeted_trapdoor/light_gray"
+    ]
+  },
+  "sends_telemetry_event": false
+}

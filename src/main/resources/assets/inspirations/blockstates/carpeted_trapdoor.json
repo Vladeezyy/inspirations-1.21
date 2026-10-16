@@ -1,0 +1,35 @@
+{
+  "forge_marker": 1,
+  "variants": {
+    "color": {
+      "white":      { "textures": { "wool": "blocks/white_wool"      }},
+      "orange":     { "textures": { "wool": "blocks/orange_wool"     }},
+      "magenta":    { "textures": { "wool": "blocks/magenta_wool"    }},
+      "light_blue": { "textures": { "wool": "blocks/light_wool_blue" }},
+      "yellow":     { "textures": { "wool": "blocks/yellow_wool"     }},
+      "lime":       { "textures": { "wool": "blocks/lime_wool"       }},
+      "pink":       { "textures": { "wool": "blocks/pink_wool"       }},
+      "gray":       { "textures": { "wool": "blocks/gray_wool"       }},
+      "silver":     { "textures": { "wool": "blocks/silver_wool"     }},
+      "cyan":       { "textures": { "wool": "blocks/cyan_wool"       }},
+      "purple":     { "textures": { "wool": "blocks/purple_wool"     }},
+      "blue":       { "textures": { "wool": "blocks/blue_wool"       }},
+      "brown":      { "textures": { "wool": "blocks/brown_wool"      }},
+      "green":      { "textures": { "wool": "blocks/green_wool"      }},
+      "red":        { "textures": { "wool": "blocks/red_wool"        }},
+      "black":      { "textures": { "wool": "blocks/black_wool"      }}
+    },
+    "facing": {
+      "north": {},
+      "south": { "y": 180 },
+      "east":  { "y":  90 },
+      "west":  { "y": 270 }
+    },
+    "shape": {
+      "bottom":      { "model": "inspirations:carpeted_trapdoor_bottom", "uvlock": true },
+      "top":         { "model": "inspirations:carpeted_trapdoor_top",    "uvlock": true },
+      "bottom_open": { "model": "inspirations:carpeted_trapdoor_bottom_open" },
+      "top_open":    { "model": "inspirations:carpeted_trapdoor_top_open"    }
+    }
+  }
+}

@@ -1,0 +1,59 @@
+{
+    "ambientocclusion": false,
+    "render_type": "minecraft:cutout",
+    "textures": {
+        "top": "inspirations:block/glass_door_upper",
+        "bottom": "inspirations:block/glass_door_lower",
+        "handle": "inspirations:block/glass_door_handle",
+        "particle": "inspirations:block/glass_door_lower"
+    },
+    "elements": [
+        {
+            "name": "Door",
+            "from": [ 0, 0, 0 ], 
+            "to": [ 3, 16, 16 ], 
+            "faces": {
+                "down":  { "uv": [ 13, 0, 16, 16 ], "texture": "#bottom", "cullface": "down" },
+                "north": { "uv": [  0, 0,  3, 16 ], "texture": "#bottom", "cullface": "north" },
+                "south": { "uv": [  0, 0,  3, 16 ], "texture": "#bottom", "cullface": "south" },
+                "west":  { "uv": [  0, 0, 16, 16 ], "texture": "#bottom", "cullface": "west" },
+                "east":  { "uv": [  0, 0, 16, 16 ], "texture": "#bottom" }
+            }
+        },
+        {
+            "name": "InnerHandle",
+            "from": [ 4, 6, 4 ], 
+            "to": [ 5, 16, 5 ], 
+            "faces": {
+                "north": { "texture": "#handle", "uv": [ 4,  0, 5, 16 ] },
+                "east":  { "texture": "#handle", "uv": [ 4,  0, 5, 16 ] },
+                "south": { "texture": "#handle", "uv": [ 4,  0, 5, 16 ] },
+                "west":  { "texture": "#handle", "uv": [ 4,  0, 5, 16 ] },
+                "down":  { "texture": "#handle", "uv": [ 4, 15, 5, 16 ] }
+            }
+        },
+        {
+            "name": "OuterHandlle",
+            "from": [ -2, 6, 4 ], 
+            "to": [ -1, 16, 5 ], 
+            "faces": {
+                "north": { "texture": "#handle", "uv": [ 4,  0, 5, 16 ] },
+                "east":  { "texture": "#handle", "uv": [ 4,  0, 5, 16 ] },
+                "south": { "texture": "#handle", "uv": [ 4,  0, 5, 16 ] },
+                "west":  { "texture": "#handle", "uv": [ 4,  0, 5, 16 ] },
+                "down":  { "texture": "#handle", "uv": [ 4, 15, 5, 16 ] }
+            }
+        },
+        {
+            "name": "Connection",
+            "from": [ -1, 8, 4 ], 
+            "to": [ 4, 9, 5 ], 
+            "faces": {
+                "north": { "texture": "#handle", "uv": [ 4, 15, 5, 16 ] },
+                "south": { "texture": "#handle", "uv": [ 4, 15, 5, 16 ] },
+                "up":    { "texture": "#handle", "uv": [ 4,  0, 5,  1 ] },
+                "down":  { "texture": "#handle", "uv": [ 4, 15, 5, 16 ] }
+            }
+        }
+    ]
+}

@@ -1,0 +1,33 @@
+{
+  "type": "mantle:crafting_shaped_retextured",
+  "category": "misc",
+  "conditions": [
+    {
+      "type": "inspirations:config",
+      "prop": "bookshelf"
+    }
+  ],
+  "group": "inspirations:bookshelf",
+  "key": {
+    "P": {
+      "item": "minecraft:paper"
+    },
+    "S": {
+      "tag": "minecraft:wooden_slabs"
+    }
+  },
+  "match_all": true,
+  "pattern": [
+    "SSS",
+    "PPP",
+    "SSS"
+  ],
+  "result": {
+    "count": 2,
+    "item": "inspirations:ancient_shelf"
+  },
+  "show_notification": true,
+  "texture": {
+    "tag": "minecraft:wooden_slabs"
+  }
+}

@@ -1,0 +1,39 @@
+{
+  "type": "mantle:crafting_shaped_retextured",
+  "category": "misc",
+  "conditions": [
+    {
+      "type": "inspirations:config",
+      "prop": "bookshelf"
+    }
+  ],
+  "group": "inspirations:bookshelf",
+  "key": {
+    "B": {
+      "tag": "forge:dyes/blue"
+    },
+    "G": {
+      "tag": "forge:dyes/green"
+    },
+    "R": {
+      "tag": "forge:dyes/red"
+    },
+    "S": {
+      "tag": "minecraft:wooden_slabs"
+    }
+  },
+  "match_all": true,
+  "pattern": [
+    "SSS",
+    "RBG",
+    "SSS"
+  ],
+  "result": {
+    "count": 2,
+    "item": "inspirations:rainbow_shelf"
+  },
+  "show_notification": true,
+  "texture": {
+    "tag": "minecraft:wooden_slabs"
+  }
+}

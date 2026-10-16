@@ -1,0 +1,19 @@
+{
+  "type": "minecraft:crafting_shapeless",
+  "category": "misc",
+  "conditions": [
+    {
+      "type": "inspirations:config",
+      "prop": "flowers"
+    }
+  ],
+  "group": "cyan_dye",
+  "ingredients": [
+    {
+      "item": "inspirations:cyan_flower"
+    }
+  ],
+  "result": {
+    "item": "minecraft:cyan_dye"
+  }
+}

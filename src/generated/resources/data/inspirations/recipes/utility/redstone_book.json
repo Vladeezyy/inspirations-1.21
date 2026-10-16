@@ -1,0 +1,31 @@
+{
+  "type": "minecraft:crafting_shapeless",
+  "category": "redstone",
+  "conditions": [
+    {
+      "type": "inspirations:config",
+      "prop": "bookshelf"
+    },
+    {
+      "type": "inspirations:config",
+      "prop": "redstone_book"
+    }
+  ],
+  "ingredients": [
+    {
+      "tag": "forge:leather"
+    },
+    {
+      "item": "minecraft:paper"
+    },
+    {
+      "item": "minecraft:paper"
+    },
+    {
+      "tag": "forge:dusts/redstone"
+    }
+  ],
+  "result": {
+    "item": "inspirations:redstone_book"
+  }
+}

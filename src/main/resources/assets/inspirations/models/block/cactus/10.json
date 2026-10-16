@@ -1,0 +1,5 @@
+{
+  "loader": "inspirations:trim",
+  "parent": "inspirations:block/cactus/template",
+  "trim": 5
+}
