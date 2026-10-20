@@ -1,5 +1,8 @@
 package knightminer.inspirations.utility.block;
 
+import net.minecraft.util.RandomSource;
+import net.minecraft.world.level.ScheduledTickAccess;
+import net.minecraft.world.level.LevelReader;
 import knightminer.inspirations.common.Config;
 import knightminer.inspirations.utility.InspirationsUtility;
 import knightminer.inspirations.utility.block.entity.PipeBlockEntity;
@@ -9,7 +12,7 @@ import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.Container;
 import net.minecraft.world.Containers;
 import net.minecraft.world.InteractionHand;
-import net.minecraft.world.ItemInteractionResult;
+import net.minecraft.world.InteractionResult;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.Item;
@@ -30,7 +33,7 @@ import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.StateDefinition;
 import net.minecraft.world.level.block.state.properties.BlockStateProperties;
 import net.minecraft.world.level.block.state.properties.BooleanProperty;
-import net.minecraft.world.level.block.state.properties.DirectionProperty;
+import net.minecraft.world.level.block.state.properties.EnumProperty;
 import net.minecraft.world.level.material.FluidState;
 import net.minecraft.world.level.material.Fluids;
 import net.minecraft.world.phys.BlockHitResult;
@@ -44,7 +47,7 @@ import javax.annotation.Nullable;
 
 public class PipeBlock extends InventoryBlock implements SimpleWaterloggedBlock {
   // Facing is the direction we output to.
-  public static final DirectionProperty FACING = BlockStateProperties.FACING;
+  public static final EnumProperty<Direction> FACING = BlockStateProperties.FACING;
   // These six values specify if another pipe/hopper is in this direction for us
   // to visually connect to.
   private static final BooleanProperty NORTH = BlockStateProperties.NORTH;
@@ -99,7 +102,7 @@ public class PipeBlock extends InventoryBlock implements SimpleWaterloggedBlock 
 
   @Deprecated
   @Override
-  public BlockState updateShape(BlockState state, Direction neighFacing, BlockState neighState, LevelAccessor world, BlockPos pos, BlockPos neighPos) {
+  public BlockState updateShape(BlockState state, LevelReader world, ScheduledTickAccess ticks, BlockPos pos, Direction neighFacing, BlockPos neighPos, BlockState neighState, RandomSource random) {
     Direction outFacing = state.getValue(FACING);
 
     // We only need to check the one side that updated.
@@ -149,11 +152,11 @@ public class PipeBlock extends InventoryBlock implements SimpleWaterloggedBlock 
   }
 
   @Override
-  protected ItemInteractionResult useItemOn(ItemStack stack, BlockState state, Level world, BlockPos pos, Player player, InteractionHand hand, BlockHitResult trace) {
+  protected InteractionResult useItemOn(ItemStack stack, BlockState state, Level world, BlockPos pos, Player player, InteractionHand hand, BlockHitResult trace) {
     // return false if holding a pipe to make easier to place
     Item item = stack.getItem();
     if (item == InspirationsUtility.pipe.asItem() || Block.byItem(item) instanceof HopperBlock) {
-      return ItemInteractionResult.SKIP_DEFAULT_BLOCK_INTERACTION;
+      return InteractionResult.PASS;
     }
     return super.useItemOn(stack, state, world, pos, player, hand, trace);
   }
@@ -161,7 +164,7 @@ public class PipeBlock extends InventoryBlock implements SimpleWaterloggedBlock 
 
   /* Model and shape */
 
-  private static boolean canConnectTo(LevelAccessor world, BlockPos pos, Direction facing, Direction side) {
+  private static boolean canConnectTo(LevelReader world, BlockPos pos, Direction facing, Direction side) {
     // ignore side pipe is facing
     if (facing == side) return false;
 

@@ -21,7 +21,7 @@ import net.minecraft.world.level.block.state.BlockBehaviour;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.StateDefinition;
 import net.minecraft.world.level.block.state.properties.BooleanProperty;
-import net.minecraft.world.level.block.state.properties.DirectionProperty;
+import net.minecraft.world.level.block.state.properties.EnumProperty;
 import net.minecraft.world.level.material.PushReaction;
 import net.minecraft.world.phys.shapes.CollisionContext;
 import net.minecraft.world.phys.shapes.Shapes;
@@ -32,7 +32,7 @@ import javax.annotation.Nullable;
 public class RedstoneChargeBlock extends Block {
 
   public static final BooleanProperty QUICK = BooleanProperty.create("quick");
-  public static final DirectionProperty FACING = DirectionalBlock.FACING;
+  public static final EnumProperty<Direction> FACING = DirectionalBlock.FACING;
 
   public RedstoneChargeBlock(BlockBehaviour.Properties props) {
     super(props);
@@ -77,20 +77,18 @@ public class RedstoneChargeBlock extends Block {
     super.setPlacedBy(world, pos, state, entity, stack);
   }
 
-  @Deprecated
   @Override
-  public void onRemove(BlockState state, Level worldIn, BlockPos pos, BlockState newState, boolean isMoving) {
-    if (!isMoving && state.getBlock() != newState.getBlock()) {
-      super.onRemove(state, worldIn, pos, newState, false);
-      worldIn.updateNeighborsAt(pos, this);
-      worldIn.updateNeighborsAt(pos.relative(state.getValue(FACING)), this);
+  protected void affectNeighborsAfterRemoval(BlockState state, ServerLevel level, BlockPos pos, boolean movedByPiston) {
+    if (!movedByPiston) {
+      level.updateNeighborsAt(pos, this);
+      level.updateNeighborsAt(pos.relative(state.getValue(FACING)), this);
     }
   }
 
   @Deprecated
   @Override
   public void tick(BlockState state, ServerLevel world, BlockPos pos, RandomSource random) {
-    if (!world.isClientSide) {
+    if (!world.isClientSide()) {
       world.removeBlock(pos, false);
       world.playSound(null, pos, SoundEvents.REDSTONE_TORCH_BURNOUT, SoundSource.BLOCKS, 0.5F, 2.6F + (world.random.nextFloat() - world.random.nextFloat()) * 0.8F);
     }

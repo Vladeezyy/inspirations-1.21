@@ -1,5 +1,6 @@
 package knightminer.inspirations.utility.block;
 
+import net.minecraft.server.level.ServerLevel;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.core.particles.SimpleParticleType;
@@ -17,11 +18,11 @@ import net.minecraft.world.level.block.TorchBlock;
 import net.minecraft.world.level.block.state.BlockBehaviour;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.StateDefinition;
-import net.minecraft.world.level.block.state.properties.DirectionProperty;
+import net.minecraft.world.level.block.state.properties.EnumProperty;
 import net.minecraft.world.phys.BlockHitResult;
 
 public class TorchLeverBlock extends TorchBlock {
-  private static final DirectionProperty SWING = DirectionProperty.create("swing", (dir) -> dir != Direction.DOWN);
+  private static final EnumProperty<Direction> SWING = EnumProperty.create("swing", Direction.class, (dir) -> dir != Direction.DOWN);
 
   public TorchLeverBlock(BlockBehaviour.Properties props, SimpleParticleType particles) {
     super(particles, props);
@@ -62,7 +63,7 @@ public class TorchLeverBlock extends TorchBlock {
 
   @Override
   protected InteractionResult useWithoutItem(BlockState state, Level world, BlockPos pos, Player player, BlockHitResult trace) {
-    if (world.isClientSide) {
+    if (world.isClientSide()) {
       return InteractionResult.SUCCESS;
     }
 
@@ -90,15 +91,13 @@ public class TorchLeverBlock extends TorchBlock {
    * Called serverside after this block is replaced with another in Chunk, but before the Tile Entity is updated
    */
 
-  @Deprecated
   @Override
-  public void onRemove(BlockState state, Level world, BlockPos pos, BlockState newState, boolean isMoving) {
+  protected void affectNeighborsAfterRemoval(BlockState state, ServerLevel world, BlockPos pos, boolean isMoving) {
     // if powered, send updates for power
-    if (state.getBlock() != newState.getBlock() && !isMoving && isPowered(state)) {
+    if (!isMoving && isPowered(state)) {
       world.updateNeighborsAt(pos, this);
       world.updateNeighborsAt(pos.below(), this);
     }
-    super.onRemove(state, world, pos, newState, isMoving);
   }
 
   @Deprecated

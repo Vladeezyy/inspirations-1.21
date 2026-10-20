@@ -5,7 +5,7 @@ import knightminer.inspirations.common.Config;
 import knightminer.inspirations.library.recipe.cauldron.CauldronRegistry;
 import net.minecraft.core.BlockPos;
 import net.minecraft.world.InteractionHand;
-import net.minecraft.world.ItemInteractionResult;
+import net.minecraft.world.InteractionResult;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.AbstractCauldronBlock;
@@ -41,10 +41,10 @@ public class CauldronsEvents {
 
     // this is a good spot to hook in JSON eventually
     InteractionHand hand = event.getHand();
-    ItemInteractionResult result = CauldronRegistry.attemptOverride(state, world, pos, player, hand, event.getItemStack());
+    InteractionResult result = CauldronRegistry.attemptOverride(state, world, pos, player, hand, event.getItemStack());
     if (result.consumesAction()) {
       event.setCanceled(true);
-      event.setCancellationResult(result.result());
+      event.setCancellationResult(result);
     }
   }
 }

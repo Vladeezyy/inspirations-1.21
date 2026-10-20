@@ -9,15 +9,12 @@ import knightminer.inspirations.common.AbstractClientEvents;
 import knightminer.inspirations.library.MiscUtil;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.color.block.BlockColors;
-import net.minecraft.client.color.item.ItemColor;
-import net.minecraft.client.color.item.ItemColors;
 import net.minecraft.client.renderer.ItemBlockRenderTypes;
-import net.minecraft.client.renderer.RenderType;
+import net.minecraft.client.renderer.chunk.ChunkSectionLayer;
 import net.minecraft.world.item.alchemy.Potion;
-import net.minecraft.util.FastColor;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.util.ARGB;
+import net.minecraft.resources.Identifier;
 import net.neoforged.neoforge.client.extensions.common.RegisterClientExtensionsEvent;
-import knightminer.inspirations.Inspirations;
 import net.minecraft.world.item.alchemy.Potions;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.neoforged.api.distmarker.Dist;
@@ -27,15 +24,14 @@ import net.neoforged.neoforge.client.extensions.common.IClientFluidTypeExtension
 import net.neoforged.bus.api.SubscribeEvent;
 import net.neoforged.neoforge.fluids.FluidType;
 import net.neoforged.fml.common.EventBusSubscriber;
-import net.neoforged.fml.common.EventBusSubscriber.Bus;
 import net.neoforged.fml.event.lifecycle.FMLClientSetupEvent;
 
-@EventBusSubscriber(modid = Inspirations.modID, value = Dist.CLIENT, bus = Bus.MOD)
+@EventBusSubscriber(modid = Inspirations.modID, value = Dist.CLIENT)
 public class CauldronsClientEvents extends AbstractClientEvents {
   @SubscribeEvent
   static void clientSetup(FMLClientSetupEvent event) {
-    ItemBlockRenderTypes.setRenderLayer(InspirationsCaudrons.honey, RenderType.translucent());
-    ItemBlockRenderTypes.setRenderLayer(InspirationsCaudrons.honey.getFlowing(), RenderType.translucent());
+    ItemBlockRenderTypes.setRenderLayer(InspirationsCaudrons.honey, ChunkSectionLayer.TRANSLUCENT);
+    ItemBlockRenderTypes.setRenderLayer(InspirationsCaudrons.honey.getFlowing(), ChunkSectionLayer.TRANSLUCENT);
   }
 
   @SubscribeEvent
@@ -45,7 +41,7 @@ public class CauldronsClientEvents extends AbstractClientEvents {
       if (index == 0 && level != null && pos != null) {
         BlockEntity be = level.getBlockEntity(pos);
         if (be != null && be.getType() == InspirationsCaudrons.dyeCauldronEntity) {
-          return FastColor.ARGB32.opaque(((DyeCauldronBlockEntity) be).getColor());
+          return ARGB.opaque(((DyeCauldronBlockEntity) be).getColor());
         }
       }
       return -1;
@@ -55,7 +51,7 @@ public class CauldronsClientEvents extends AbstractClientEvents {
         BlockEntity be = level.getBlockEntity(pos);
         if (be != null && be.getType() == InspirationsCaudrons.potionCauldronEntity) {
           PotionCauldronBlockEntity cauldron = (PotionCauldronBlockEntity) be;
-          return cauldron.getPotion() == null ? -1 : FastColor.ARGB32.opaque(cauldron.getPotionContents().getColor());
+          return cauldron.getPotion() == null ? -1 : ARGB.opaque(cauldron.getPotionContents().getColor());
         }
       }
       return -1;
@@ -68,37 +64,26 @@ public class CauldronsClientEvents extends AbstractClientEvents {
   }
 
   @SubscribeEvent
-  static void registerItemColors(RegisterColorHandlersEvent.Item event) {
-    ItemColors itemColors = event.getItemColors();
+  static void registerItemColors(RegisterColorHandlersEvent.ItemTintSources event) {
 
     // dyed water bottles
-    InspirationsCaudrons.simpleDyedWaterBottle.forEach((color, bottle) -> itemColors.register((stack, index) -> index == 0 ? FastColor.ARGB32.opaque(MiscUtil.getColor(color)) : -1, bottle));
-    registerItemColors(itemColors, (stack, index) -> index == 0 ? FastColor.ARGB32.opaque(MixedDyedBottleItem.dyeFromBottle(stack)) : -1, InspirationsCaudrons.mixedDyedWaterBottle);
-    event.register(fluidColor(InspirationsCaudrons.mushroomStewType), InspirationsCaudrons.mushroomStewBucket);
-    event.register(fluidColor(InspirationsCaudrons.potatoSoupType), InspirationsCaudrons.potatoSoupBucket);
-    event.register(fluidColor(InspirationsCaudrons.rabbitStewType), InspirationsCaudrons.rabbitStewBucket);
-    event.register(fluidColor(InspirationsCaudrons.beetrootSoupType), InspirationsCaudrons.beetrootSoupBucket);
-    event.register(fluidColor(InspirationsCaudrons.honeyType), InspirationsCaudrons.honeyBucket);
+    InspirationsCaudrons.simpleDyedWaterBottle.forEach((color, bottle) -> registerItemColors((stack, index) -> index == 0 ? ARGB.opaque(MiscUtil.getColor(color)) : -1, bottle));
+    registerItemColors((stack, index) -> index == 0 ? ARGB.opaque(MixedDyedBottleItem.dyeFromBottle(stack)) : -1, InspirationsCaudrons.mixedDyedWaterBottle);
   }
 
-  /** Gets the fluid color for a bucket */
-  private static ItemColor fluidColor(FluidType type) {
-    IClientFluidTypeExtensions extensions = IClientFluidTypeExtensions.of(type);
-    return (stack, index) -> index == 1 ? extensions.getTintColor() : -1;
-  }
 
   /** Still and flowing textures and tint of a fluid, from the fluid texture JSON Mantle read in 1.20 */
   private static IClientFluidTypeExtensions fluidTexture(String texture, int color) {
-    ResourceLocation still = Inspirations.getResource("fluid/" + texture + "_still");
-    ResourceLocation flowing = Inspirations.getResource("fluid/" + texture + "_flowing");
+    Identifier still = Inspirations.getResource("fluid/" + texture + "_still");
+    Identifier flowing = Inspirations.getResource("fluid/" + texture + "_flowing");
     return new IClientFluidTypeExtensions() {
       @Override
-      public ResourceLocation getStillTexture() {
+      public Identifier getStillTexture() {
         return still;
       }
 
       @Override
-      public ResourceLocation getFlowingTexture() {
+      public Identifier getFlowingTexture() {
         return flowing;
       }
 

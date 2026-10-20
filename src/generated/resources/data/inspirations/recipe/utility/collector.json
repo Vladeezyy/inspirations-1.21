@@ -8,15 +8,9 @@
   "type": "minecraft:crafting_shaped",
   "category": "redstone",
   "key": {
-    "C": {
-      "tag": "c:cobblestones"
-    },
-    "F": {
-      "item": "minecraft:fishing_rod"
-    },
-    "R": {
-      "tag": "c:dusts/redstone"
-    }
+    "C": "#c:cobblestones",
+    "F": "minecraft:fishing_rod",
+    "R": "#c:dusts/redstone"
   },
   "pattern": [
     "CCC",

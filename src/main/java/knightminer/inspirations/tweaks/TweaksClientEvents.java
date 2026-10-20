@@ -3,21 +3,19 @@ package knightminer.inspirations.tweaks;
 import knightminer.inspirations.Inspirations;
 import knightminer.inspirations.common.AbstractClientEvents;
 import knightminer.inspirations.common.Config;
-import knightminer.inspirations.library.client.model.TrimModel;
 import knightminer.inspirations.tweaks.client.PortalColorHandler;
 import knightminer.inspirations.tweaks.client.TintedLecternRenderer;
 import net.minecraft.client.color.block.BlockColors;
-import net.minecraft.client.color.item.ItemColors;
 import net.minecraft.client.renderer.BiomeColors;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.ListTag;
 import net.minecraft.nbt.Tag;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.contents.TranslatableContents;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.core.Holder;
 import net.minecraft.core.component.DataComponents;
-import net.minecraft.util.FastColor;
+import net.minecraft.util.ARGB;
 import net.minecraft.world.item.component.Fireworks;
 import net.minecraft.world.item.enchantment.ItemEnchantments;
 import net.minecraft.world.level.block.entity.BannerPatternLayers;
@@ -29,19 +27,17 @@ import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.neoforged.api.distmarker.Dist;
 import net.neoforged.neoforge.client.event.EntityRenderersEvent;
-import net.neoforged.neoforge.client.event.ModelEvent.RegisterGeometryLoaders;
 import net.neoforged.neoforge.client.event.RegisterColorHandlersEvent;
 import net.neoforged.neoforge.common.NeoForge;
 import net.neoforged.neoforge.event.entity.player.ItemTooltipEvent;
 import net.neoforged.bus.api.SubscribeEvent;
 import net.neoforged.fml.common.EventBusSubscriber;
-import net.neoforged.fml.common.EventBusSubscriber.Bus;
 import net.neoforged.fml.event.lifecycle.FMLClientSetupEvent;
 import net.minecraft.core.registries.BuiltInRegistries;
 
 import java.util.List;
 
-@EventBusSubscriber(modid = Inspirations.modID, value = Dist.CLIENT, bus = Bus.MOD)
+@EventBusSubscriber(modid = Inspirations.modID, value = Dist.CLIENT)
 public class TweaksClientEvents extends AbstractClientEvents {
   @SubscribeEvent
   static void clientSetup(FMLClientSetupEvent event) {
@@ -56,10 +52,6 @@ public class TweaksClientEvents extends AbstractClientEvents {
     }
   }
 
-  @SubscribeEvent
-  static void registerModelLoaders(RegisterGeometryLoaders event) {
-    event.register(Inspirations.getResource("trim"), TrimModel.LOADER);
-  }
 
   @SubscribeEvent
   static void registerBlockColors(RegisterColorHandlersEvent.Block event) {
@@ -78,11 +70,10 @@ public class TweaksClientEvents extends AbstractClientEvents {
   }
 
   @SubscribeEvent
-  static void registerItemColors(RegisterColorHandlersEvent.Item event) {
-    ItemColors itemColors = event.getItemColors();
+  static void registerItemColors(RegisterColorHandlersEvent.ItemTintSources event) {
 
     // colored ribbons on enchanted books
-    registerItemColors(itemColors, (stack, tintIndex) -> {
+    registerItemColors((stack, tintIndex) -> {
       if (tintIndex == 0 && Config.get(Config.coloredEnchantedRibbons)) {
         // find the rarest enchantment we have; 1.21 has weights instead of rarities: 10 common, 5 uncommon, 2 rare, 1 very rare
         int weight = Integer.MAX_VALUE;
@@ -101,12 +92,12 @@ public class TweaksClientEvents extends AbstractClientEvents {
         } else {
           color = 0x9F7FFF;
         }
-        return FastColor.ARGB32.opaque(color);
+        return ARGB.opaque(color);
       }
       return -1;
     }, Items.ENCHANTED_BOOK);
 
-    registerItemColors(itemColors, (stack, tintIndex) -> {
+    registerItemColors((stack, tintIndex) -> {
       if (!Config.get(Config.coloredFireworkItems)) {
         return -1;
       }
@@ -126,19 +117,19 @@ public class TweaksClientEvents extends AbstractClientEvents {
             color = 0x000000;
           }
         }
-        return FastColor.ARGB32.opaque(color);
+        return ARGB.opaque(color);
       }
       // color the stripes and the top
       if (tintIndex == 0 || tintIndex == 1) {
         // no stars?
-        int missing = FastColor.ARGB32.opaque(tintIndex == 1 ? 0xCCA190 : 0xC0C0C0);
+        int missing = ARGB.opaque(tintIndex == 1 ? 0xCCA190 : 0xC0C0C0);
         if (fireworks == null || tintIndex >= fireworks.explosions().size()) {
           return missing;
         }
 
         // grab the proper star's first color
         IntList colors = fireworks.explosions().get(tintIndex).colors();
-        return colors.isEmpty() ? missing : FastColor.ARGB32.opaque(colors.getInt(0));
+        return colors.isEmpty() ? missing : ARGB.opaque(colors.getInt(0));
       }
 
       return -1;

@@ -1,7 +1,6 @@
 package knightminer.inspirations.building;
 
 import knightminer.inspirations.library.InspirationsRegistry;
-import knightminer.inspirations.common.datagen.IInspirationsRecipeBuilder;
 import knightminer.inspirations.building.block.EnlightenedBushBlock;
 import knightminer.inspirations.building.block.GlassDoorBlock;
 import knightminer.inspirations.building.block.GrowableFlowerBlock;
@@ -17,7 +16,6 @@ import knightminer.inspirations.building.block.type.FlowerType;
 import knightminer.inspirations.building.block.type.MulchType;
 import knightminer.inspirations.building.block.type.PathType;
 import knightminer.inspirations.building.block.type.ShelfType;
-import knightminer.inspirations.building.datagen.BuildingRecipeProvider;
 import knightminer.inspirations.building.item.ShelfItem;
 import knightminer.inspirations.common.Config;
 import knightminer.inspirations.common.ModuleBase;
@@ -25,7 +23,6 @@ import knightminer.inspirations.common.item.DyeableItem;
 import net.minecraft.core.Registry;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.core.registries.Registries;
-import net.minecraft.data.DataGenerator;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.world.effect.MobEffects;
 import net.minecraft.world.inventory.MenuType;
@@ -45,12 +42,12 @@ import net.minecraft.world.level.block.state.BlockBehaviour.Properties;
 import net.minecraft.world.level.block.state.properties.NoteBlockInstrument;
 import net.minecraft.world.level.material.MapColor;
 import net.minecraft.world.level.material.PushReaction;
-import net.neoforged.neoforge.data.event.GatherDataEvent;
 import net.neoforged.neoforge.event.LootTableLoadEvent;
 import net.neoforged.bus.api.SubscribeEvent;
 import net.neoforged.fml.event.lifecycle.FMLCommonSetupEvent;
 import net.neoforged.neoforge.registries.RegisterEvent;
 import net.neoforged.neoforge.capabilities.Capabilities;
+import net.neoforged.neoforge.transfer.item.VanillaContainerWrapper;
 import net.neoforged.neoforge.capabilities.RegisterCapabilitiesEvent;
 import net.neoforged.neoforge.common.NeoForge;
 import net.neoforged.neoforge.event.TagsUpdatedEvent;
@@ -101,20 +98,20 @@ public class InspirationsBuilding extends ModuleBase {
       // normal shelf uses a less regular naming
       BlockBehaviour.Properties shelfProps = Block.Properties.of().mapColor(MapColor.WOOD).ignitedByLava().instrument(NoteBlockInstrument.BASS).strength(2.0F, 5.0F).sound(SoundType.WOOD).noOcclusion();
       shelf = new EnumObject.Builder<ShelfType,ShelfBlock>(ShelfType.class)
-          .put(ShelfType.NORMAL, registry.register(new ShelfBlock(shelfProps), "shelf"))
+          .put(ShelfType.NORMAL, registry.make(() -> new ShelfBlock(shelfProps), "shelf"))
           .putAll(registry.registerEnum(type -> new ShelfBlock(shelfProps), ShelfType.FANCY, "shelf"))
           .build();
-      rope = registry.register(new RopeBlock(Items.STICK,
+      rope = registry.make(() -> new RopeBlock(Items.STICK,
               Block.Properties.of().mapColor(MapColor.PODZOL).ignitedByLava().sound(SoundType.WOOL).strength(0.5F)
       ), "rope");
-      vine = registry.register(new RopeBlock(Items.BAMBOO,
+      vine = registry.make(() -> new RopeBlock(Items.BAMBOO,
               Block.Properties.of().mapColor(MapColor.PLANT).ignitedByLava().sound(SoundType.GRASS).strength(0.5F)
       ), "vine");
       // iron bars are climbable through a mixin (ClimbableIronBarsMixin), NeoForge cannot replace vanilla blocks
 
       BlockBehaviour.Properties glassDoorProps = Block.Properties.of().mapColor(MapColor.NONE).instrument(NoteBlockInstrument.HAT).strength(0.3F).sound(SoundType.GLASS).noOcclusion();
-      glassDoor = registry.register(new GlassDoorBlock(glassDoorProps), "glass_door");
-      glassTrapdoor = registry.register(new TrapDoorBlock(GlassDoorBlock.GLASS_TYPE, glassDoorProps), "glass_trapdoor");
+      glassDoor = registry.make(() -> new GlassDoorBlock(glassDoorProps), "glass_door");
+      glassTrapdoor = registry.make(() -> new TrapDoorBlock(GlassDoorBlock.GLASS_TYPE, glassDoorProps), "glass_trapdoor");
 
       mulch = registry.registerEnum(type -> new MulchBlock(
               Properties.of().mapColor(type.getColor()).ignitedByLava().instrument(NoteBlockInstrument.BASS).sound(SoundType.WET_GRASS).strength(0.6F)
@@ -127,12 +124,12 @@ public class InspirationsBuilding extends ModuleBase {
       ), BushType.values(), "enlightened_bush");
 
       // flowers, have no base name
-      BlockBehaviour.Properties flowerProps = Block.Properties.of().mapColor(MapColor.PLANT).pushReaction(PushReaction.DESTROY).strength(0F).sound(SoundType.GRASS).noCollission();
+      BlockBehaviour.Properties flowerProps = Block.Properties.of().mapColor(MapColor.PLANT).pushReaction(PushReaction.DESTROY).strength(0F).sound(SoundType.GRASS).noCollision();
       flower = new EnumObject.Builder<FlowerType,GrowableFlowerBlock>(FlowerType.class)
-          .put(FlowerType.CYAN, registry.register(new GrowableFlowerBlock(MobEffects.SLOW_FALLING, 4, null, flowerProps), "cyan_flower"))
-          .put(FlowerType.SYRINGA, registry.register(new GrowableFlowerBlock(MobEffects.HUNGER, 8, (DoublePlantBlock)Blocks.LILAC, flowerProps), "syringa"))
-          .put(FlowerType.PAEONIA, registry.register(new GrowableFlowerBlock(MobEffects.WATER_BREATHING, 5, (DoublePlantBlock)Blocks.PEONY, flowerProps), "paeonia"))
-          .put(FlowerType.ROSE, registry.register(new GrowableFlowerBlock(MobEffects.DIG_SPEED, 7, (DoublePlantBlock)Blocks.ROSE_BUSH, flowerProps), "rose"))
+          .put(FlowerType.CYAN, registry.make(() -> new GrowableFlowerBlock(MobEffects.SLOW_FALLING, 4, null, flowerProps), "cyan_flower"))
+          .put(FlowerType.SYRINGA, registry.make(() -> new GrowableFlowerBlock(MobEffects.HUNGER, 8, (DoublePlantBlock)Blocks.LILAC, flowerProps), "syringa"))
+          .put(FlowerType.PAEONIA, registry.make(() -> new GrowableFlowerBlock(MobEffects.WATER_BREATHING, 5, (DoublePlantBlock)Blocks.PEONY, flowerProps), "paeonia"))
+          .put(FlowerType.ROSE, registry.make(() -> new GrowableFlowerBlock(MobEffects.HASTE, 7, (DoublePlantBlock)Blocks.ROSE_BUSH, flowerProps), "rose"))
           .build();
 
       // flower pots
@@ -162,7 +159,7 @@ public class InspirationsBuilding extends ModuleBase {
       // common props
       Item.Properties props = new Item.Properties();
 
-      coloredBook = registry.register(new DyeableItem(props), "colored_book");
+      coloredBook = registry.make(() -> new DyeableItem(props), "colored_book");
       redstoneBook = registry.register(props, "redstone_book");
 
       // item blocks
@@ -175,21 +172,16 @@ public class InspirationsBuilding extends ModuleBase {
       registry.registerBlockItem(flower, props);
       registry.registerBlockItem(enlightenedBush, props);
 
-      glassDoorItem = registry.register(new DoubleHighBlockItem(glassDoor, props), BuiltInRegistries.BLOCK.getKey(glassDoor));
+      glassDoorItem = registry.registerBlockItem(glassDoor, p -> new DoubleHighBlockItem(glassDoor, props));
       registry.registerBlockItem(glassTrapdoor, props);
     });
   }
 
   @SubscribeEvent
   void registerCapabilities(RegisterCapabilitiesEvent event) {
-    event.registerBlockEntity(Capabilities.ItemHandler.BLOCK, shelfTileEntity, (shelf, side) -> shelf.getInventory());
+    event.registerBlockEntity(Capabilities.Item.BLOCK, shelfTileEntity, (shelf, side) -> VanillaContainerWrapper.of(shelf.getInventory()));
   }
 
-  @SubscribeEvent
-  void gatherData(GatherDataEvent event) {
-    DataGenerator gen = event.getGenerator();
-    gen.addProvider(event.includeServer(), IInspirationsRecipeBuilder.named("Inspirations Recipes - Building", new BuildingRecipeProvider(gen.getPackOutput(), event.getLookupProvider())));
-  }
 
   @SubscribeEvent
   void init(FMLCommonSetupEvent event) {

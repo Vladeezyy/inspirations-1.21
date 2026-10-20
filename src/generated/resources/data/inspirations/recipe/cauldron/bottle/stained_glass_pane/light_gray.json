@@ -9,12 +9,8 @@
   "category": "misc",
   "group": "stained_glass_pane",
   "key": {
-    "#": {
-      "tag": "c:glass_panes/colorless"
-    },
-    "x": {
-      "item": "inspirations:light_gray_dyed_bottle"
-    }
+    "#": "#c:glass_panes/colorless",
+    "x": "inspirations:light_gray_dyed_bottle"
   },
   "pattern": [
     "###",

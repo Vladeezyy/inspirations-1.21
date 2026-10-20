@@ -1,5 +1,9 @@
 package knightminer.inspirations.building.block;
 
+import javax.annotation.Nullable;
+import net.minecraft.world.level.redstone.Orientation;
+import net.minecraft.util.RandomSource;
+import net.minecraft.world.level.ScheduledTickAccess;
 import knightminer.inspirations.library.InspirationsTags;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
@@ -55,11 +59,11 @@ public class PathBlock extends Block implements SimpleWaterloggedBlock {
   @SuppressWarnings("deprecation")
   @Override
   @Deprecated
-  public BlockState updateShape(BlockState state, Direction facing, BlockState facingState, LevelAccessor world, BlockPos currentPos, BlockPos facingPos) {
+  public BlockState updateShape(BlockState state, LevelReader world, ScheduledTickAccess ticks, BlockPos currentPos, Direction facing, BlockPos facingPos, BlockState facingState, RandomSource random) {
     if (state.getValue(WATERLOGGED)) {
-      world.scheduleTick(currentPos, Fluids.WATER, Fluids.WATER.getTickDelay(world));
+      ticks.scheduleTick(currentPos, Fluids.WATER, Fluids.WATER.getTickDelay(world));
     }
-    return super.updateShape(state, facing, facingState, world, currentPos, facingPos);
+    return super.updateShape(state, world, ticks, currentPos, facing, facingPos, facingState, random);
   }
 
   /* Block Shape */
@@ -95,7 +99,7 @@ public class PathBlock extends Block implements SimpleWaterloggedBlock {
   @SuppressWarnings("deprecation")
   @Deprecated
   @Override
-  public void neighborChanged(BlockState state, Level world, BlockPos pos, Block other, BlockPos fromPos, boolean isMoving) {
+  public void neighborChanged(BlockState state, Level world, BlockPos pos, Block other, @Nullable Orientation orientation, boolean isMoving) {
     if (!this.canBlockStay(world, pos)) {
       world.destroyBlock(pos, true);
     } else if (state.getValue(WATERLOGGED)) {

@@ -9,18 +9,10 @@
   "category": "misc",
   "group": "inspirations:bookshelf",
   "key": {
-    "B": {
-      "tag": "c:dyes/blue"
-    },
-    "G": {
-      "tag": "c:dyes/green"
-    },
-    "R": {
-      "tag": "c:dyes/red"
-    },
-    "S": {
-      "tag": "minecraft:wooden_slabs"
-    }
+    "B": "#c:dyes/blue",
+    "G": "#c:dyes/green",
+    "R": "#c:dyes/red",
+    "S": "#minecraft:wooden_slabs"
   },
   "match_all": true,
   "pattern": [
@@ -32,7 +24,5 @@
     "count": 2,
     "id": "inspirations:rainbow_shelf"
   },
-  "texture": {
-    "tag": "minecraft:wooden_slabs"
-  }
+  "texture": "#minecraft:wooden_slabs"
 }

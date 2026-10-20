@@ -9,8 +9,6 @@ import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.network.protocol.common.custom.CustomPacketPayload;
 import net.minecraft.world.item.ItemStack;
 import net.neoforged.neoforge.capabilities.Capabilities;
-import net.neoforged.neoforge.items.IItemHandler;
-import net.neoforged.neoforge.items.IItemHandlerModifiable;
 import net.neoforged.neoforge.network.handling.IPayloadContext;
 
 /** Syncs one slot of a block inventory, such as a shelf, to clients */
@@ -46,9 +44,10 @@ public record InventorySlotSyncPacket(ItemStack itemStack, int slot, BlockPos po
       if (level == null || !level.isLoaded(packet.pos)) {
         return;
       }
-      IItemHandler handler = level.getCapability(Capabilities.ItemHandler.BLOCK, packet.pos, null);
-      if (handler instanceof IItemHandlerModifiable itemHandler && packet.slot >= 0 && packet.slot < itemHandler.getSlots()) {
-        itemHandler.setStackInSlot(packet.slot, packet.itemStack);
+      // the shelf is the only block sending its slots
+      if (level.getBlockEntity(packet.pos) instanceof knightminer.inspirations.building.block.entity.ShelfBlockEntity shelf
+          && packet.slot >= 0 && packet.slot < shelf.getInventory().getContainerSize()) {
+        shelf.getInventory().setStackInSlot(packet.slot, packet.itemStack);
       }
     }
   }

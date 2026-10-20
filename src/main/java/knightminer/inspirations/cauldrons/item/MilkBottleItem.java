@@ -4,10 +4,10 @@ import net.minecraft.advancements.CriteriaTriggers;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.stats.Stats;
 import net.minecraft.world.InteractionHand;
-import net.minecraft.world.InteractionResultHolder;
+import net.minecraft.world.InteractionResult;
+import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.effect.MobEffect;
 import net.minecraft.core.Holder;
-import net.neoforged.neoforge.common.EffectCures;
 import net.minecraft.world.effect.MobEffectInstance;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.player.Player;
@@ -15,7 +15,7 @@ import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.ItemUtils;
 import net.minecraft.world.item.Items;
-import net.minecraft.world.item.UseAnim;
+import net.minecraft.world.item.ItemUseAnimation;
 import net.minecraft.world.level.Level;
 import org.jetbrains.annotations.Nullable;
 
@@ -37,11 +37,10 @@ public class MilkBottleItem extends Item {
 		}
 
 		// remove random effect
-		if (!level.isClientSide) {
-			// one random effect that milk cures
+		if (!level.isClientSide()) {
+			// one random effect; NeoForge 21.11 has no effect cures, milk clears every effect
 			List<Holder<MobEffect>> effects = living.getActiveEffects()
 																			.stream()
-																			.filter(effect -> effect.getCures().contains(EffectCures.MILK))
 																			.map(MobEffectInstance::getEffect)
 																			.toList();
 			if (!effects.isEmpty()) {
@@ -50,7 +49,7 @@ public class MilkBottleItem extends Item {
 		}
 
 		// shrink the stack and return the container
-		ItemStack container = stack.getCraftingRemainingItem().copy();
+		ItemStack container = stack.getCraftingRemainder();
 		if (living instanceof Player player) {
 			return ItemUtils.createFilledResult(stack, player, container);
 		} else {
@@ -58,7 +57,9 @@ public class MilkBottleItem extends Item {
 			if (stack.isEmpty()) {
 				return container;
 			} else {
-				living.spawnAtLocation(container);
+				if (level instanceof ServerLevel server) {
+					living.spawnAtLocation(server, container);
+				}
 				return stack;
 			}
 		}
@@ -70,12 +71,12 @@ public class MilkBottleItem extends Item {
 	}
 
 	@Override
-	public UseAnim getUseAnimation(ItemStack pStack) {
-		return UseAnim.DRINK;
+	public ItemUseAnimation getUseAnimation(ItemStack pStack) {
+		return ItemUseAnimation.DRINK;
 	}
 
 	@Override
-	public InteractionResultHolder<ItemStack> use(Level pLevel, Player pPlayer, InteractionHand pHand) {
+	public InteractionResult use(Level pLevel, Player pPlayer, InteractionHand pHand) {
 		return ItemUtils.startUsingInstantly(pLevel, pPlayer, pHand);
 	}
 

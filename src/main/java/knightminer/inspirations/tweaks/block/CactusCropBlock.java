@@ -1,5 +1,6 @@
 package knightminer.inspirations.tweaks.block;
 
+import net.minecraft.world.entity.InsideBlockEffectApplier;
 import knightminer.inspirations.common.Config;
 import knightminer.inspirations.tweaks.InspirationsTweaks;
 import net.minecraft.core.BlockPos;
@@ -14,7 +15,7 @@ import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.shapes.CollisionContext;
 import net.minecraft.world.phys.shapes.VoxelShape;
-import net.neoforged.neoforge.common.util.TriState;
+import net.minecraft.util.TriState;
 
 import java.util.function.Supplier;
 import java.util.stream.IntStream;
@@ -39,7 +40,7 @@ public class CactusCropBlock extends BlockCropBlock {
 
   /* spiky! */
   @Override
-  public void entityInside(BlockState state, Level worldIn, BlockPos pos, Entity entity) {
+  public void entityInside(BlockState state, Level worldIn, BlockPos pos, Entity entity, InsideBlockEffectApplier effects, boolean intersects) {
     entity.hurt(worldIn.damageSources().cactus(), 1.0F);
   }
 

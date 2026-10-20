@@ -6,6 +6,7 @@ import net.minecraft.core.component.DataComponents;
 import net.minecraft.world.level.block.entity.BannerPatternLayers;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.ShieldItem;
 import net.minecraft.world.item.enchantment.Enchantment;
 import net.minecraft.world.item.enchantment.Enchantments;
 import net.neoforged.neoforge.common.ItemAbilities;
@@ -56,9 +57,9 @@ public final class InspirationsEnchanting {
     return isIn(enchantment, AXE_DAMAGE) || (Config.axeWeaponEnchants.getAsBoolean() && isIn(enchantment, AXE_WEAPON));
   }
 
-  /** Enchantability of a shield, more with a banner on it */
+  /** Enchantability of a shield, more with a banner on it; 0 for other items or when the table is off */
   public static int shieldEnchantability(ItemStack stack) {
-    if (!Config.shieldEnchantmentTable.getAsBoolean()) {
+    if (!(stack.getItem() instanceof ShieldItem) || !Config.shieldEnchantmentTable.getAsBoolean()) {
       return 0;
     }
     // shields always have the (empty) banner pattern component in 1.21, a banner means a base color or layers
@@ -72,7 +73,7 @@ public final class InspirationsEnchanting {
    * aspect and thorns act only when it blocks a hit (ToolsEvents), as the 1.20 enchantment classes did.
    */
   public static boolean skipVanillaEffect(ItemStack stack, Holder<Enchantment> enchantment) {
-    return Config.moreShieldEnchantments.getAsBoolean() && stack.canPerformAction(ItemAbilities.SHIELD_BLOCK)
+    return Config.moreShieldEnchantments.getAsBoolean() && stack.has(net.minecraft.core.component.DataComponents.BLOCKS_ATTACKS)
            && (isIn(enchantment, SHIELD_ATTACK) || enchantment.is(Enchantments.THORNS));
   }
 

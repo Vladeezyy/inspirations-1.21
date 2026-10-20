@@ -51,7 +51,7 @@ public class InspirationsNetwork {
 
   /** Sends a packet to the server */
   public static void sendToServer(CustomPacketPayload packet) {
-    PacketDistributor.sendToServer(packet);
+    net.neoforged.neoforge.client.network.ClientPacketDistributor.sendToServer(packet);
   }
 
   /**

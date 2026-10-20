@@ -1,11 +1,13 @@
 package knightminer.inspirations.building.block;
 
+import net.minecraft.util.RandomSource;
+import net.minecraft.world.level.ScheduledTickAccess;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.tags.BlockTags;
 import net.minecraft.util.StringRepresentable;
 import net.minecraft.world.InteractionHand;
-import net.minecraft.world.ItemInteractionResult;
+import net.minecraft.world.InteractionResult;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.BlockItem;
 import net.minecraft.world.item.Item;
@@ -119,7 +121,7 @@ public class RopeBlock extends Block implements SimpleWaterloggedBlock {
   @SuppressWarnings("deprecation")
   @Deprecated
   @Override
-  public BlockState updateShape(BlockState state, Direction facing, BlockState facingState, LevelAccessor world, BlockPos pos, BlockPos facingPos) {
+  public BlockState updateShape(BlockState state, LevelReader world, ScheduledTickAccess ticks, BlockPos pos, Direction facing, BlockPos facingPos, BlockState facingState, RandomSource random) {
     // if the rope is not valid, break it
     if (!this.isValidRope(world, pos)) {
       return Blocks.AIR.defaultBlockState();
@@ -132,16 +134,16 @@ public class RopeBlock extends Block implements SimpleWaterloggedBlock {
   }
 
   @Override
-  protected ItemInteractionResult useItemOn(ItemStack stack, BlockState state, Level world, BlockPos pos, Player player, InteractionHand hand, BlockHitResult hit) {
+  protected InteractionResult useItemOn(ItemStack stack, BlockState state, Level world, BlockPos pos, Player player, InteractionHand hand, BlockHitResult hit) {
     // no need to check verticals, one is not possible and the other normal block placement
     if (hit.getDirection().getAxis().isVertical()) {
-      return ItemInteractionResult.PASS_TO_DEFAULT_BLOCK_INTERACTION;
+      return InteractionResult.TRY_WITH_EMPTY_HAND;
     }
 
     // right click with a rope to extend downwards
     // check if the item is the same type as us
     if (Block.byItem(stack.getItem()) != this) {
-      return ItemInteractionResult.PASS_TO_DEFAULT_BLOCK_INTERACTION;
+      return InteractionResult.TRY_WITH_EMPTY_HAND;
     }
 
     // find the first block at the bottom of the rope
@@ -153,7 +155,7 @@ public class RopeBlock extends Block implements SimpleWaterloggedBlock {
       ((BlockItem)stack.getItem()).place(new BlockPlaceContext(player, hand, stack, new BlockHitResult(Vec3.atBottomCenterOf(next), Direction.UP, next, false)));
     }
 
-    return ItemInteractionResult.sidedSuccess(world.isClientSide);
+    return InteractionResult.SUCCESS;
   }
 
   @Override

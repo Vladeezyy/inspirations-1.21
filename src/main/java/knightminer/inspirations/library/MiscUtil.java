@@ -135,7 +135,7 @@ public class MiscUtil {
    * @return  Stack with color
    */
   public static ItemStack setColor(ItemStack stack, int color) {
-    stack.set(DataComponents.DYED_COLOR, new DyedItemColor(color & 0xFFFFFF, true));
+    stack.set(DataComponents.DYED_COLOR, new DyedItemColor(color & 0xFFFFFF));
     return stack;
   }
 
@@ -156,7 +156,7 @@ public class MiscUtil {
    */
   public static void notifyClientUpdate(BlockEntity te) {
     Level world = te.getLevel();
-    if (world != null && world.isClientSide) {
+    if (world != null && world.isClientSide()) {
       te.requestModelDataUpdate();
       BlockState state = te.getBlockState();
       world.sendBlockUpdated(te.getBlockPos(), state, state, Block.UPDATE_NONE | Block.UPDATE_SUPPRESS_DROPS);

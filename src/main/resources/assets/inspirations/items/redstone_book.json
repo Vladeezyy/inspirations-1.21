@@ -1,0 +1,12 @@
+{
+  "model": {
+    "type": "minecraft:model",
+    "model": "inspirations:item/redstone_book",
+    "tints": [
+      {
+        "type": "inspirations:item_color",
+        "index": 0
+      }
+    ]
+  }
+}

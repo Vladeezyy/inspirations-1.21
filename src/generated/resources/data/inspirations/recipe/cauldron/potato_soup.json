@@ -8,18 +8,10 @@
   "type": "minecraft:crafting_shapeless",
   "category": "misc",
   "ingredients": [
-    {
-      "item": "minecraft:bowl"
-    },
-    {
-      "item": "minecraft:baked_potato"
-    },
-    {
-      "item": "minecraft:baked_potato"
-    },
-    {
-      "tag": "c:mushrooms"
-    }
+    "minecraft:bowl",
+    "minecraft:baked_potato",
+    "minecraft:baked_potato",
+    "#c:mushrooms"
   ],
   "result": {
     "count": 1,

@@ -18,8 +18,8 @@ public class BlockRegistryAdapter extends RegistryAdapter<Block> {
 
   /** Registers the block of a fluid, named {@code <name>_fluid} */
   public LiquidBlock registerFluidBlock(Supplier<? extends FlowingFluid> fluid, MapColor color, int light, String name) {
-    return register(new LiquidBlock(fluid.get(), BlockBehaviour.Properties.of()
-      .mapColor(color).replaceable().noCollission().strength(100.0F).pushReaction(PushReaction.DESTROY)
+    return make(() -> new LiquidBlock(fluid.get(), BlockBehaviour.Properties.of()
+      .mapColor(color).replaceable().noCollision().strength(100.0F).pushReaction(PushReaction.DESTROY)
       .noLootTable().liquid().lightLevel(state -> light)), name + "_fluid");
   }
 }

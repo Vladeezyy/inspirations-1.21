@@ -1,7 +1,7 @@
 package knightminer.inspirations.tools.client;
 
 import net.minecraft.client.multiplayer.ClientLevel;
-import net.minecraft.client.renderer.item.ItemPropertyFunction;
+import knightminer.inspirations.common.client.ItemColorSources;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.item.ItemStack;
@@ -9,9 +9,9 @@ import net.minecraft.world.level.Level;
 
 import javax.annotation.Nullable;
 
-public class BarometerPropertyGetter implements ItemPropertyFunction {
+public class BarometerPropertyGetter implements ItemColorSources.ItemProperty {
   @Override
-  public float call(ItemStack stack, @Nullable ClientLevel clientWorld, @Nullable LivingEntity entityIn, int seed) {
+  public float get(ItemStack stack, @Nullable ClientLevel clientWorld, @Nullable LivingEntity entityIn, int seed) {
     Entity entity = entityIn != null ? entityIn : stack.getFrame();
     if (entity == null) {
       return 0;
@@ -27,7 +27,7 @@ public class BarometerPropertyGetter implements ItemPropertyFunction {
       return 0;
     }
 
-    int worldHeight = world.getMaxBuildHeight();
+    int worldHeight = world.getMaxY();
     if (height > worldHeight) {
       return 1;
     }

@@ -1,5 +1,6 @@
 package knightminer.inspirations.selftest;
 
+import net.neoforged.neoforge.client.network.ClientPacketDistributor;
 import com.mojang.datafixers.util.Pair;
 import knightminer.inspirations.Inspirations;
 import knightminer.inspirations.building.InspirationsBuilding;
@@ -30,7 +31,7 @@ import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.item.alchemy.Potion;
 import net.minecraft.world.item.alchemy.Potions;
-import net.minecraft.world.level.GameRules;
+import net.minecraft.world.level.gamerules.GameRules;
 import net.minecraft.world.level.GameType;
 import net.minecraft.world.level.LevelSettings;
 import net.minecraft.world.level.WorldDataConfiguration;
@@ -124,7 +125,9 @@ public final class StressScene {
 
   private static double fps(String name) {
     double fps = frames / ((System.nanoTime() - measureStart) / 1e9);
-    Inspirations.log.info(String.format("[scene] PERF %s: %.1f FPS", name, fps));
+    var server = Minecraft.getInstance().getSingleplayerServer();
+    double mspt = server == null ? 0 : server.getAverageTickTimeNanos() / 1e6;
+    Inspirations.log.info(String.format("[scene] PERF %s: %.1f FPS, %.2f MSPT", name, fps, mspt));
     return fps;
   }
 
@@ -141,6 +144,12 @@ public final class StressScene {
     at(t += 40, mc -> startMeasure());
     at(t += 100, mc -> {
       fpsEmpty = fps("empty floor");
+      server(mc, StressScene::vanilla);
+    });
+    // vanilla baseline: the same places with full chiseled bookshelves (a block entity, a block model per book)
+    at(t += 100, mc -> startMeasure());
+    at(t += 100, mc -> {
+      fps("vanilla baseline, 1024 full chiseled bookshelves");
       server(mc, StressScene::build);
     });
     // let 1024 shelves and their books bake
@@ -149,8 +158,13 @@ public final class StressScene {
       startMeasure();
     });
     at(t += 100, mc -> {
-      double fps = fps("1024 shelves full of books, 96 cauldrons");
+      double fps = fps("1024 shelves full of books");
       check("frame rate with 1024 shelves stays over 30 FPS", fps > 30, fps);
+      server(mc, StressScene::cauldrons);
+    });
+    at(t += 60, mc -> startMeasure());
+    at(t += 100, mc -> {
+      fps("plus 96 cauldrons (32 boiling over campfires)");
       startMeasure();
     });
     // churn: shelves, cauldrons, broken and placed shelves every tick
@@ -167,13 +181,13 @@ public final class StressScene {
     at(t += 5, mc -> {
       for (int i = 0; i < 2000; i++) {
         BlockPos pos = new BlockPos(RANDOM.nextInt(60_000_000) - 30_000_000, RANDOM.nextInt(400) - 64, RANDOM.nextInt(60_000_000) - 30_000_000);
-        PacketDistributor.sendToServer(new RequestLecternBookPacket(i % 100 == 0 ? at(RANDOM.nextInt(SIDE), 1, RANDOM.nextInt(SIDE)) : pos));
+        ClientPacketDistributor.sendToServer(new RequestLecternBookPacket(i % 100 == 0 ? at(RANDOM.nextInt(SIDE), 1, RANDOM.nextInt(SIDE)) : pos));
       }
       // and once for the real lectern, its book was cleared on the client
       if (mc.level.getBlockEntity(at(-4, 1, -4)) instanceof LecternBlockEntity lectern) {
         lectern.clearContent();
       }
-      PacketDistributor.sendToServer(new RequestLecternBookPacket(at(-4, 1, -4)));
+      ClientPacketDistributor.sendToServer(new RequestLecternBookPacket(at(-4, 1, -4)));
     });
     at(t += 20, mc -> {
       check("2000 lectern requests for random positions: the server runs, the real lectern answers",
@@ -183,20 +197,20 @@ public final class StressScene {
     at(t += 10, mc -> server(mc, StressScene::saveState));
     at(t += 10, mc -> {
       rejoining = true;
-      mc.level.disconnect();
-      mc.disconnect(new TitleScreen());
+      mc.level.disconnect(net.minecraft.network.chat.Component.empty());
+      mc.disconnect(new TitleScreen(), false);
     });
 
     afterRejoin(60, mc -> server(mc, p -> {
-      List<String> now = shelfState(p.serverLevel());
+      List<String> now = shelfState(p.level());
       check("shelf contents and textures survive saving and loading", now.equals(savedShelves), now.size() + " vs " + savedShelves.size());
     }));
     afterRejoin(65, mc -> check("dye cauldron color reached the client after loading", mc.level.getBlockEntity(at(0, 1, -2)) instanceof DyeCauldronBlockEntity dye && dye.getColor() == savedDye,
       mc.level.getBlockEntity(at(0, 1, -2)) instanceof DyeCauldronBlockEntity dye ? Integer.toHexString(dye.getColor()) : "none"));
     afterRejoin(75, mc -> {
       Inspirations.log.info("[scene] DONE " + (checks - failures) + "/" + checks + (failures == 0 ? " passed" : " (" + failures + " failed)"));
-      mc.level.disconnect();
-      mc.disconnect(new TitleScreen());
+      mc.level.disconnect(net.minecraft.network.chat.Component.empty());
+      mc.disconnect(new TitleScreen(), false);
       mc.stop();
     });
   }
@@ -225,7 +239,7 @@ public final class StressScene {
     }
     if (!opened && mc.screen instanceof TitleScreen) {
       opened = true;
-      GLFW.glfwSetWindowSize(mc.getWindow().getWindow(), 1600, 900);
+      GLFW.glfwSetWindowSize(mc.getWindow().handle(), 1600, 900);
       mc.options.guiScale().set(3);
       mc.options.cloudStatus().set(CloudStatus.OFF);
       mc.options.framerateLimit().set(260);
@@ -233,7 +247,7 @@ public final class StressScene {
       mc.options.renderDistance().set(8);
       mc.options.pauseOnLostFocus = false;
       mc.resizeDisplay();
-      LevelSettings settings = new LevelSettings(WORLD, GameType.CREATIVE, false, Difficulty.PEACEFUL, true, new GameRules(), WorldDataConfiguration.DEFAULT);
+      LevelSettings settings = new LevelSettings(WORLD, GameType.CREATIVE, false, Difficulty.PEACEFUL, true, new GameRules(WorldDataConfiguration.DEFAULT.enabledFeatures()), WorldDataConfiguration.DEFAULT);
       mc.createWorldOpenFlows().createFreshLevel(WORLD, settings, new WorldOptions(20261016L, false, false), WorldPresets::createNormalWorldDimensions, new TitleScreen());
       return;
     }
@@ -248,7 +262,7 @@ public final class StressScene {
     }
     mc.options.pauseOnLostFocus = false;
     mc.getTutorial().setStep(net.minecraft.client.tutorial.TutorialSteps.NONE);
-    mc.getToasts().clear();
+    mc.getToastManager().clear();
     if (mc.screen instanceof PauseScreen) {
       mc.setScreen(null);
     }
@@ -269,18 +283,18 @@ public final class StressScene {
 
   /** Stone floor in the sky, the player above its middle looking down at it */
   private static void floor(ServerPlayer player) {
-    ServerLevel level = player.serverLevel();
-    BlockPos spawn = level.getSharedSpawnPos();
+    ServerLevel level = player.level();
+    BlockPos spawn = level.getRespawnData().pos();
     stage = new BlockPos(spawn.getX() - SIDE / 2, 150, spawn.getZ() - SIDE / 2);
     level.setDayTime(6000);
-    level.getGameRules().getRule(GameRules.RULE_DAYLIGHT).set(false, level.getServer());
-    level.getGameRules().getRule(GameRules.RULE_WEATHER_CYCLE).set(false, level.getServer());
+    level.getGameRules().set(GameRules.ADVANCE_TIME, false, level.getServer());
+    level.getGameRules().set(GameRules.ADVANCE_WEATHER, false, level.getServer());
     for (BlockPos pos : BlockPos.betweenClosed(at(-6, 0, -6), at(SIDE + 2, 0, SIDE + 2))) {
       level.setBlock(pos, Blocks.SMOOTH_STONE.defaultBlockState(), Block.UPDATE_CLIENTS);
     }
     player.getAbilities().flying = true;
     player.onUpdateAbilities();
-    player.teleportTo(level, stage.getX() + SIDE / 2.0, stage.getY() + 14, stage.getZ() - 6, 0, 45);
+    player.teleportTo(level, stage.getX() + SIDE / 2.0, stage.getY() + 14, stage.getZ() - 6, java.util.Set.of(), 0, 45, true);
   }
 
   private static ItemStack randomBook() {
@@ -303,14 +317,33 @@ public final class StressScene {
     }
   }
 
-  /** 1024 shelves, 32 boiling cauldrons, 32 dye and 32 potion cauldrons, a lectern with a book */
+  /** The baseline: 1024 full chiseled bookshelves where the shelves go */
+  private static void vanilla(ServerPlayer player) {
+    ServerLevel level = player.level();
+    BlockState full = Blocks.CHISELED_BOOKSHELF.defaultBlockState();
+    for (var slot : net.minecraft.world.level.block.ChiseledBookShelfBlock.SLOT_OCCUPIED_PROPERTIES) {
+      full = full.setValue(slot, true);
+    }
+    for (int x = 0; x < SIDE; x++) {
+      for (int z = 0; z < SIDE; z++) {
+        level.setBlock(at(x, 1, z), full, Block.UPDATE_ALL);
+      }
+    }
+  }
+
+  /** 1024 shelves full of books */
   private static void build(ServerPlayer player) {
-    ServerLevel level = player.serverLevel();
+    ServerLevel level = player.level();
     for (int x = 0; x < SIDE; x++) {
       for (int z = 0; z < SIDE; z++) {
         placeShelf(level, at(x, 1, z));
       }
     }
+  }
+
+  /** 32 boiling cauldrons, 32 dye and 32 potion cauldrons, a lectern with a book */
+  private static void cauldrons(ServerPlayer player) {
+    ServerLevel level = player.level();
     for (int x = 0; x < SIDE; x++) {
       level.setBlock(at(x, 1, -4), Blocks.CAMPFIRE.defaultBlockState(), Block.UPDATE_ALL);
       level.setBlock(at(x, 2, -4), Blocks.WATER_CAULDRON.defaultBlockState().setValue(LayeredCauldronBlock.LEVEL, 3), Block.UPDATE_ALL);
@@ -329,7 +362,7 @@ public final class StressScene {
 
   /** One tick: 64 shelves change a book, 4 shelves are replaced, 16 dye and 16 potion cauldrons change */
   private static void churn(ServerPlayer player) {
-    ServerLevel level = player.serverLevel();
+    ServerLevel level = player.level();
     for (int i = 0; i < 64; i++) {
       if (level.getBlockEntity(at(RANDOM.nextInt(SIDE), 1, RANDOM.nextInt(SIDE))) instanceof ShelfBlockEntity shelf) {
         shelf.getInventory().setStackInSlot(1 + RANDOM.nextInt(15), randomBook());
@@ -352,7 +385,7 @@ public final class StressScene {
 
   /** Enchanting power at the config's limits, the milk cooldown at its maximum */
   private static void extremeConfig(ServerPlayer player) {
-    ServerLevel level = player.serverLevel();
+    ServerLevel level = player.level();
     // an enchanting table inside the shelves: shelves on the ring two blocks away
     BlockPos table = at(5, 1, 5);
     for (BlockPos pos : BlockPos.betweenClosed(table.offset(-1, 0, -1), table.offset(1, 1, 1))) {
@@ -377,16 +410,16 @@ public final class StressScene {
   private static int[] enchantCosts(ServerPlayer player, BlockPos table) {
     // shelf power is cached per shelf, the shelves are placed again to drop it
     for (BlockPos pos : BlockPos.betweenClosed(table.offset(-2, 0, -2), table.offset(2, 1, 2))) {
-      if (player.serverLevel().getBlockEntity(pos) instanceof ShelfBlockEntity shelf) {
-        BlockState state = player.serverLevel().getBlockState(pos);
+      if (player.level().getBlockEntity(pos) instanceof ShelfBlockEntity shelf) {
+        BlockState state = player.level().getBlockState(pos);
         List<ItemStack> items = new ArrayList<>();
         for (int slot = 0; slot < 16; slot++) {
           items.add(shelf.getInventory().getStackInSlot(slot).copy());
         }
         Block texture = shelf.getTexture();
-        player.serverLevel().removeBlock(pos, false);
-        player.serverLevel().setBlock(pos, state, Block.UPDATE_ALL);
-        if (player.serverLevel().getBlockEntity(pos) instanceof ShelfBlockEntity fresh) {
+        player.level().removeBlock(pos, false);
+        player.level().setBlock(pos, state, Block.UPDATE_ALL);
+        if (player.level().getBlockEntity(pos) instanceof ShelfBlockEntity fresh) {
           fresh.updateTexture(texture);
           for (int slot = 0; slot < 16; slot++) {
             fresh.getInventory().setStackInSlot(slot, items.get(slot));
@@ -394,7 +427,7 @@ public final class StressScene {
         }
       }
     }
-    EnchantmentMenu menu = new EnchantmentMenu(0, player.getInventory(), ContainerLevelAccess.create(player.serverLevel(), table));
+    EnchantmentMenu menu = new EnchantmentMenu(0, player.getInventory(), ContainerLevelAccess.create(player.level(), table));
     menu.getSlot(1).set(new ItemStack(Items.LAPIS_LAZULI, 3));
     menu.getSlot(0).set(new ItemStack(Items.DIAMOND_SWORD));
     menu.slotsChanged(menu.getSlot(0).container);
@@ -423,8 +456,8 @@ public final class StressScene {
 
   private static void saveState(ServerPlayer player) {
     savedShelves.clear();
-    savedShelves.addAll(shelfState(player.serverLevel()));
-    if (player.serverLevel().getBlockEntity(at(0, 1, -2)) instanceof DyeCauldronBlockEntity dye) {
+    savedShelves.addAll(shelfState(player.level()));
+    if (player.level().getBlockEntity(at(0, 1, -2)) instanceof DyeCauldronBlockEntity dye) {
       dye.setColor(0x123456);
       savedDye = dye.getColor();
     }

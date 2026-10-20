@@ -20,12 +20,6 @@ public abstract class ShieldItemMixin extends Item {
   }
 
   @Override
-  public int getEnchantmentValue(ItemStack stack) {
-    int value = InspirationsEnchanting.shieldEnchantability(stack);
-    return value > 0 ? value : super.getEnchantmentValue(stack);
-  }
-
-  @Override
   public boolean supportsEnchantment(ItemStack stack, Holder<Enchantment> enchantment) {
     return InspirationsEnchanting.shieldSupports(enchantment) || super.supportsEnchantment(stack, enchantment);
   }

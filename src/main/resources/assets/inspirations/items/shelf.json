@@ -1,0 +1,76 @@
+{
+  "model": {
+    "type": "kilnwork:retextured",
+    "model": "inspirations:item/shelf",
+    "tints": [
+      {
+        "type": "inspirations:item_color",
+        "index": 0
+      },
+      {
+        "type": "inspirations:item_color",
+        "index": 1
+      },
+      {
+        "type": "inspirations:item_color",
+        "index": 2
+      },
+      {
+        "type": "inspirations:item_color",
+        "index": 3
+      },
+      {
+        "type": "inspirations:item_color",
+        "index": 4
+      },
+      {
+        "type": "inspirations:item_color",
+        "index": 5
+      },
+      {
+        "type": "inspirations:item_color",
+        "index": 6
+      },
+      {
+        "type": "inspirations:item_color",
+        "index": 7
+      },
+      {
+        "type": "inspirations:item_color",
+        "index": 8
+      },
+      {
+        "type": "inspirations:item_color",
+        "index": 9
+      },
+      {
+        "type": "inspirations:item_color",
+        "index": 10
+      },
+      {
+        "type": "inspirations:item_color",
+        "index": 11
+      },
+      {
+        "type": "inspirations:item_color",
+        "index": 12
+      },
+      {
+        "type": "inspirations:item_color",
+        "index": 13
+      },
+      {
+        "type": "inspirations:item_color",
+        "index": 14
+      },
+      {
+        "type": "inspirations:item_color",
+        "index": 15
+      },
+      {
+        "type": "inspirations:item_color",
+        "index": 16
+      }
+    ]
+  }
+}

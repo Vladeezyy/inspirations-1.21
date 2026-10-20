@@ -65,7 +65,7 @@ public class SmoothGrowthListener implements Consumer<Pre> {
 
     // update the block above and fire relevant events
     if (world instanceof Level casted) {
-      state.handleNeighborChanged(casted, dest, seed, source, false);
+      state.handleNeighborChanged(casted, dest, seed, null, false);
       CommonHooks.fireCropGrowPost(casted, source, state);
     }
   }

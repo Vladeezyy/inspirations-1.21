@@ -1,0 +1,12 @@
+{
+  "model": {
+    "type": "minecraft:model",
+    "model": "inspirations:item/soul_torch_lever",
+    "tints": [
+      {
+        "type": "inspirations:item_color",
+        "index": 0
+      }
+    ]
+  }
+}

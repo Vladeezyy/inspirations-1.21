@@ -2,7 +2,7 @@ package knightminer.inspirations.tools.client;
 
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.multiplayer.ClientLevel;
-import net.minecraft.client.renderer.item.ItemPropertyFunction;
+import knightminer.inspirations.common.client.ItemColorSources;
 import net.minecraft.core.Direction;
 import net.minecraft.util.Mth;
 import net.minecraft.world.entity.LivingEntity;
@@ -12,11 +12,11 @@ import net.minecraft.world.level.Level;
 
 import javax.annotation.Nullable;
 
-public class NorthCompassPropertyGetter implements ItemPropertyFunction {
+public class NorthCompassPropertyGetter implements ItemColorSources.ItemProperty {
   private final Angle angle = new Angle();
 
   @Override
-  public float call(ItemStack stack, @Nullable ClientLevel clientWorld, @Nullable LivingEntity entity, int seed) {
+  public float get(ItemStack stack, @Nullable ClientLevel clientWorld, @Nullable LivingEntity entity, int seed) {
     ItemFrame frame = stack.getFrame();
     if (frame != null) {
       Direction facing = frame.getDirection();

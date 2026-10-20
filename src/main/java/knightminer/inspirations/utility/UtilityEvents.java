@@ -19,7 +19,7 @@ import net.minecraft.world.level.block.SoundType;
 import net.minecraft.world.level.block.WoolCarpetBlock;
 import net.minecraft.world.level.block.state.BlockState;
 import net.neoforged.neoforge.event.entity.player.PlayerInteractEvent.RightClickBlock;
-import net.neoforged.neoforge.common.util.TriState;
+import net.minecraft.util.TriState;
 import net.neoforged.bus.api.SubscribeEvent;
 import net.neoforged.fml.common.EventBusSubscriber;
 
@@ -54,7 +54,7 @@ public class UtilityEvents {
     // determine the state to place
     DyeColor color = ((WoolCarpetBlock)carpetBlock).getColor();
     BlockState state = InspirationsUtility.carpetedPressurePlates.get(color).defaultBlockState();
-    state = state.updateShape(Direction.DOWN, world.getBlockState(pos.below()), world, pos, pos.below());
+    state = state.updateShape(world, world, pos, Direction.DOWN, pos.below(), world.getBlockState(pos.below()), world.getRandom());
 
     // play sound
     Player player = event.getEntity();
@@ -62,7 +62,7 @@ public class UtilityEvents {
     world.playSound(player, pos, sound.getPlaceSound(), SoundSource.BLOCKS, (sound.getVolume() + 1.0F) / 2.0F, sound.getPitch() * 0.8F);
 
     // place the block
-    if (!world.isClientSide) {
+    if (!world.isClientSide()) {
       // and place it
       world.setBlockAndUpdate(pos, state);
 
@@ -89,7 +89,7 @@ public class UtilityEvents {
       return;
     }
     Level world = event.getLevel();
-    if (world.isClientSide || !(world.getBlockState(event.getPos()).getBlock() instanceof HopperBlock)) {
+    if (world.isClientSide() || !(world.getBlockState(event.getPos()).getBlock() instanceof HopperBlock)) {
       return;
     }
 

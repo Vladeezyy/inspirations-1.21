@@ -7,7 +7,7 @@ import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.item.ItemStack;
 import dev.vladeezyy.kilnwork.inventory.BaseContainerMenu;
-import dev.vladeezyy.kilnwork.inventory.SmartItemHandlerSlot;
+import dev.vladeezyy.kilnwork.inventory.ContainerSlot;
 
 import javax.annotation.Nullable;
 
@@ -56,7 +56,7 @@ public class ShelfContainerMenu extends BaseContainerMenu<ShelfBlockEntity> {
   /**
    * Slot that limits to just books
    */
-  private static class ShelfSlot extends SmartItemHandlerSlot {
+  private static class ShelfSlot extends ContainerSlot {
     private final ShelfInventory shelf;
     private ShelfSlot(ShelfInventory inventory, int index, int x, int y) {
       super(inventory, index, x, y);
@@ -65,7 +65,7 @@ public class ShelfContainerMenu extends BaseContainerMenu<ShelfBlockEntity> {
 
     @Override
     public boolean mayPlace(ItemStack stack) {
-      return shelf.canHoldItem(getSlotIndex(), stack);
+      return shelf.canHoldItem(getContainerSlot(), stack);
     }
   }
 }

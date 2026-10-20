@@ -5,7 +5,7 @@ import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.tags.FluidTags;
 import net.minecraft.world.InteractionHand;
-import net.minecraft.world.InteractionResultHolder;
+import net.minecraft.world.InteractionResult;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.BottleItem;
 import net.minecraft.world.item.Item;
@@ -36,7 +36,7 @@ public class EmptyBottleItem extends BottleItem {
   }
 
   @Override
-  public InteractionResultHolder<ItemStack> use(Level world, Player player, InteractionHand hand) {
+  public InteractionResult use(Level world, Player player, InteractionHand hand) {
     ItemStack stack = player.getItemInHand(hand);
 
     // must hit a block
@@ -44,16 +44,16 @@ public class EmptyBottleItem extends BottleItem {
     if (trace.getType() == HitResult.Type.BLOCK) {
       BlockPos pos = trace.getBlockPos();
       if (!world.mayInteract(player, pos)) {
-        return InteractionResultHolder.pass(stack);
+        return InteractionResult.PASS;
       }
 
       // if the block contains water, give filled stack
       if (world.getFluidState(pos).is(FluidTags.WATER)) {
         world.playSound(player, player.getX(), player.getY(), player.getZ(), SoundEvents.BOTTLE_FILL, SoundSource.NEUTRAL, 1.0F, 1.0F);
-        return InteractionResultHolder.sidedSuccess(this.turnBottleIntoItem(stack, player, PotionContents.createItemStack(filled.get(), Potions.WATER)), world.isClientSide());
+        return InteractionResult.SUCCESS.heldItemTransformedTo(this.turnBottleIntoItem(stack, player, PotionContents.createItemStack(filled.get(), Potions.WATER)));
       }
     }
 
-    return InteractionResultHolder.pass(stack);
+    return InteractionResult.PASS;
   }
 }

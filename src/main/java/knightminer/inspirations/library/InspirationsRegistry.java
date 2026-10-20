@@ -18,6 +18,8 @@ public class InspirationsRegistry {
    * Books
    */
   private static final Map<Item,Float> bookCache = new ConcurrentHashMap<>();
+  /** Counts the cache clears, for values computed from the book cache elsewhere (shelf item masks) */
+  private static volatile int bookGeneration;
 
   /**
    * Checks if the given item stack is a book
@@ -43,6 +45,12 @@ public class InspirationsRegistry {
   /** Clears cached book data, tags may have changed */
   public static void clearBookCache() {
     bookCache.clear();
+    bookGeneration++;
+  }
+
+  /** Changes whenever the book cache is cleared */
+  public static int getBookGeneration() {
+    return bookGeneration;
   }
 
   /**

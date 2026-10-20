@@ -1,5 +1,6 @@
 package knightminer.inspirations.mixin;
 
+import net.minecraft.world.entity.LivingEntity;
 import knightminer.inspirations.tweaks.block.HopperWaterlogging;
 import net.minecraft.core.BlockPos;
 import net.minecraft.sounds.SoundEvent;
@@ -7,7 +8,6 @@ import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.context.BlockPlaceContext;
 import net.minecraft.world.level.BlockGetter;
-import net.minecraft.world.level.Level;
 import net.minecraft.world.level.LevelAccessor;
 import net.minecraft.world.level.block.HopperBlock;
 import net.minecraft.world.level.block.SimpleWaterloggedBlock;
@@ -17,7 +17,6 @@ import net.minecraft.world.level.material.FluidState;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
-import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 
 import javax.annotation.Nullable;
@@ -30,7 +29,7 @@ import java.util.Optional;
 @Mixin(HopperBlock.class)
 public abstract class HopperBlockMixin implements SimpleWaterloggedBlock {
   @Override
-  public boolean canPlaceLiquid(@Nullable Player player, BlockGetter world, BlockPos pos, BlockState state, Fluid fluid) {
+  public boolean canPlaceLiquid(@Nullable LivingEntity player, BlockGetter world, BlockPos pos, BlockState state, Fluid fluid) {
     return HopperWaterlogging.canPlaceLiquid(fluid);
   }
 
@@ -40,7 +39,7 @@ public abstract class HopperBlockMixin implements SimpleWaterloggedBlock {
   }
 
   @Override
-  public ItemStack pickupBlock(@Nullable Player player, LevelAccessor world, BlockPos pos, BlockState state) {
+  public ItemStack pickupBlock(@Nullable LivingEntity player, LevelAccessor world, BlockPos pos, BlockState state) {
     // a dry hopper has no water to give
     return ItemStack.EMPTY;
   }
@@ -48,6 +47,14 @@ public abstract class HopperBlockMixin implements SimpleWaterloggedBlock {
   @Override
   public Optional<SoundEvent> getPickupSound() {
     return Optional.empty();
+  }
+
+  /**
+   * Turning dry (the wet hopper becomes this) keeps the block entity and its items; since 1.21.5 this also skips the
+   * drops (preRemoveSideEffects), which 1.20 cancelled in onRemove
+   */
+  public boolean shouldChangedStateKeepBlockEntity(BlockState old) {
+    return HopperWaterlogging.isSwap(old, ((HopperBlock) (Object) this).defaultBlockState());
   }
 
   @Inject(method = "getStateForPlacement", at = @At("RETURN"), cancellable = true)
@@ -58,11 +65,4 @@ public abstract class HopperBlockMixin implements SimpleWaterloggedBlock {
     }
   }
 
-  @Inject(method = "onRemove", at = @At("HEAD"), cancellable = true)
-  private void inspirations$keepContentsOnSwap(BlockState state, Level level, BlockPos pos, BlockState newState, boolean isMoving, CallbackInfo ci) {
-    // turning wet keeps the block entity and its items
-    if (HopperWaterlogging.isSwap(state, newState)) {
-      ci.cancel();
-    }
-  }
 }

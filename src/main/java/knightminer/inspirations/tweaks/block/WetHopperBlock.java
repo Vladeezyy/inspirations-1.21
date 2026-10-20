@@ -1,5 +1,6 @@
 package knightminer.inspirations.tweaks.block;
 
+import net.minecraft.world.entity.LivingEntity;
 import knightminer.inspirations.tweaks.InspirationsTweaks;
 import net.minecraft.core.BlockPos;
 import net.minecraft.sounds.SoundEvent;
@@ -29,19 +30,13 @@ public class WetHopperBlock extends HopperBlock implements SimpleWaterloggedBloc
   }
 
   @Override
-  public String getDescriptionId() {
-    // a vanilla hopper with water inside, other mods (Jade) show its name
-    return Blocks.HOPPER.getDescriptionId();
-  }
-
-  @Override
   protected FluidState getFluidState(BlockState state) {
     return Fluids.WATER.getSource(false);
   }
 
   // Duplicate SimpleWaterloggedBlock's code, but don't use the property.
   @Override
-  public boolean canPlaceLiquid(@Nullable Player player, BlockGetter world, BlockPos pos, BlockState state, Fluid fluid) {
+  public boolean canPlaceLiquid(@Nullable LivingEntity player, BlockGetter world, BlockPos pos, BlockState state, Fluid fluid) {
     // No new fluid can be inserted.
     return false;
   }
@@ -52,7 +47,7 @@ public class WetHopperBlock extends HopperBlock implements SimpleWaterloggedBloc
   }
 
   @Override
-  public ItemStack pickupBlock(@Nullable Player player, LevelAccessor world, BlockPos pos, BlockState state) {
+  public ItemStack pickupBlock(@Nullable LivingEntity player, LevelAccessor world, BlockPos pos, BlockState state) {
     world.setBlock(pos, HopperWaterlogging.swap(state, InspirationsTweaks.dryHopper), 3);
     return new ItemStack(Items.WATER_BUCKET);
   }
@@ -63,15 +58,13 @@ public class WetHopperBlock extends HopperBlock implements SimpleWaterloggedBloc
   }
 
   @Override
-  protected void onRemove(BlockState state, net.minecraft.world.level.Level world, BlockPos pos, BlockState newState, boolean moving) {
-    // drying keeps the block entity and its items
-    if (!HopperWaterlogging.isSwap(state, newState)) {
-      super.onRemove(state, world, pos, newState, moving);
-    }
+  public boolean shouldChangedStateKeepBlockEntity(BlockState old) {
+    // turning wet keeps the block entity and its items
+    return HopperWaterlogging.isSwap(old, defaultBlockState()) || super.shouldChangedStateKeepBlockEntity(old);
   }
 
   @Override
-  public ItemStack getCloneItemStack(BlockState state, HitResult target, LevelReader level, BlockPos pos, Player player) {
+  protected ItemStack getCloneItemStack(LevelReader level, BlockPos pos, BlockState state, boolean includeData) {
     return new ItemStack(Items.HOPPER);
   }
 }

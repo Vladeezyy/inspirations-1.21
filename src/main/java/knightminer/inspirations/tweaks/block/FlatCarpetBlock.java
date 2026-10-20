@@ -1,5 +1,7 @@
 package knightminer.inspirations.tweaks.block;
 
+import net.minecraft.util.RandomSource;
+import net.minecraft.world.level.ScheduledTickAccess;
 import knightminer.inspirations.common.Config;
 import knightminer.inspirations.tweaks.InspirationsTweaks;
 import net.minecraft.core.BlockPos;
@@ -39,7 +41,7 @@ public class FlatCarpetBlock extends WoolCarpetBlock {
   }
 
   @Override
-  public BlockState updateShape(BlockState state, Direction facing, BlockState facingState, LevelAccessor world, BlockPos pos, BlockPos facingPos) {
+  public BlockState updateShape(BlockState state, LevelReader world, ScheduledTickAccess ticks, BlockPos pos, Direction facing, BlockPos facingPos, BlockState facingState, RandomSource random) {
     return fitToStairs(getColor(), state, world, pos);
   }
 
@@ -47,7 +49,7 @@ public class FlatCarpetBlock extends WoolCarpetBlock {
    * Shape of a carpet of the color at the position: fitted to the stairs below, flat (vanilla carpet) otherwise, or
    * air if it cannot stay. Used by fitted carpets and, through WoolCarpetBlockMixin, by the vanilla carpets.
    */
-  public static BlockState fitToStairs(DyeColor color, BlockState state, LevelAccessor world, BlockPos pos) {
+  public static BlockState fitToStairs(DyeColor color, BlockState state, LevelReader world, BlockPos pos) {
     if (!state.canSurvive(world, pos)) {
       return Blocks.AIR.defaultBlockState();
     }
@@ -67,11 +69,11 @@ public class FlatCarpetBlock extends WoolCarpetBlock {
 
   @Override
   public void setPlacedBy(Level world, BlockPos pos, BlockState state, @Nullable LivingEntity entity, ItemStack stack) {
-    world.setBlock(pos, updateShape(state, Direction.UP, state, world, pos, pos), 2);
+    world.setBlock(pos, fitToStairs(getColor(), state, world, pos), 2);
   }
 
   @Override
-  public ItemStack getCloneItemStack(BlockState state, HitResult target, LevelReader level, BlockPos pos, Player player) {
+  protected ItemStack getCloneItemStack(LevelReader level, BlockPos pos, BlockState state, boolean includeData) {
     return new ItemStack(InspirationsTweaks.flatCarpets.get(getColor()));
   }
 

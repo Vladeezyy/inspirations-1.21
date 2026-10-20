@@ -1,0 +1,584 @@
+{
+  "model": {
+    "type": "minecraft:range_dispatch",
+    "property": "inspirations:property",
+    "name": "angle",
+    "entries": [
+      {
+        "threshold": 0.0,
+        "model": {
+          "type": "minecraft:model",
+          "model": "inspirations:item/dimension_compass",
+          "tints": [
+            {
+              "type": "inspirations:item_color",
+              "index": 0
+            },
+            {
+              "type": "inspirations:item_color",
+              "index": 1
+            }
+          ]
+        }
+      },
+      {
+        "threshold": 0.015625,
+        "model": {
+          "type": "minecraft:model",
+          "model": "inspirations:item/dimension_compass/17",
+          "tints": [
+            {
+              "type": "inspirations:item_color",
+              "index": 0
+            },
+            {
+              "type": "inspirations:item_color",
+              "index": 1
+            }
+          ]
+        }
+      },
+      {
+        "threshold": 0.046875,
+        "model": {
+          "type": "minecraft:model",
+          "model": "inspirations:item/dimension_compass/18",
+          "tints": [
+            {
+              "type": "inspirations:item_color",
+              "index": 0
+            },
+            {
+              "type": "inspirations:item_color",
+              "index": 1
+            }
+          ]
+        }
+      },
+      {
+        "threshold": 0.078125,
+        "model": {
+          "type": "minecraft:model",
+          "model": "inspirations:item/dimension_compass/19",
+          "tints": [
+            {
+              "type": "inspirations:item_color",
+              "index": 0
+            },
+            {
+              "type": "inspirations:item_color",
+              "index": 1
+            }
+          ]
+        }
+      },
+      {
+        "threshold": 0.109375,
+        "model": {
+          "type": "minecraft:model",
+          "model": "inspirations:item/dimension_compass/20",
+          "tints": [
+            {
+              "type": "inspirations:item_color",
+              "index": 0
+            },
+            {
+              "type": "inspirations:item_color",
+              "index": 1
+            }
+          ]
+        }
+      },
+      {
+        "threshold": 0.140625,
+        "model": {
+          "type": "minecraft:model",
+          "model": "inspirations:item/dimension_compass/21",
+          "tints": [
+            {
+              "type": "inspirations:item_color",
+              "index": 0
+            },
+            {
+              "type": "inspirations:item_color",
+              "index": 1
+            }
+          ]
+        }
+      },
+      {
+        "threshold": 0.171875,
+        "model": {
+          "type": "minecraft:model",
+          "model": "inspirations:item/dimension_compass/22",
+          "tints": [
+            {
+              "type": "inspirations:item_color",
+              "index": 0
+            },
+            {
+              "type": "inspirations:item_color",
+              "index": 1
+            }
+          ]
+        }
+      },
+      {
+        "threshold": 0.203125,
+        "model": {
+          "type": "minecraft:model",
+          "model": "inspirations:item/dimension_compass/23",
+          "tints": [
+            {
+              "type": "inspirations:item_color",
+              "index": 0
+            },
+            {
+              "type": "inspirations:item_color",
+              "index": 1
+            }
+          ]
+        }
+      },
+      {
+        "threshold": 0.234375,
+        "model": {
+          "type": "minecraft:model",
+          "model": "inspirations:item/dimension_compass/24",
+          "tints": [
+            {
+              "type": "inspirations:item_color",
+              "index": 0
+            },
+            {
+              "type": "inspirations:item_color",
+              "index": 1
+            }
+          ]
+        }
+      },
+      {
+        "threshold": 0.265625,
+        "model": {
+          "type": "minecraft:model",
+          "model": "inspirations:item/dimension_compass/25",
+          "tints": [
+            {
+              "type": "inspirations:item_color",
+              "index": 0
+            },
+            {
+              "type": "inspirations:item_color",
+              "index": 1
+            }
+          ]
+        }
+      },
+      {
+        "threshold": 0.296875,
+        "model": {
+          "type": "minecraft:model",
+          "model": "inspirations:item/dimension_compass/26",
+          "tints": [
+            {
+              "type": "inspirations:item_color",
+              "index": 0
+            },
+            {
+              "type": "inspirations:item_color",
+              "index": 1
+            }
+          ]
+        }
+      },
+      {
+        "threshold": 0.328125,
+        "model": {
+          "type": "minecraft:model",
+          "model": "inspirations:item/dimension_compass/27",
+          "tints": [
+            {
+              "type": "inspirations:item_color",
+              "index": 0
+            },
+            {
+              "type": "inspirations:item_color",
+              "index": 1
+            }
+          ]
+        }
+      },
+      {
+        "threshold": 0.359375,
+        "model": {
+          "type": "minecraft:model",
+          "model": "inspirations:item/dimension_compass/28",
+          "tints": [
+            {
+              "type": "inspirations:item_color",
+              "index": 0
+            },
+            {
+              "type": "inspirations:item_color",
+              "index": 1
+            }
+          ]
+        }
+      },
+      {
+        "threshold": 0.390625,
+        "model": {
+          "type": "minecraft:model",
+          "model": "inspirations:item/dimension_compass/29",
+          "tints": [
+            {
+              "type": "inspirations:item_color",
+              "index": 0
+            },
+            {
+              "type": "inspirations:item_color",
+              "index": 1
+            }
+          ]
+        }
+      },
+      {
+        "threshold": 0.421875,
+        "model": {
+          "type": "minecraft:model",
+          "model": "inspirations:item/dimension_compass/30",
+          "tints": [
+            {
+              "type": "inspirations:item_color",
+              "index": 0
+            },
+            {
+              "type": "inspirations:item_color",
+              "index": 1
+            }
+          ]
+        }
+      },
+      {
+        "threshold": 0.453125,
+        "model": {
+          "type": "minecraft:model",
+          "model": "inspirations:item/dimension_compass/31",
+          "tints": [
+            {
+              "type": "inspirations:item_color",
+              "index": 0
+            },
+            {
+              "type": "inspirations:item_color",
+              "index": 1
+            }
+          ]
+        }
+      },
+      {
+        "threshold": 0.484375,
+        "model": {
+          "type": "minecraft:model",
+          "model": "inspirations:item/dimension_compass/00",
+          "tints": [
+            {
+              "type": "inspirations:item_color",
+              "index": 0
+            },
+            {
+              "type": "inspirations:item_color",
+              "index": 1
+            }
+          ]
+        }
+      },
+      {
+        "threshold": 0.515625,
+        "model": {
+          "type": "minecraft:model",
+          "model": "inspirations:item/dimension_compass/01",
+          "tints": [
+            {
+              "type": "inspirations:item_color",
+              "index": 0
+            },
+            {
+              "type": "inspirations:item_color",
+              "index": 1
+            }
+          ]
+        }
+      },
+      {
+        "threshold": 0.546875,
+        "model": {
+          "type": "minecraft:model",
+          "model": "inspirations:item/dimension_compass/02",
+          "tints": [
+            {
+              "type": "inspirations:item_color",
+              "index": 0
+            },
+            {
+              "type": "inspirations:item_color",
+              "index": 1
+            }
+          ]
+        }
+      },
+      {
+        "threshold": 0.578125,
+        "model": {
+          "type": "minecraft:model",
+          "model": "inspirations:item/dimension_compass/03",
+          "tints": [
+            {
+              "type": "inspirations:item_color",
+              "index": 0
+            },
+            {
+              "type": "inspirations:item_color",
+              "index": 1
+            }
+          ]
+        }
+      },
+      {
+        "threshold": 0.609375,
+        "model": {
+          "type": "minecraft:model",
+          "model": "inspirations:item/dimension_compass/04",
+          "tints": [
+            {
+              "type": "inspirations:item_color",
+              "index": 0
+            },
+            {
+              "type": "inspirations:item_color",
+              "index": 1
+            }
+          ]
+        }
+      },
+      {
+        "threshold": 0.640625,
+        "model": {
+          "type": "minecraft:model",
+          "model": "inspirations:item/dimension_compass/05",
+          "tints": [
+            {
+              "type": "inspirations:item_color",
+              "index": 0
+            },
+            {
+              "type": "inspirations:item_color",
+              "index": 1
+            }
+          ]
+        }
+      },
+      {
+        "threshold": 0.671875,
+        "model": {
+          "type": "minecraft:model",
+          "model": "inspirations:item/dimension_compass/06",
+          "tints": [
+            {
+              "type": "inspirations:item_color",
+              "index": 0
+            },
+            {
+              "type": "inspirations:item_color",
+              "index": 1
+            }
+          ]
+        }
+      },
+      {
+        "threshold": 0.703125,
+        "model": {
+          "type": "minecraft:model",
+          "model": "inspirations:item/dimension_compass/07",
+          "tints": [
+            {
+              "type": "inspirations:item_color",
+              "index": 0
+            },
+            {
+              "type": "inspirations:item_color",
+              "index": 1
+            }
+          ]
+        }
+      },
+      {
+        "threshold": 0.734375,
+        "model": {
+          "type": "minecraft:model",
+          "model": "inspirations:item/dimension_compass/08",
+          "tints": [
+            {
+              "type": "inspirations:item_color",
+              "index": 0
+            },
+            {
+              "type": "inspirations:item_color",
+              "index": 1
+            }
+          ]
+        }
+      },
+      {
+        "threshold": 0.765625,
+        "model": {
+          "type": "minecraft:model",
+          "model": "inspirations:item/dimension_compass/09",
+          "tints": [
+            {
+              "type": "inspirations:item_color",
+              "index": 0
+            },
+            {
+              "type": "inspirations:item_color",
+              "index": 1
+            }
+          ]
+        }
+      },
+      {
+        "threshold": 0.796875,
+        "model": {
+          "type": "minecraft:model",
+          "model": "inspirations:item/dimension_compass/10",
+          "tints": [
+            {
+              "type": "inspirations:item_color",
+              "index": 0
+            },
+            {
+              "type": "inspirations:item_color",
+              "index": 1
+            }
+          ]
+        }
+      },
+      {
+        "threshold": 0.828125,
+        "model": {
+          "type": "minecraft:model",
+          "model": "inspirations:item/dimension_compass/11",
+          "tints": [
+            {
+              "type": "inspirations:item_color",
+              "index": 0
+            },
+            {
+              "type": "inspirations:item_color",
+              "index": 1
+            }
+          ]
+        }
+      },
+      {
+        "threshold": 0.859375,
+        "model": {
+          "type": "minecraft:model",
+          "model": "inspirations:item/dimension_compass/12",
+          "tints": [
+            {
+              "type": "inspirations:item_color",
+              "index": 0
+            },
+            {
+              "type": "inspirations:item_color",
+              "index": 1
+            }
+          ]
+        }
+      },
+      {
+        "threshold": 0.890625,
+        "model": {
+          "type": "minecraft:model",
+          "model": "inspirations:item/dimension_compass/13",
+          "tints": [
+            {
+              "type": "inspirations:item_color",
+              "index": 0
+            },
+            {
+              "type": "inspirations:item_color",
+              "index": 1
+            }
+          ]
+        }
+      },
+      {
+        "threshold": 0.921875,
+        "model": {
+          "type": "minecraft:model",
+          "model": "inspirations:item/dimension_compass/14",
+          "tints": [
+            {
+              "type": "inspirations:item_color",
+              "index": 0
+            },
+            {
+              "type": "inspirations:item_color",
+              "index": 1
+            }
+          ]
+        }
+      },
+      {
+        "threshold": 0.953125,
+        "model": {
+          "type": "minecraft:model",
+          "model": "inspirations:item/dimension_compass/15",
+          "tints": [
+            {
+              "type": "inspirations:item_color",
+              "index": 0
+            },
+            {
+              "type": "inspirations:item_color",
+              "index": 1
+            }
+          ]
+        }
+      },
+      {
+        "threshold": 0.984375,
+        "model": {
+          "type": "minecraft:model",
+          "model": "inspirations:item/dimension_compass",
+          "tints": [
+            {
+              "type": "inspirations:item_color",
+              "index": 0
+            },
+            {
+              "type": "inspirations:item_color",
+              "index": 1
+            }
+          ]
+        }
+      }
+    ],
+    "fallback": {
+      "type": "minecraft:model",
+      "model": "inspirations:item/dimension_compass",
+      "tints": [
+        {
+          "type": "inspirations:item_color",
+          "index": 0
+        },
+        {
+          "type": "inspirations:item_color",
+          "index": 1
+        }
+      ]
+    }
+  }
+}

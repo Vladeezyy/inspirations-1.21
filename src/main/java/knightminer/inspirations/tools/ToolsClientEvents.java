@@ -8,19 +8,17 @@ import knightminer.inspirations.tools.client.DimensionCompassPropertyGetter;
 import knightminer.inspirations.tools.client.NorthCompassPropertyGetter;
 import knightminer.inspirations.tools.client.PhotometerPropertyGetter;
 import knightminer.inspirations.tools.client.RedstoneArrowRenderer;
-import net.minecraft.client.color.item.ItemColors;
-import net.minecraft.util.FastColor;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.util.ARGB;
+import net.minecraft.resources.Identifier;
 import net.neoforged.api.distmarker.Dist;
 import net.neoforged.neoforge.client.event.RegisterColorHandlersEvent;
 import net.neoforged.neoforge.client.event.EntityRenderersEvent;
 import net.neoforged.bus.api.SubscribeEvent;
 import net.neoforged.fml.common.EventBusSubscriber;
-import net.neoforged.fml.common.EventBusSubscriber.Bus;
 import net.neoforged.fml.event.lifecycle.FMLClientSetupEvent;
 
 @SuppressWarnings("unused")
-@EventBusSubscriber(modid = Inspirations.modID, value = Dist.CLIENT, bus = Bus.MOD)
+@EventBusSubscriber(modid = Inspirations.modID, value = Dist.CLIENT)
 public class ToolsClientEvents extends AbstractClientEvents {
 
   @SubscribeEvent
@@ -40,15 +38,14 @@ public class ToolsClientEvents extends AbstractClientEvents {
   }
 
   @SubscribeEvent
-  static void registerItemColors(RegisterColorHandlersEvent.Item event) {
-    ItemColors itemColors = event.getItemColors();
+  static void registerItemColors(RegisterColorHandlersEvent.ItemTintSources event) {
 
     // coloring of books for normal bookshelf
-    registerItemColors(itemColors, (stack, tintIndex) -> {
+    registerItemColors((stack, tintIndex) -> {
       if (tintIndex == 1 && MiscUtil.hasColor(stack)) {
-        return FastColor.ARGB32.opaque(MiscUtil.getColor(stack));
+        return ARGB.opaque(MiscUtil.getColor(stack));
       }
-      return tintIndex == 0 ? -1 : FastColor.ARGB32.opaque(0x2CCDB1);
+      return tintIndex == 0 ? -1 : ARGB.opaque(0x2CCDB1);
     }, InspirationsTools.dimensionCompass);
   }
 }

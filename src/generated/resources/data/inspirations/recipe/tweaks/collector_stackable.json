@@ -12,15 +12,9 @@
   "type": "minecraft:crafting_shaped",
   "category": "redstone",
   "key": {
-    "D": {
-      "item": "minecraft:dropper"
-    },
-    "S": {
-      "tag": "c:strings"
-    },
-    "T": {
-      "tag": "c:rods/wooden"
-    }
+    "D": "minecraft:dropper",
+    "S": "#c:strings",
+    "T": "#c:rods/wooden"
   },
   "pattern": [
     "  T",

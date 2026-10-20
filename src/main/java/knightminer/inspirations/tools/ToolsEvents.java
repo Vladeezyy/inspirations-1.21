@@ -1,5 +1,8 @@
 package knightminer.inspirations.tools;
 
+import net.minecraft.advancements.criterion.ItemPredicate;
+import net.minecraft.advancements.criterion.DataComponentMatchers;
+import net.minecraft.core.component.DataComponentExactPredicate;
 import knightminer.inspirations.Inspirations;
 import knightminer.inspirations.common.Config;
 import knightminer.inspirations.common.network.InspirationsNetwork;
@@ -57,7 +60,9 @@ public class ToolsEvents {
 
     if (te instanceof BaseContainerBlockEntity lockable) {
 
-      LockCode heldCode = new LockCode(stack.getHoverName().getString());
+      // a lock opens with an item of the same name since 1.21.2 (the lock is an item predicate)
+      LockCode heldCode = new LockCode(ItemPredicate.Builder.item().withComponents(DataComponentMatchers.Builder.components()
+        .exact(DataComponentExactPredicate.expect(DataComponents.CUSTOM_NAME, stack.getHoverName())).build()).build());
 
       // lock code
       if (isLock) {
@@ -83,12 +88,12 @@ public class ToolsEvents {
         if (lockable.lockKey != LockCode.NO_LOCK) {
           // if the key matches the lock, take off the lock and give it to the player
           if (lockable.lockKey.unlocksWith(stack)) {
-            LockCode code = lockable.lockKey;
             lockable.lockKey = LockCode.NO_LOCK;
             lockable.setChanged();
             ItemStack lock = new ItemStack(InspirationsTools.lock);
-            lock.set(DataComponents.CUSTOM_NAME, Component.literal(code.key()));
-            ItemHandlerHelper.giveItemToPlayer(player, lock);
+            // the key opened it, so the lock had its name
+            lock.set(DataComponents.CUSTOM_NAME, stack.get(DataComponents.CUSTOM_NAME));
+            player.getInventory().placeItemBackInInventory(lock);
             player.displayClientMessage(Component.translatable(Inspirations.prefix("unlock.success")), true);
           } else {
             player.displayClientMessage(Component.translatable(Inspirations.prefix("unlock.fail.no_match")), true);
@@ -223,7 +228,7 @@ public class ToolsEvents {
     Entity attacker = source.getDirectEntity();
     // Apply shield enchantments if the player can be hurt by the source,
     // and they are have blocked it.
-    if (attacker != null && !target.isInvulnerableTo(source)) {
+    if (attacker != null && !target.isInvulnerableTo(level, source)) {
       // the chance and damage of 1.20 ThornsEnchantment, enchantments are data in 1.21
       if (thorns > 0 && level.random.nextFloat() < 0.15F * thorns) {
         attacker.hurt(level.damageSources().thorns(target), thorns > 10 ? thorns - 10 : 1 + level.random.nextInt(4));

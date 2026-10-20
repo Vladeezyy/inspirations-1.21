@@ -1,5 +1,7 @@
 package knightminer.inspirations.selftest;
 
+import knightminer.inspirations.tools.enchantment.InspirationsEnchanting;
+import net.minecraft.world.entity.EntitySpawnReason;
 import dev.vladeezyy.kilnwork.KilnworkRegistries;
 import dev.vladeezyy.kilnwork.retexture.RetexturedHelper;
 import dev.vladeezyy.kilnwork.util.LegacyItemStacks;
@@ -37,7 +39,7 @@ import net.minecraft.world.InteractionResult;
 import net.minecraft.world.effect.MobEffectInstance;
 import net.minecraft.world.effect.MobEffects;
 import net.minecraft.world.entity.EntityType;
-import net.minecraft.world.entity.animal.Pig;
+import net.minecraft.world.entity.animal.pig.Pig;
 import net.minecraft.world.entity.item.ItemEntity;
 import net.minecraft.world.item.CreativeModeTab;
 import net.minecraft.world.item.DyeColor;
@@ -73,7 +75,6 @@ import net.neoforged.neoforge.common.util.FakePlayer;
 import net.neoforged.neoforge.common.util.FakePlayerFactory;
 import net.neoforged.neoforge.event.server.ServerStartedEvent;
 import net.neoforged.neoforge.event.tick.ServerTickEvent;
-import net.neoforged.neoforge.items.IItemHandler;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -147,7 +148,7 @@ public class SelfTest {
       return;
     }
     ServerLevel level = event.getServer().overworld();
-    BlockPos spawn = level.getSharedSpawnPos();
+    BlockPos spawn = level.getRespawnData().pos();
     origin = new BlockPos(spawn.getX(), 150, spawn.getZ());
     for (int cx = -1; cx <= 2; cx++) {
       for (int cz = -1; cz <= 2; cz++) {
@@ -201,7 +202,7 @@ public class SelfTest {
     long items = BuiltInRegistries.ITEM.keySet().stream().filter(id -> id.getNamespace().equals(Inspirations.modID)).count();
     check("registries: " + blocks + " blocks, " + items + " items", blocks > 100 && items > 80);
 
-    long recipes = server.getRecipeManager().getRecipes().stream().filter(r -> r.id().getNamespace().equals(Inspirations.modID)).count();
+    long recipes = server.getRecipeManager().getRecipes().stream().filter(r -> r.id().identifier().getNamespace().equals(Inspirations.modID)).count();
     check("recipes loaded with the config condition: " + recipes, recipes >= 200);
 
     // shelves take the texture of the slabs, and creative shelves are the same items (issue #247)
@@ -214,7 +215,7 @@ public class SelfTest {
         .orElse(false);
     });
     check("creative tab shelves have slab textures, like crafted ones (#247)", () -> {
-      CreativeModeTab tab = BuiltInRegistries.CREATIVE_MODE_TAB.getOrThrow(net.minecraft.world.item.CreativeModeTabs.FUNCTIONAL_BLOCKS);
+      CreativeModeTab tab = BuiltInRegistries.CREATIVE_MODE_TAB.getOrThrow(net.minecraft.world.item.CreativeModeTabs.FUNCTIONAL_BLOCKS).value();
       tab.buildContents(new CreativeModeTab.ItemDisplayParameters(level.enabledFeatures(), true, level.registryAccess()));
       return tab.getDisplayItems().stream().anyMatch(s -> s.is(InspirationsBuilding.shelf.get(ShelfType.NORMAL).asItem()) && RetexturedHelper.getTexture(s) == Blocks.OAK_SLAB);
     });
@@ -250,8 +251,12 @@ public class SelfTest {
       ItemStack shield = new ItemStack(Items.SHIELD);
       ItemStack banner = new ItemStack(Items.SHIELD);
       banner.set(DataComponents.BASE_COLOR, DyeColor.RED);
-      Inspirations.log.info(PREFIX + "shield enchantability {} / {}, primary {}", shield.getEnchantmentValue(), banner.getEnchantmentValue(), shield.isPrimaryItemFor(enchantment(level, Enchantments.PROTECTION)));
-      return shield.getEnchantmentValue() == 12 && banner.getEnchantmentValue() == 16 && shield.isPrimaryItemFor(enchantment(level, Enchantments.PROTECTION));
+      // since 1.21.2 the table needs the enchantable component, the mixins give it to shields
+      int cost = net.minecraft.world.item.enchantment.EnchantmentHelper.getEnchantmentCost(level.getRandom(), 0, 15, shield);
+      Inspirations.log.info(PREFIX + "shield enchantability {} / {}, table {}, cost {}, primary {}", InspirationsEnchanting.shieldEnchantability(shield), InspirationsEnchanting.shieldEnchantability(banner),
+        shield.isEnchantable(), cost, shield.isPrimaryItemFor(enchantment(level, Enchantments.PROTECTION)));
+      return InspirationsEnchanting.shieldEnchantability(shield) == 12 && InspirationsEnchanting.shieldEnchantability(banner) == 16 && shield.isEnchantable() && cost > 0
+        && shield.isPrimaryItemFor(enchantment(level, Enchantments.PROTECTION));
     });
     check("axe takes looting, knockback and fire aspect, sharpness at the table", () -> {
       ItemStack axe = new ItemStack(Items.IRON_AXE);
@@ -266,15 +271,15 @@ public class SelfTest {
 
     // loot tables injected on load: in 1.20 the listener was never registered
     check("skeleton loot has the skull pool", () -> {
-      LootTable table = server.reloadableRegistries().getLootTable(EntityType.SKELETON.getDefaultLootTable());
+      LootTable table = server.reloadableRegistries().getLootTable(EntityType.SKELETON.getDefaultLootTable().orElseThrow());
       return table.getPool(Inspirations.getResource("entities/skeleton").toString()) != null;
     });
     check("cave spider loot has the cobweb pool", () -> {
-      LootTable table = server.reloadableRegistries().getLootTable(EntityType.CAVE_SPIDER.getDefaultLootTable());
+      LootTable table = server.reloadableRegistries().getLootTable(EntityType.CAVE_SPIDER.getDefaultLootTable().orElseThrow());
       return table.getPool(Inspirations.getResource("entities/cave_spider").toString()) != null;
     });
     check("rose bush loot drops a rose with shears", () -> {
-      LootTable table = server.reloadableRegistries().getLootTable(Blocks.ROSE_BUSH.getLootTable());
+      LootTable table = server.reloadableRegistries().getLootTable(Blocks.ROSE_BUSH.getLootTable().orElseThrow());
       return table.getPool(Inspirations.getResource("blocks/inject/rose").toString()) != null;
     });
     check("heartbeets drop from beetroots (global loot modifier)", () -> {
@@ -349,9 +354,12 @@ public class SelfTest {
     BlockPos pipeChest = at(8, 0, 0);
     level.setBlockAndUpdate(pipeChest, Blocks.CHEST.defaultBlockState());
     level.setBlockAndUpdate(at(8, 0, 1), InspirationsUtility.pipe.defaultBlockState().setValue(net.minecraft.world.level.block.DirectionalBlock.FACING, Direction.NORTH));
-    IItemHandler pipe = level.getCapability(Capabilities.ItemHandler.BLOCK, at(8, 0, 1), null);
+    var pipe = level.getCapability(Capabilities.Item.BLOCK, at(8, 0, 1), null);
     if (pipe != null) {
-      pipe.insertItem(0, new ItemStack(Items.EMERALD, 2), false);
+      try (var transaction = net.neoforged.neoforge.transfer.transaction.Transaction.openRoot()) {
+        pipe.insert(0, net.neoforged.neoforge.transfer.item.ItemResource.of(Items.EMERALD), 2, transaction);
+        transaction.commit();
+      }
     }
 
     // boiling water cauldron over a campfire
@@ -396,12 +404,12 @@ public class SelfTest {
 
     // boiling water cauldron, a mixin on the vanilla block
     check("water cauldron over fire boils entities", () -> {
-      Pig pig = EntityType.PIG.create(level);
-      pig.moveTo(Vec3.atBottomCenterOf(at(12, 0, 0)).add(0, 0.3, 0));
+      Pig pig = EntityType.PIG.create(level, EntitySpawnReason.COMMAND);
+      pig.snapTo(Vec3.atBottomCenterOf(at(12, 0, 0)).add(0, 0.3, 0));
       level.addFreshEntity(pig);
       float health = pig.getHealth();
       BlockState cauldron = level.getBlockState(at(12, 0, 0));
-      cauldron.entityInside(level, at(12, 0, 0), pig);
+      cauldron.entityInside(level, at(12, 0, 0), pig, net.minecraft.world.entity.InsideBlockEffectApplier.NOOP, true);
       boolean hurt = pig.getHealth() < health;
       pig.discard();
       return hurt;
@@ -491,7 +499,7 @@ public class SelfTest {
       effects.add(effect);
       tag.put("Effects", effects);
       BlockEntity be = level.getBlockEntity(pos);
-      be.loadWithComponents(tag, level.registryAccess());
+      be.loadWithComponents(net.minecraft.world.level.storage.TagValueInput.create(net.minecraft.util.ProblemReporter.DISCARDING, level.registryAccess(), tag));
       return be instanceof SuspiciousStewCauldronBlockEntity stewCauldron && stewCauldron.getEffects().effects().size() == 1
         && stewCauldron.getEffects().effects().get(0).effect().is(MobEffects.NIGHT_VISION);
     });
@@ -511,7 +519,7 @@ public class SelfTest {
       level.setBlockAndUpdate(pos, InspirationsBuilding.shelf.get(ShelfType.NORMAL).defaultBlockState());
       ShelfBlockEntity shelf = (ShelfBlockEntity) level.getBlockEntity(pos);
       shelf.getInventory().setStackInSlot(5, new ItemStack(InspirationsBuilding.redstoneBook));
-      return level.getBlockState(pos).getAnalogOutputSignal(level, pos) == 5;
+      return level.getBlockState(pos).getAnalogOutputSignal(level, pos, Direction.NORTH) == 5;
     });
     check("broken shelf drops with its texture", () -> {
       BlockPos pos = at(22, 0, 4);
@@ -612,21 +620,21 @@ public class SelfTest {
       ItemStack lock = new ItemStack(InspirationsTools.lock);
       lock.set(DataComponents.CUSTOM_NAME, Component.literal("selftest"));
       use(level, pos, lock, Direction.NORTH);
-      boolean locked = !((ChestBlockEntity) level.getBlockEntity(pos)).lockKey.key().isEmpty();
+      boolean locked = ((ChestBlockEntity) level.getBlockEntity(pos)).isLocked();
       Inspirations.log.info(PREFIX + "chest locked: {}", locked);
       ItemStack key = new ItemStack(InspirationsTools.key);
       key.set(DataComponents.CUSTOM_NAME, Component.literal("selftest"));
       crouch(true);
       use(level, pos, key, Direction.NORTH);
       crouch(false);
-      return locked && ((ChestBlockEntity) level.getBlockEntity(pos)).lockKey.key().isEmpty();
+      return locked && !((ChestBlockEntity) level.getBlockEntity(pos)).isLocked();
     });
     // pigs
     check("sneaking with an empty hand takes the saddle off a pig", () -> {
-      Pig pig = EntityType.PIG.create(level);
-      pig.moveTo(Vec3.atCenterOf(at(10, 0, 6)));
+      Pig pig = EntityType.PIG.create(level, EntitySpawnReason.COMMAND);
+      pig.snapTo(Vec3.atCenterOf(at(10, 0, 6)));
       level.addFreshEntity(pig);
-      pig.equipSaddle(new ItemStack(Items.SADDLE), null);
+      pig.setItemSlot(net.minecraft.world.entity.EquipmentSlot.SADDLE, new ItemStack(Items.SADDLE));
       player.getInventory().clearContent();
       player.setItemInHand(InteractionHand.MAIN_HAND, ItemStack.EMPTY);
       crouch(true);

@@ -9,11 +9,11 @@ import net.minecraft.world.level.block.SaplingBlock;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.shapes.CollisionContext;
 import net.minecraft.world.phys.shapes.VoxelShape;
-import net.minecraft.world.level.block.BushBlock;
+import net.minecraft.world.level.block.VegetationBlock;
 import net.minecraft.world.level.block.CropBlock;
 import net.minecraft.world.level.block.MushroomBlock;
 import net.minecraft.world.level.block.StemBlock;
-import net.neoforged.neoforge.common.util.TriState;
+import net.minecraft.util.TriState;
 import com.mojang.serialization.MapCodec;
 
 public class MulchBlock extends FallingBlock {
@@ -31,6 +31,12 @@ public class MulchBlock extends FallingBlock {
   }
 
   @Override
+  public int getDustColor(BlockState state, BlockGetter level, BlockPos pos) {
+    // the default of FallingBlock in 1.21.1
+    return 0xFF000000;
+  }
+
+  @Override
   protected VoxelShape getCollisionShape(BlockState state, BlockGetter worldIn, BlockPos pos, CollisionContext context) {
     return SHAPE;
   }
@@ -39,9 +45,9 @@ public class MulchBlock extends FallingBlock {
   public TriState canSustainPlant(BlockState state, BlockGetter world, BlockPos pos, Direction direction, BlockState plant) {
     // we are fine with most plants, but saplings are a bit much
     // this is mostly cop out since I have no way of stopping sapling growth
-    // 1.20 allowed the plains plant type: flowers, grass and other bushes growing on dirt, not crops or mushrooms
+    // 1.20 allowed the plains plant type (BushBlock then, VegetationBlock since 1.21.5): flowers, grass and other bushes growing on dirt, not crops or mushrooms
     Block block = plant.getBlock();
-    if (block instanceof BushBlock && !(block instanceof SaplingBlock) && !(block instanceof CropBlock) && !(block instanceof MushroomBlock) && !(block instanceof StemBlock)) {
+    if (block instanceof VegetationBlock && !(block instanceof SaplingBlock) && !(block instanceof CropBlock) && !(block instanceof MushroomBlock) && !(block instanceof StemBlock)) {
       return TriState.TRUE;
     }
     return TriState.DEFAULT;

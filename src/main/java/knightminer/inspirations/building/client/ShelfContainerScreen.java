@@ -8,14 +8,14 @@ import knightminer.inspirations.common.client.BackgroundContainerScreen;
 import knightminer.inspirations.library.InspirationsRegistry;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.network.chat.Component;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.inventory.Slot;
 import net.minecraft.world.item.ItemStack;
 
 /** Screen for bookshelves */
 public class ShelfContainerScreen extends BackgroundContainerScreen<ShelfContainerMenu> {
-	private static final ResourceLocation BACKGROUND = Inspirations.getResource("textures/gui/shelf.png");
+	private static final Identifier BACKGROUND = Inspirations.getResource("textures/gui/shelf.png");
 	/** Part of the background texture: x, y, width, height */
 	private record Element(int u, int v, int width, int height) {
 		void draw(GuiGraphics graphics, int x, int y) {

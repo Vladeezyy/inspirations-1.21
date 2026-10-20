@@ -4,17 +4,23 @@ import knightminer.inspirations.Inspirations;
 import knightminer.inspirations.tools.entity.RedstoneArrow;
 import net.minecraft.client.renderer.entity.ArrowRenderer;
 import net.minecraft.client.renderer.entity.EntityRendererProvider;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.client.renderer.entity.state.ArrowRenderState;
+import net.minecraft.resources.Identifier;
 
-public class RedstoneArrowRenderer extends ArrowRenderer<RedstoneArrow> {
-  private static final ResourceLocation CHARGED_ARROW = Inspirations.getResource("textures/entity/arrow/charged.png");
+public class RedstoneArrowRenderer extends ArrowRenderer<RedstoneArrow, ArrowRenderState> {
+  private static final Identifier CHARGED_ARROW = Inspirations.getResource("textures/entity/arrow/charged.png");
 
   public RedstoneArrowRenderer(EntityRendererProvider.Context context) {
     super(context);
   }
 
   @Override
-  public ResourceLocation getTextureLocation(RedstoneArrow entity) {
+  protected Identifier getTextureLocation(ArrowRenderState state) {
     return CHARGED_ARROW;
+  }
+
+  @Override
+  public ArrowRenderState createRenderState() {
+    return new ArrowRenderState();
   }
 }

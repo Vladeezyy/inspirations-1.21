@@ -1,5 +1,10 @@
 package knightminer.inspirations.cauldrons.block;
 
+import net.minecraft.world.entity.Entity;
+import net.minecraft.world.level.BlockGetter;
+import net.minecraft.world.phys.shapes.Shapes;
+import net.minecraft.world.phys.shapes.VoxelShape;
+import net.minecraft.core.Direction;
 import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 
@@ -46,8 +51,17 @@ public class FourLayerCauldronBlock extends AbstractCauldronBlock {
 	}
 
 	@Override
-	public int getAnalogOutputSignal(BlockState state, Level level, BlockPos pos) {
+	protected int getAnalogOutputSignal(BlockState state, Level level, BlockPos pos, Direction direction) {
 		return state.getValue(LEVEL);
+	}
+
+	/** Content shapes per level: entities inside them get {@link #entityInside} since 1.21.5 (isEntityInsideContent before) */
+	private static final VoxelShape[] FILLED_SHAPES = Block.boxes(MAX_FILL_LEVEL - 1,
+		level -> Shapes.or(AbstractCauldronBlock.SHAPE, Block.column(12.0, 4.0, 5.0 + (level + 1) * 2.5)));
+
+	@Override
+	protected VoxelShape getEntityInsideCollisionShape(BlockState state, BlockGetter level, BlockPos pos, Entity entity) {
+		return FILLED_SHAPES[state.getValue(LEVEL) - 1];
 	}
 
 	@Override

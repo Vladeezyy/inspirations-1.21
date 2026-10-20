@@ -1,11 +1,9 @@
 package knightminer.inspirations.tools;
 
-import knightminer.inspirations.common.datagen.IInspirationsRecipeBuilder;
 import knightminer.inspirations.common.Config;
 import knightminer.inspirations.common.ModuleBase;
 import knightminer.inspirations.tools.block.RedstoneChargeBlock;
 import knightminer.inspirations.tools.capability.DimensionCompass;
-import knightminer.inspirations.tools.datagen.ToolsRecipeProvider;
 import knightminer.inspirations.tools.entity.RedstoneArrow;
 import knightminer.inspirations.tools.item.DimensionCompassItem;
 import knightminer.inspirations.tools.item.RedstoneArrowItem;
@@ -17,12 +15,11 @@ import net.minecraft.core.Position;
 import net.minecraft.core.Registry;
 import net.minecraft.core.dispenser.OptionalDispenseItemBehavior;
 import net.minecraft.core.registries.Registries;
-import net.minecraft.data.DataGenerator;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.EquipmentSlot;
 import net.minecraft.world.entity.MobCategory;
-import net.minecraft.world.entity.projectile.Arrow;
+import net.minecraft.world.entity.projectile.arrow.Arrow;
 import net.minecraft.world.entity.projectile.Projectile;
 import net.minecraft.world.item.ArrowItem;
 import net.minecraft.world.item.Item;
@@ -36,7 +33,6 @@ import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.level.material.MapColor;
 import net.minecraft.world.level.material.PushReaction;
 import net.neoforged.neoforge.common.NeoForge;
-import net.neoforged.neoforge.data.event.GatherDataEvent;
 import net.neoforged.bus.api.SubscribeEvent;
 import net.neoforged.fml.event.lifecycle.FMLCommonSetupEvent;
 import net.minecraft.core.registries.BuiltInRegistries;
@@ -75,7 +71,7 @@ public class InspirationsTools extends ModuleBase {
   public void register(RegisterEvent event) {
     event.register(Registries.BLOCK, helper -> {
       BlockRegistryAdapter registry = new BlockRegistryAdapter(helper);
-      redstoneCharge = registry.register(new RedstoneChargeBlock(
+      redstoneCharge = registry.make(() -> new RedstoneChargeBlock(
         Block.Properties.of().mapColor(MapColor.NONE).pushReaction(PushReaction.DESTROY).strength(0).lightLevel((state) -> 2)
       ), "redstone_charge");
     });
@@ -83,8 +79,8 @@ public class InspirationsTools extends ModuleBase {
       ItemRegistryAdapter registry = new ItemRegistryAdapter(helper);
       Item.Properties props = new Item.Properties();
 
-      redstoneArrow = registry.register(new RedstoneArrowItem(props), "charged_arrow");
-      redstoneCharger = registry.register(new RedstoneChargerItem(new Item.Properties().durability(120)), "redstone_charger");
+      redstoneArrow = registry.make(() -> new RedstoneArrowItem(props), "charged_arrow");
+      redstoneCharger = registry.make(() -> new RedstoneChargerItem(new Item.Properties().durability(120).repairable(Items.REDSTONE)), "redstone_charger");
 
       lock = registry.register(props, "lock");
       key = registry.register(props, "key");
@@ -92,7 +88,7 @@ public class InspirationsTools extends ModuleBase {
       northCompass = registry.register(props, "north_compass");
       barometer = registry.register(props, "barometer");
       photometer = registry.register(props, "photometer");
-      dimensionCompass = registry.register(new DimensionCompassItem(props), "dimension_compass");
+      dimensionCompass = registry.make(() -> new DimensionCompassItem(props), "dimension_compass");
       // the enchantable shield of 1.20 replaced the vanilla item; NeoForge cannot, ShieldItemMixin does it
     });
     event.register(Registries.ENTITY_TYPE, helper -> {
@@ -108,11 +104,6 @@ public class InspirationsTools extends ModuleBase {
     DimensionCompass.registerAttachment(event);
   }
 
-  @SubscribeEvent
-  void gatherData(GatherDataEvent event) {
-    DataGenerator gen = event.getGenerator();
-    gen.addProvider(event.includeServer(), IInspirationsRecipeBuilder.named("Inspirations Recipes - Tools", new ToolsRecipeProvider(gen.getPackOutput(), event.getLookupProvider())));
-  }
 
   private void registerDispenserBehavior() {
     DispenserBlock.registerProjectileBehavior(redstoneArrow);

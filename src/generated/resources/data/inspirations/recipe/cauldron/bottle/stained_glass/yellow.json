@@ -9,12 +9,8 @@
   "category": "building",
   "group": "stained_glass",
   "key": {
-    "#": {
-      "tag": "c:glass_blocks/colorless"
-    },
-    "x": {
-      "item": "inspirations:yellow_dyed_bottle"
-    }
+    "#": "#c:glass_blocks/colorless",
+    "x": "inspirations:yellow_dyed_bottle"
   },
   "pattern": [
     "###",

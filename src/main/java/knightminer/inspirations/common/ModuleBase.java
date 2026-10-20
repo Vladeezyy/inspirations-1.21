@@ -3,7 +3,7 @@ package knightminer.inspirations.common;
 import knightminer.inspirations.Inspirations;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.resources.ResourceKey;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.world.level.storage.loot.LootPool;
 import net.minecraft.world.level.storage.loot.LootTable;
 import net.minecraft.world.level.storage.loot.entries.NestedLootTable;
@@ -22,7 +22,7 @@ public class ModuleBase {
     }
     LootTable table = event.getTable();
     if (table != LootTable.EMPTY) {
-      ResourceLocation location = Inspirations.getResource(name);
+      Identifier location = Inspirations.getResource(name);
       table.addPool(new LootPool.Builder()
                         .name(location.toString())
                         .setRolls(ConstantValue.exactly(1))

@@ -9,9 +9,7 @@
   "category": "misc",
   "group": "minecraft:pink_dye",
   "ingredients": [
-    {
-      "item": "inspirations:paeonia"
-    }
+    "inspirations:paeonia"
   ],
   "result": {
     "count": 1,

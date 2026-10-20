@@ -2,7 +2,7 @@
 # Runs a client test scene (max 15 min): -Pscene=main (src/selftest/.../ClientScene, default) or -Pscene=stress.
 # Screenshots in run/screenshots/scene_*.png; prints the checks and the errors of the run. Every run starts from the
 # default configs and a new world. Extra gradle arguments are passed on (-Pscene_lang=ru_ru, -Pwith_compat,
-# -Pneo_version=21.1.197 -Pno_jei).
+# -Pneo_version=21.1.197 -Pno_jei, -Pjfr for a flight recording in run/stress.jfr).
 cd "$(dirname "$0")/.."
 rm -rf run/saves/insp_scene run/saves/insp_stress run/screenshots/scene_*.png build-scene.log
 rm -f run/config/inspirations-*.toml

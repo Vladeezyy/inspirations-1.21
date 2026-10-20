@@ -4,9 +4,9 @@ import knightminer.inspirations.Inspirations;
 import knightminer.inspirations.common.Config;
 import knightminer.inspirations.library.MiscUtil;
 import net.minecraft.client.Minecraft;
-import net.minecraft.util.FastColor;
+import net.minecraft.util.ARGB;
 import net.minecraft.client.color.block.BlockColor;
-import net.minecraft.client.renderer.chunk.RenderChunkRegion;
+import net.minecraft.client.renderer.chunk.RenderSectionRegion;
 import net.minecraft.core.BlockPos;
 import net.minecraft.world.level.BlockAndTintGetter;
 import net.minecraft.world.level.BlockGetter;
@@ -36,11 +36,11 @@ public class PortalColorHandler implements BlockColor {
       return -1;
     }
     if (world == null || pos == null) {
-      return FastColor.ARGB32.opaque(DEFAULT_COLOR);
+      return ARGB.opaque(DEFAULT_COLOR);
     }
 
     // Get the real world, not the fake one so we can look at the blocks far enough below us.
-    if (world instanceof RenderChunkRegion && Minecraft.getInstance().level != null) {
+    if (world instanceof RenderSectionRegion && Minecraft.getInstance().level != null) {
       world = Minecraft.getInstance().level;
     }
 
@@ -61,7 +61,7 @@ public class PortalColorHandler implements BlockColor {
       pos = pos.below();
     }
 
-    return FastColor.ARGB32.opaque(getColorValue(world, pos.below()));
+    return ARGB.opaque(getColorValue(world, pos.below()));
   }
 
   /**

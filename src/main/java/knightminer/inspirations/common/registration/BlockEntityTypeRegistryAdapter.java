@@ -15,14 +15,14 @@ public class BlockEntityTypeRegistryAdapter extends RegistryAdapter<BlockEntityT
   }
 
   public <T extends BlockEntity> BlockEntityType<T> register(BlockEntityType.BlockEntitySupplier<T> factory, Block block, String name) {
-    return register(BlockEntityType.Builder.of(factory, block).build(null), name);
+    return register(new BlockEntityType<>(factory, java.util.Set.of(block)), name);
   }
 
   public <T extends BlockEntity> BlockEntityType<T> register(BlockEntityType.BlockEntitySupplier<T> factory, EnumObject<?, ? extends Block> blocks, String name) {
-    return register(BlockEntityType.Builder.of(factory, blocks.values().toArray(new Block[0])).build(null), name);
+    return register(new BlockEntityType<>(factory, java.util.Set.copyOf(blocks.values())), name);
   }
 
   public <T extends BlockEntity> BlockEntityType<T> register(BlockEntityType.BlockEntitySupplier<T> factory, List<? extends Block> blocks, String name) {
-    return register(BlockEntityType.Builder.of(factory, new ArrayList<>(blocks).toArray(new Block[0])).build(null), name);
+    return register(new BlockEntityType<>(factory, java.util.Set.copyOf(blocks)), name);
   }
 }

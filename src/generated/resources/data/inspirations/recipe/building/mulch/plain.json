@@ -6,9 +6,7 @@
     }
   ],
   "type": "minecraft:stonecutting",
-  "ingredient": {
-    "tag": "minecraft:planks"
-  },
+  "ingredient": "#minecraft:planks",
   "result": {
     "count": 1,
     "id": "inspirations:plain_mulch"

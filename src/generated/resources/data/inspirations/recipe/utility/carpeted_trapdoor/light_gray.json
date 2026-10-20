@@ -9,12 +9,8 @@
   "category": "redstone",
   "group": "inspirations:carpeted_trapdoor",
   "key": {
-    "C": {
-      "item": "minecraft:light_gray_carpet"
-    },
-    "T": {
-      "tag": "minecraft:wooden_trapdoors"
-    }
+    "C": "minecraft:light_gray_carpet",
+    "T": "#minecraft:wooden_trapdoors"
   },
   "pattern": [
     "C",

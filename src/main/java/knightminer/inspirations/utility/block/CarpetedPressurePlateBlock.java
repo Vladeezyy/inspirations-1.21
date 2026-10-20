@@ -41,14 +41,6 @@ public class CarpetedPressurePlateBlock extends PressurePlateBlock {
     return flag ? PRESSED_AABB : UNPRESSED_AABB;
   }
 
-  @Override
-  public String getDescriptionId() {
-    // Use the name of the carpet on top for the translation key.
-    // This should never be seen normally, but other mods might display it
-    // so ensure it's a valid value.
-    return transKey;
-  }
-
   /**
    * Gets the carpet block that cooresponds to this block
    * @return Carpet block
@@ -58,7 +50,7 @@ public class CarpetedPressurePlateBlock extends PressurePlateBlock {
   }
 
   @Override
-  public ItemStack getCloneItemStack(BlockState state, HitResult target, LevelReader level, BlockPos pos, Player player) {
+  protected ItemStack getCloneItemStack(LevelReader level, BlockPos pos, BlockState state, boolean includeData) {
     return new ItemStack(getCarpet());
   }
 }

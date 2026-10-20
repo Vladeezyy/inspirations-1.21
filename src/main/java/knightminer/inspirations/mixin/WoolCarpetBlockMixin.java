@@ -1,5 +1,8 @@
 package knightminer.inspirations.mixin;
 
+import net.minecraft.util.RandomSource;
+import net.minecraft.world.level.ScheduledTickAccess;
+import net.minecraft.world.level.LevelReader;
 import knightminer.inspirations.tweaks.block.FlatCarpetBlock;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
@@ -30,7 +33,7 @@ public abstract class WoolCarpetBlockMixin extends CarpetBlock {
   public abstract DyeColor getColor();
 
   @Override
-  protected BlockState updateShape(BlockState state, Direction facing, BlockState facingState, LevelAccessor world, BlockPos pos, BlockPos facingPos) {
+  protected BlockState updateShape(BlockState state, LevelReader world, ScheduledTickAccess ticks, BlockPos pos, Direction facing, BlockPos facingPos, BlockState facingState, RandomSource random) {
     return FlatCarpetBlock.fitToStairs(getColor(), state, world, pos);
   }
 

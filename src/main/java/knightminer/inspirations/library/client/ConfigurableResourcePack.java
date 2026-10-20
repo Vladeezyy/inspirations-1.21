@@ -2,7 +2,7 @@ package knightminer.inspirations.library.client;
 
 import knightminer.inspirations.Inspirations;
 import net.minecraft.network.chat.Component;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.server.packs.AbstractPackResources;
 import net.minecraft.server.packs.PackType;
 import net.minecraft.server.packs.repository.Pack;
@@ -61,7 +61,7 @@ public class ConfigurableResourcePack extends AbstractPackResources implements R
    * @param displayName     Display name of the pack for UIs
    * @param namespaces      List of namespaces that have resources replaced
    */
-  public ConfigurableResourcePack(Class<?> resourceLoader, ResourceLocation packId, Component displayName, Component description, Set<String> namespaces) {
+  public ConfigurableResourcePack(Class<?> resourceLoader, Identifier packId, Component displayName, Component description, Set<String> namespaces) {
     this(resourceLoader, packId.toString(), String.format(Locale.ROOT, "/%s/%s/%s/", PackType.CLIENT_RESOURCES.getDirectory(), packId.getNamespace(), packId.getPath()), displayName, description, namespaces);
   }
 
@@ -95,7 +95,7 @@ public class ConfigurableResourcePack extends AbstractPackResources implements R
 
   @Nullable
   @Override
-  public IoSupplier<InputStream> getResource(PackType packType, ResourceLocation location) {
+  public IoSupplier<InputStream> getResource(PackType packType, Identifier location) {
     return this.getResource(String.format(Locale.ROOT, "%s/%s/%s", packType.getDirectory(), location.getNamespace(), location.getPath()));
   }
 
@@ -149,7 +149,7 @@ public class ConfigurableResourcePack extends AbstractPackResources implements R
       if (replacement.isEnabled()) {
         String path = entry.getKey();
         if (path.startsWith(prefix)) {
-          ResourceLocation location = ResourceLocation.tryBuild(namespace, path.substring(root.length()));
+          Identifier location = Identifier.tryBuild(namespace, path.substring(root.length()));
           if (location != null) {
             output.accept(location, getIoSupplier(replacement.name));
           }
@@ -200,7 +200,7 @@ public class ConfigurableResourcePack extends AbstractPackResources implements R
    * @param folder     Resource folder
    * @return  Full resource path
    */
-  private static String makePath(ResourceLocation id, String folder, String extension) {
+  private static String makePath(Identifier id, String folder, String extension) {
     return String.format("%s/%s/%s/%s.%s", PackType.CLIENT_RESOURCES.getDirectory(), id.getNamespace(), folder, id.getPath(), extension);
   }
 
@@ -242,6 +242,17 @@ public class ConfigurableResourcePack extends AbstractPackResources implements R
    */
   public void addItemModelReplacement(BooleanValue condition, ItemLike item, String resource) {
     addItemModelReplacement(condition::get, item, resource);
+  }
+
+  /**
+   * Adds a replacement for a client item definition (items folder, since 1.21.4), needed when the replacement model
+   * has tints: they come from the definition
+   * @param condition  Condition for replacement
+   * @param item       Item to replace the definition
+   * @param resource   Name of the definition replacement
+   */
+  public void addItemDefinitionReplacement(BooleanValue condition, ItemLike item, String resource) {
+    addReplacement(condition::get, makePath(BuiltInRegistries.ITEM.getKey(item.asItem()), "items", "json"), "items/" + resource + ".json");
   }
 
   /**

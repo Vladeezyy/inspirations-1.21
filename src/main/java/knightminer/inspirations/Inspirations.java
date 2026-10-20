@@ -6,22 +6,14 @@ import knightminer.inspirations.common.CommonsClientEvents;
 import knightminer.inspirations.common.Config;
 import knightminer.inspirations.common.InspirationsCommons;
 import knightminer.inspirations.common.data.GlobalLootProvider;
-import knightminer.inspirations.common.datagen.InspirationsBlockTagsProvider;
-import knightminer.inspirations.common.datagen.InspirationsFluidTagsProvider;
-import knightminer.inspirations.common.datagen.InspirationsItemTagsProvider;
-import knightminer.inspirations.common.datagen.InspirationsLootTableProvider;
 import knightminer.inspirations.common.network.InspirationsNetwork;
 import knightminer.inspirations.tools.InspirationsTools;
 import knightminer.inspirations.tweaks.InspirationsTweaks;
 import knightminer.inspirations.utility.InspirationsUtility;
 import net.minecraft.core.HolderLookup.Provider;
-import net.minecraft.data.DataGenerator;
-import net.minecraft.data.PackOutput;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.neoforged.api.distmarker.Dist;
 import net.neoforged.neoforge.common.data.BlockTagsProvider;
-import net.neoforged.neoforge.common.data.ExistingFileHelper;
-import net.neoforged.neoforge.data.event.GatherDataEvent;
 import net.neoforged.bus.api.IEventBus;
 import net.neoforged.bus.api.SubscribeEvent;
 
@@ -48,7 +40,6 @@ public class Inspirations {
     // 1.20 loaded this file by hand before registration; a startup config is loaded right here, under the same name
     container.registerConfig(Type.STARTUP, Config.COMMON_SPEC, modID + "-common.toml");
 
-    modBus.register(this);
     modBus.register(new InspirationsCommons());
     modBus.register(new InspirationsBuilding());
     modBus.register(new InspirationsUtility());
@@ -58,27 +49,11 @@ public class Inspirations {
     modBus.addListener(Config::configChanged);
     modBus.addListener(InspirationsNetwork::register);
 
-    if (FMLEnvironment.dist == Dist.CLIENT) {
+    if (FMLEnvironment.getDist() == Dist.CLIENT) {
       CommonsClientEvents.onConstruct(modBus);
     }
   }
 
-  @SubscribeEvent
-  void gatherData(GatherDataEvent event) {
-    DataGenerator gen = event.getGenerator();
-    PackOutput packOutput = gen.getPackOutput();
-    CompletableFuture<Provider> lookupProvider = event.getLookupProvider();
-    boolean server = event.includeServer();
-    ExistingFileHelper existing = event.getExistingFileHelper();
-
-    BlockTagsProvider blockTags = new InspirationsBlockTagsProvider(packOutput, lookupProvider, existing);
-    gen.addProvider(server, blockTags);
-    gen.addProvider(server, new InspirationsItemTagsProvider(packOutput, lookupProvider, blockTags.contentsGetter(), existing));
-    gen.addProvider(server, new InspirationsFluidTagsProvider(packOutput, lookupProvider, existing));
-    gen.addProvider(server, new InspirationsLootTableProvider(packOutput, lookupProvider));
-    gen.addProvider(server, new GlobalLootProvider(packOutput, lookupProvider));
-    // damage type, atlas, fluid transfers and shelf item positions are plain files in src/main/resources
-  }
 
 
   /* Utilities */
@@ -88,8 +63,8 @@ public class Inspirations {
    * @param name Resource path
    * @return Resource location
    */
-  public static ResourceLocation getResource(String name) {
-    return ResourceLocation.fromNamespaceAndPath(modID, name);
+  public static Identifier getResource(String name) {
+    return Identifier.fromNamespaceAndPath(modID, name);
   }
 
   /**

@@ -1,6 +1,7 @@
 package knightminer.inspirations.tweaks;
 
-import knightminer.inspirations.common.datagen.IInspirationsRecipeBuilder;
+import net.minecraft.world.item.consume_effects.ApplyStatusEffectsConsumeEffect;
+import net.minecraft.world.item.component.Consumables;
 import com.google.common.collect.ImmutableSet;
 import knightminer.inspirations.common.Config;
 import knightminer.inspirations.common.InspirationsCommons;
@@ -11,7 +12,6 @@ import knightminer.inspirations.tweaks.block.FittedCarpetBlock;
 import knightminer.inspirations.tweaks.block.FlatCarpetBlock;
 import knightminer.inspirations.tweaks.block.SugarCaneCropBlock;
 import knightminer.inspirations.tweaks.block.WetHopperBlock;
-import knightminer.inspirations.tweaks.datagen.TweaksRecipeProvider;
 import knightminer.inspirations.tweaks.recipe.NormalBrewingRecipe;
 import knightminer.inspirations.tweaks.util.SmoothGrowthListener;
 import net.minecraft.core.BlockPos;
@@ -20,7 +20,6 @@ import net.minecraft.core.Registry;
 import net.minecraft.core.dispenser.DefaultDispenseItemBehavior;
 import net.minecraft.core.dispenser.DispenseItemBehavior;
 import net.minecraft.core.registries.Registries;
-import net.minecraft.data.DataGenerator;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.world.effect.MobEffectInstance;
@@ -29,7 +28,6 @@ import net.minecraft.world.food.FoodProperties;
 import net.minecraft.world.item.BlockItem;
 import net.minecraft.world.item.DyeColor;
 import net.minecraft.world.item.Item;
-import net.minecraft.world.item.ItemNameBlockItem;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.item.alchemy.Potions;
 import net.minecraft.world.item.context.DirectionalPlaceContext;
@@ -43,7 +41,6 @@ import net.minecraft.world.level.block.HopperBlock;
 import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.minecraft.world.level.block.state.BlockBehaviour;
 import net.neoforged.neoforge.common.NeoForge;
-import net.neoforged.neoforge.data.event.GatherDataEvent;
 import net.neoforged.neoforge.event.LootTableLoadEvent;
 import net.neoforged.bus.api.SubscribeEvent;
 import net.neoforged.fml.event.lifecycle.FMLCommonSetupEvent;
@@ -82,29 +79,32 @@ public class InspirationsTweaks extends ModuleBase {
       EnumObject.Builder<DyeColor,FittedCarpetBlock> fittedBuilder = new EnumObject.Builder<>(DyeColor.class);
       for (DyeColor color : DyeColor.values()) {
         Block original = InspirationsCommons.VANILLA_CARPETS.get(color);
-        Block.Properties props = Block.Properties.ofFullCopy(original);
+        // named like the vanilla carpet
+        Block.Properties props = Block.Properties.ofFullCopy(original).overrideDescription(original.getDescriptionId());
         flatBuilder.put(color, original);
         // bounding box messes with sprinting on stairs, so disable
-        fittedBuilder.put(color, registry.register(new FittedCarpetBlock(color, props.noCollission()), color.getSerializedName() + "_fitted_carpet"));
+        fittedBuilder.put(color, registry.make(() -> new FittedCarpetBlock(color, props.noCollision()), color.getSerializedName() + "_fitted_carpet"));
       }
       flatCarpets = flatBuilder.build();
       fitCarpets = fittedBuilder.build();
 
       // the vanilla hopper takes water through a mixin (HopperBlockMixin) and turns into this block
       dryHopper = (HopperBlock) Blocks.HOPPER;
-      wetHopper = registry.register(new WetHopperBlock(Block.Properties.ofFullCopy(Blocks.HOPPER)), "wet_hopper");
+      wetHopper = registry.make(() -> new WetHopperBlock(Block.Properties.ofFullCopy(Blocks.HOPPER).overrideDescription(Blocks.HOPPER.getDescriptionId())), "wet_hopper");
 
-      cactus = registry.register(new CactusCropBlock(() -> Blocks.CACTUS, BlockBehaviour.Properties.ofFullCopy(Blocks.CACTUS)), "cactus");
-      sugarCane = registry.register(new SugarCaneCropBlock(() -> Blocks.SUGAR_CANE, BlockBehaviour.Properties.ofFullCopy(Blocks.SUGAR_CANE)), "sugar_cane");
+      cactus = registry.make(() -> new CactusCropBlock(() -> Blocks.CACTUS, BlockBehaviour.Properties.ofFullCopy(Blocks.CACTUS)), "cactus");
+      sugarCane = registry.make(() -> new SugarCaneCropBlock(() -> Blocks.SUGAR_CANE, BlockBehaviour.Properties.ofFullCopy(Blocks.SUGAR_CANE)), "sugar_cane");
     });
     event.register(Registries.ITEM, helper -> {
       ItemRegistryAdapter registry = new ItemRegistryAdapter(helper);
       Item.Properties props = new Item.Properties();
 
-      cactusSeeds = registry.register(new ItemNameBlockItem(cactus, props), "cactus_seeds");
-      sugarCaneSeeds = registry.register(new ItemNameBlockItem(sugarCane, props), "sugar_cane_seeds");
+      // items named as themselves, not as the block (ItemNameBlockItem before 1.21.2)
+      cactusSeeds = registry.make(() -> new BlockItem(cactus, props), "cactus_seeds");
+      sugarCaneSeeds = registry.make(() -> new BlockItem(sugarCane, props), "sugar_cane_seeds");
       heartbeet = registry.register(
-        new Item.Properties().food(new FoodProperties.Builder().nutrition(2).saturationModifier(2.4f).effect(() -> new MobEffectInstance(MobEffects.REGENERATION, 100), 1).build()),
+        new Item.Properties().food(new FoodProperties.Builder().nutrition(2).saturationModifier(2.4f).build(),
+          Consumables.defaultFood().onConsume(new ApplyStatusEffectsConsumeEffect(new MobEffectInstance(MobEffects.REGENERATION, 100), 1)).build()),
         "heartbeet");
     });
     event.register(Registries.BLOCK_ENTITY_TYPE, helper -> {
@@ -137,11 +137,6 @@ public class InspirationsTweaks extends ModuleBase {
     event.getBuilder().addRecipe(new NormalBrewingRecipe(Potions.AWKWARD, heartbeet, Potions.REGENERATION, Config.brewHeartbeet));
   }
 
-  @SubscribeEvent
-  public void gatherData(GatherDataEvent event) {
-    DataGenerator gen = event.getGenerator();
-    gen.addProvider(event.includeServer(), IInspirationsRecipeBuilder.named("Inspirations Recipes - Tweaks", new TweaksRecipeProvider(gen.getPackOutput(), event.getLookupProvider())));
-  }
 
 
   private static void loadLoot(LootTableLoadEvent event) {

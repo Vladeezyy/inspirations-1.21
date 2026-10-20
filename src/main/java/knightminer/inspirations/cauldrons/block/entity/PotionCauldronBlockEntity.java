@@ -1,5 +1,12 @@
 package knightminer.inspirations.cauldrons.block.entity;
 
+import net.minecraft.sounds.SoundSource;
+import net.minecraft.sounds.SoundEvents;
+import net.minecraft.world.entity.AreaEffectCloud;
+import net.minecraft.world.level.block.LayeredCauldronBlock;
+import net.minecraft.tags.BlockTags;
+import net.minecraft.world.level.storage.ValueOutput;
+import net.minecraft.world.level.storage.ValueInput;
 import dev.vladeezyy.kilnwork.block.SyncedBlockEntity;
 import knightminer.inspirations.cauldrons.InspirationsCaudrons;
 import knightminer.inspirations.common.network.CauldronPotionUpdatePacket;
@@ -10,7 +17,7 @@ import net.minecraft.core.Holder;
 import net.minecraft.core.HolderLookup;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.nbt.CompoundTag;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.world.item.alchemy.Potion;
 import net.minecraft.world.item.alchemy.PotionContents;
 import net.minecraft.world.item.alchemy.Potions;
@@ -64,7 +71,7 @@ public class PotionCauldronBlockEntity extends SyncedBlockEntity {
 	public boolean setPotion(@Nullable Holder<Potion> potion) {
 		if (!Objects.equals(potion, this.potion)) {
 			this.potion = potion;
-			if (level != null && !level.isClientSide) {
+			if (level != null && !level.isClientSide()) {
 				InspirationsNetwork.sendToClients(level, worldPosition, new CauldronPotionUpdatePacket(worldPosition, Optional.ofNullable(potion)));
 			}
 			this.setChangedFast();
@@ -73,33 +80,53 @@ public class PotionCauldronBlockEntity extends SyncedBlockEntity {
 		return false;
 	}
 
+	/** Broken (not turned into another cauldron): the potion makes a cloud, as in 1.20 */
+	@Override
+	public void preRemoveSideEffects(BlockPos pos, BlockState state) {
+		// the new block is already in the world here
+		if (level == null || potion == null || level.getBlockState(pos).is(BlockTags.CAULDRONS)) {
+			return;
+		}
+		int waterLevel = state.getValue(LayeredCauldronBlock.LEVEL);
+		AreaEffectCloud cloud = new AreaEffectCloud(level, pos.getX() + 0.5F, pos.getY() + 0.5F, pos.getZ() + 0.5F);
+		cloud.setRadius(0.5F * waterLevel + 0.5F);
+		cloud.setDuration(20 * (waterLevel + 1));
+		cloud.setRadiusOnUse(-0.5F);
+		cloud.setWaitTime(10);
+		cloud.setRadiusPerTick(-cloud.getRadius() / cloud.getDuration());
+		// 1.20 set the potion and added its effects again, so the cloud had every effect twice
+		cloud.setPotionContents(getPotionContents());
+		level.addFreshEntity(cloud);
+		level.playSound(null, pos, SoundEvents.SPLASH_POTION_BREAK, SoundSource.BLOCKS, 1.0f, 1.0f);
+	}
+
 	@Override
 	protected boolean shouldSyncOnUpdate() {
 		return true;
 	}
 
 	@Override
-	protected void saveSynced(CompoundTag nbt, HolderLookup.Provider registries) {
-		super.saveSynced(nbt, registries);
+	protected void saveSynced(ValueOutput output) {
+		super.saveSynced(output);
 		// the potion id, the format of 1.20
-		nbt.putString(TAG_POTION, potion == null ? "minecraft:empty" : potion.unwrapKey().map(key -> key.location().toString()).orElse("minecraft:empty"));
+		output.putString(TAG_POTION, potion == null ? "minecraft:empty" : potion.unwrapKey().map(key -> key.identifier().toString()).orElse("minecraft:empty"));
 	}
 
 	/** Parses the potion from its name, null for empty or unknown (1.20 worlds have minecraft:empty) */
 	@Nullable
 	private static Holder<Potion> parsePotion(String key) {
-		ResourceLocation id = ResourceLocation.tryParse(key);
+		Identifier id = Identifier.tryParse(key);
 		if (id != null) {
-			return BuiltInRegistries.POTION.getHolder(id).orElse(null);
+			return BuiltInRegistries.POTION.get(id).orElse(null);
 		}
 		return null;
 	}
 
 	@Override
-	protected void loadAdditional(CompoundTag nbt, HolderLookup.Provider registries) {
-		super.loadAdditional(nbt, registries);
-		potion = parsePotion(nbt.getString(TAG_POTION));
-		if (level != null && level.isClientSide) {
+	protected void loadAdditional(ValueInput input) {
+		super.loadAdditional(input);
+		potion = parsePotion(input.getStringOr(TAG_POTION, ""));
+		if (level != null && level.isClientSide()) {
 			MiscUtil.notifyClientUpdate(this);
 		}
 	}

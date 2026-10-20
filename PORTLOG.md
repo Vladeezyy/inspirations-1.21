@@ -102,6 +102,39 @@ Checked with `modding-kb/scripts/langcheck.py`; the client scene passes in `ru_r
 - Release jar on real NeoForge 21.1.197 and 21.1.259 dedicated servers (`prodtest/serve.sh`): starts, Kilnwork loaded
   from the jar, no errors. The jar has the license texts and no test classes.
 
+## Minecraft 1.21.11 (NeoForge 21.11.48), branch `mc/1.21.11`
+
+Ported from this 1.21.1 code with Kilnwork 1.1.0 for 1.21.11. Datagen is not ported; its 1.21.1 output is converted once
+and kept as data.
+
+- Models: the loaders `inspirations:trim` and `kilnwork:colored_block` became plain JSON (`tools/port/static_models.py`,
+  rerun per Minecraft version). Retextured models (shelves, enlightened bushes) remap the quad UVs onto the texture
+  block's sprite instead of baking a model per texture; shelf books are quad groups chosen by the `BOOKS` model data.
+- Item definitions (`items/*.json`, `tools/port/item_definitions.py`): item colors and properties stay Java functions,
+  read through the tint source `inspirations:item_color` and the numeric property `inspirations:property`. The config
+  resource pack also replaces the definitions of the enchanted book and the firework rocket (their tints).
+- Data: `tools/port/recipes_1_21_11.py` converts the ingredients (recipes, the heartbeet loot modifier, Kilnwork fluid
+  transfers) to the 1.21.2 string format and `dyed_color` to an integer.
+- Registration: `Properties.setId` comes from a pending id set by the registry adapters (`BlockPropertiesMixin`,
+  `ItemPropertiesMixin`).
+- Fluid and item handlers on the transfer API (`ResourceHandler`, `ItemAccessResourceHandler`, `VanillaContainerWrapper`).
+- Milk bottles remove one random effect of any kind: NeoForge 21.11 has no effect cures (vanilla milk clears all).
+- Shields at the enchanting table need the `enchantable` component since 1.21.2: `EnchantmentHelperMixin` and
+  `ItemStackMixin` give it to shields (12, 16 with a banner) while the config option is on.
+- Hoppers keep their items when they turn wet or dry through `shouldChangedStateKeepBlockEntity` alone (1.21.5 removed
+  `onRemove`; the drops are skipped with the block entity).
+- `minecraft:cutout_mipped` is gone (NeoForge 21.11 knows solid, cutout, translucent, tripwire) and an unknown render
+  type draws solid without a warning: the bushes use `cutout`, and Kilnwork keeps the render type of retextured parts.
+- Mulch holds `VegetationBlock` plants (BushBlock is one kind of them since 1.21.5); bonemeal on sand and mycelium no
+  longer casts to BushBlock.
+- The shelf renderer is asked every frame for every shelf (render states, 1.21.9): shelves holding only books are
+  skipped by `shouldRender`, the non-book slots are a cached mask.
+
+Verification on 1.21.11: selftest 55/55, client scene 41/41 (11 screenshots compared with the 1.21.1 ones; the scene
+world is in another biome now, so the vine rope has the savanna tint), net test 11/11. Stress (machine under other load,
+numbers of one run): empty floor 151 FPS, vanilla baseline of 1024 full chiseled bookshelves 140 FPS, 1024 shelves full
+of books 158 FPS at 7.6 MSPT, plus 96 cauldrons 154 FPS at 4.6 MSPT, 200 ticks of changes 126 FPS at 5.8 MSPT — 10/10.
+
 ## License
 
 Code: LGPL-3.0-only (`LICENSE`, GPL text in `licenses/COPYING`); the original is MIT (`licenses/LICENSE-MIT`).

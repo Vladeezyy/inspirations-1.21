@@ -2,10 +2,11 @@ package knightminer.inspirations.common.client;
 
 import knightminer.inspirations.Inspirations;
 import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.renderer.RenderPipelines;
 import net.minecraft.client.gui.screens.MenuScreens.ScreenConstructor;
 import net.minecraft.client.gui.screens.inventory.AbstractContainerScreen;
 import net.minecraft.network.chat.Component;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.inventory.AbstractContainerMenu;
 
@@ -16,7 +17,7 @@ import net.minecraft.world.inventory.AbstractContainerMenu;
 @SuppressWarnings("WeakerAccess")
 public class BackgroundContainerScreen<T extends AbstractContainerMenu> extends AbstractContainerScreen<T> {
   /** Background drawn for this screen */
-  protected final ResourceLocation background;
+  protected final Identifier background;
 
   /**
    * Creates a new screen instance
@@ -25,7 +26,7 @@ public class BackgroundContainerScreen<T extends AbstractContainerMenu> extends 
    * @param name       Container name
    * @param background Container background
    */
-  public BackgroundContainerScreen(T container, Inventory inventory, Component name, int height, ResourceLocation background) {
+  public BackgroundContainerScreen(T container, Inventory inventory, Component name, int height, Identifier background) {
     super(container, inventory, name);
     this.background = background;
     this.imageHeight = height;
@@ -46,11 +47,11 @@ public class BackgroundContainerScreen<T extends AbstractContainerMenu> extends 
 
   @Override
   protected void renderBg(GuiGraphics graphics, float partialTicks, int mouseX, int mouseY) {
-    graphics.blit(this.background, this.leftPos, this.topPos, 0, 0, this.imageWidth, this.imageHeight);
+    graphics.blit(RenderPipelines.GUI_TEXTURED, this.background, this.leftPos, this.topPos, 0, 0, this.imageWidth, this.imageHeight, 256, 256);
   }
 
   public static class Factory<T extends AbstractContainerMenu> implements ScreenConstructor<T,BackgroundContainerScreen<T>> {
-    private final ResourceLocation background;
+    private final Identifier background;
     private final int height;
 
     /**
@@ -58,7 +59,7 @@ public class BackgroundContainerScreen<T extends AbstractContainerMenu> extends 
      * @param height     Screen height
      * @param background Background location
      */
-    public Factory(int height, ResourceLocation background) {
+    public Factory(int height, Identifier background) {
       this.height = height;
       this.background = background;
     }

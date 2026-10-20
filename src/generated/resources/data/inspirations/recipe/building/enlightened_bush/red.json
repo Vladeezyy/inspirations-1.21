@@ -9,15 +9,9 @@
   "category": "building",
   "group": "inspirations:enlightened_bush",
   "key": {
-    "D": {
-      "tag": "c:dyes/red"
-    },
-    "G": {
-      "tag": "c:dusts/glowstone"
-    },
-    "L": {
-      "tag": "minecraft:leaves"
-    }
+    "D": "#c:dyes/red",
+    "G": "#c:dusts/glowstone",
+    "L": "#minecraft:leaves"
   },
   "pattern": [
     " D ",
@@ -27,7 +21,5 @@
     "count": 1,
     "id": "inspirations:red_enlightened_bush"
   },
-  "texture": {
-    "tag": "minecraft:leaves"
-  }
+  "texture": "#minecraft:leaves"
 }

@@ -1,5 +1,6 @@
 package knightminer.inspirations.cauldrons.block;
 
+import net.minecraft.world.entity.InsideBlockEffectApplier;
 import knightminer.inspirations.cauldrons.InspirationsCaudrons;
 import knightminer.inspirations.library.InspirationsTags;
 import knightminer.inspirations.library.MiscUtil;
@@ -24,12 +25,12 @@ public class BoilingFourLayerCauldronBlock extends FourLayerCauldronBlock {
 
 	/** Deals boiling damage to the given entity */
 	public static void boil(Entity target) {
-		target.hurt(new DamageSource(target.level().registryAccess().registryOrThrow(Registries.DAMAGE_TYPE).getHolderOrThrow(InspirationsCaudrons.DAMAGE_BOIL)), 2.0F);
+		target.hurt(new DamageSource(target.level().registryAccess().lookupOrThrow(Registries.DAMAGE_TYPE).getOrThrow(InspirationsCaudrons.DAMAGE_BOIL)), 2.0F);
 	}
 
 	@Override
-	public void entityInside(BlockState state, Level world, BlockPos pos, Entity entity) {
-		if (!world.isClientSide && isEntityInsideContent(state, pos, entity) && isBoiling(world, pos)) {
+	public void entityInside(BlockState state, Level world, BlockPos pos, Entity entity, InsideBlockEffectApplier effects, boolean intersects) {
+		if (!world.isClientSide() && isBoiling(world, pos)) {
 			boil(entity);
 		}
 	}

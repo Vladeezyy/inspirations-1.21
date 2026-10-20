@@ -9,12 +9,8 @@
   "category": "misc",
   "group": "inspirations:gray_dyed_bottle",
   "ingredients": [
-    {
-      "item": "inspirations:black_dyed_bottle"
-    },
-    {
-      "item": "inspirations:white_dyed_bottle"
-    }
+    "inspirations:black_dyed_bottle",
+    "inspirations:white_dyed_bottle"
   ],
   "result": {
     "count": 2,

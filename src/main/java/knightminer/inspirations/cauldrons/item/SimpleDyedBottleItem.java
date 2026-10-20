@@ -4,7 +4,7 @@ import net.minecraft.sounds.SoundEvents;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.world.entity.LivingEntity;
-import net.minecraft.world.entity.animal.Sheep;
+import net.minecraft.world.entity.animal.sheep.Sheep;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.DyeColor;
 import net.minecraft.world.item.DyeItem;
@@ -53,12 +53,12 @@ public class SimpleDyedBottleItem extends DyeItem {
    */
   private static void consumeItem(Player player, InteractionHand hand, ItemStack stack) {
     if (!player.isCreative()) {
-      ItemStack bottle = stack.getCraftingRemainingItem().copy();
+      ItemStack bottle = stack.getCraftingRemainder();
       if (stack.getCount() == 1) {
         player.setItemInHand(hand, bottle);
       } else {
         stack.shrink(1);
-        ItemHandlerHelper.giveItemToPlayer(player, bottle);
+        player.getInventory().placeItemBackInInventory(bottle);
       }
     }
   }

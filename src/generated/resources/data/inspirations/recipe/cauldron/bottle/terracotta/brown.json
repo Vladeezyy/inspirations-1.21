@@ -9,12 +9,8 @@
   "category": "building",
   "group": "stained_terracotta",
   "key": {
-    "#": {
-      "tag": "inspirations:terracotta"
-    },
-    "x": {
-      "item": "inspirations:brown_dyed_bottle"
-    }
+    "#": "#inspirations:terracotta",
+    "x": "inspirations:brown_dyed_bottle"
   },
   "pattern": [
     "###",

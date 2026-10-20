@@ -1,0 +1,16 @@
+{
+  "model": {
+    "type": "minecraft:model",
+    "model": "inspirations:item/colored_book",
+    "tints": [
+      {
+        "type": "inspirations:item_color",
+        "index": 0
+      },
+      {
+        "type": "inspirations:item_color",
+        "index": 1
+      }
+    ]
+  }
+}

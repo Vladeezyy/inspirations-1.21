@@ -1,0 +1,24 @@
+{
+  "model": {
+    "type": "minecraft:model",
+    "model": "minecraft:item/firework_rocket",
+    "tints": [
+      {
+        "type": "inspirations:item_color",
+        "index": 0
+      },
+      {
+        "type": "inspirations:item_color",
+        "index": 1
+      },
+      {
+        "type": "inspirations:item_color",
+        "index": 2
+      },
+      {
+        "type": "inspirations:item_color",
+        "index": 3
+      }
+    ]
+  }
+}

@@ -23,8 +23,8 @@ public class DimensionCompassItem extends CompassItem {
 	}
 
 	@Override
-	public String getDescriptionId(ItemStack stack) {
-		return stack.has(DataComponents.LODESTONE_TRACKER) ? "item.inspirations.lodestone_dimension_compass" : this.getDescriptionId();
+	public net.minecraft.network.chat.Component getName(ItemStack stack) {
+		return stack.has(DataComponents.LODESTONE_TRACKER) ? net.minecraft.network.chat.Component.translatable("item.inspirations.lodestone_dimension_compass") : super.getName(stack);
 	}
 
 	@Override
@@ -55,6 +55,6 @@ public class DimensionCompassItem extends CompassItem {
 				player.drop(copy, false);
 			}
 		}
-		return InteractionResult.sidedSuccess(world.isClientSide);
+		return InteractionResult.SUCCESS;
 	}
 }

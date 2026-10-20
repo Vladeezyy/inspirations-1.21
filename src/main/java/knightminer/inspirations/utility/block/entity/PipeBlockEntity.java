@@ -1,5 +1,10 @@
 package knightminer.inspirations.utility.block.entity;
 
+import net.minecraft.world.level.storage.ValueOutput;
+import net.minecraft.world.level.storage.ValueInput;
+import net.neoforged.neoforge.transfer.ResourceHandlerUtil;
+import net.neoforged.neoforge.transfer.item.ItemResource;
+import net.neoforged.neoforge.transfer.ResourceHandler;
 import knightminer.inspirations.common.Config;
 import knightminer.inspirations.utility.InspirationsUtility;
 import knightminer.inspirations.utility.block.PipeBlock;
@@ -18,8 +23,6 @@ import net.minecraft.world.level.block.entity.HopperBlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
 import net.neoforged.neoforge.capabilities.Capabilities;
 
-import net.neoforged.neoforge.items.IItemHandler;
-import net.neoforged.neoforge.items.ItemHandlerHelper;
 import dev.vladeezyy.kilnwork.block.InventoryBlockEntity;
 import net.neoforged.neoforge.capabilities.BlockCapabilityCache;
 import net.minecraft.server.level.ServerLevel;
@@ -38,7 +41,7 @@ public class PipeBlockEntity extends InventoryBlockEntity {
 
   /** Item handler of the block we output to, created once per facing (server only) */
   @Nullable
-  private BlockCapabilityCache<IItemHandler, Direction> facingHandler = null;
+  private BlockCapabilityCache<ResourceHandler<ItemResource>, Direction> facingHandler = null;
 
   public PipeBlockEntity(BlockPos pos, BlockState state) {
     super(InspirationsUtility.tilePipe, pos, state, TITLE, 1);
@@ -64,7 +67,7 @@ public class PipeBlockEntity extends InventoryBlockEntity {
     }
 
     // transfer items if we have a handler
-    IItemHandler handler = getHandler(facing);
+    ResourceHandler<ItemResource> handler = getHandler(facing);
     if (handler != null) {
       transferItem(handler, facing);
     }
@@ -76,13 +79,13 @@ public class PipeBlockEntity extends InventoryBlockEntity {
    * @return  Item handler
    */
   @Nullable
-  private IItemHandler getHandler(Direction facing) {
+  private ResourceHandler<ItemResource> getHandler(Direction facing) {
     if (!(level instanceof ServerLevel serverLevel)) {
       return null;
     }
     // the cache follows the neighbor by itself, so it is made once per facing
     if (facingHandler == null) {
-      facingHandler = BlockCapabilityCache.create(Capabilities.ItemHandler.BLOCK, serverLevel, worldPosition.relative(facing), facing.getOpposite(), () -> !isRemoved(), () -> {});
+      facingHandler = BlockCapabilityCache.create(Capabilities.Item.BLOCK, serverLevel, worldPosition.relative(facing), facing.getOpposite(), () -> !isRemoved(), () -> {});
     }
     return facingHandler.getCapability();
   }
@@ -91,16 +94,14 @@ public class PipeBlockEntity extends InventoryBlockEntity {
    * Logic to transfer a single item
    * @param neighbor  Neighbor to transfer items into
    */
-  private void transferItem(IItemHandler neighbor, Direction facing) {
+  private void transferItem(ResourceHandler<ItemResource> neighbor, Direction facing) {
     ItemStack stack = getItem(0);
     if (stack.isEmpty()) {
       return;
     }
 
-    ItemStack copy = stack.copy();
-    copy.setCount(1);
-    // if we successfully place it in, shrink it here
-    if (ItemHandlerHelper.insertItemStacked(neighbor, copy, false).isEmpty()) {
+    // if we successfully place one in, shrink it here
+    if (ResourceHandlerUtil.insertStacking(neighbor, ItemResource.of(stack), 1, null) == 1) {
       // set cooldown on the hopper
       if (level != null && level.getBlockEntity(worldPosition.relative(facing)) instanceof HopperBlockEntity hop) {
         hop.setCooldown(8);
@@ -147,14 +148,14 @@ public class PipeBlockEntity extends InventoryBlockEntity {
   private static final String TAG_COOLDOWN = "cooldown";
 
   @Override
-  protected void loadAdditional(CompoundTag tags, HolderLookup.Provider registries) {
-    super.loadAdditional(tags, registries);
-    this.cooldown = tags.getShort(TAG_COOLDOWN);
+  protected void loadAdditional(ValueInput input) {
+    super.loadAdditional(input);
+    this.cooldown = (short) input.getShortOr(TAG_COOLDOWN, (short) 0);
   }
 
   @Override
-  protected void saveAdditional(CompoundTag tags, HolderLookup.Provider registries) {
-    super.saveAdditional(tags, registries);
-    tags.putShort(TAG_COOLDOWN, this.cooldown);
+  protected void saveAdditional(ValueOutput output) {
+    super.saveAdditional(output);
+    output.putShort(TAG_COOLDOWN, this.cooldown);
   }
 }

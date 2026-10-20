@@ -20,12 +20,18 @@ public class ItemRegistryAdapter extends RegistryAdapter<Item> {
 
   /** Registers a plain item */
   public Item register(Item.Properties props, String name) {
-    return register(new Item(props), name);
+    return make(() -> new Item(props), name);
   }
 
   /** Registers a block item named as the block */
   public BlockItem registerBlockItem(Block block, Item.Properties props) {
-    return registerBlockItem(new BlockItem(block, props));
+    return registerBlockItem(withPendingId(BuiltInRegistries.BLOCK.getKey(block), true, () -> new BlockItem(block, props)));
+  }
+
+  /** Makes the block item (its properties get the block's id and name) and registers it */
+  public <I extends BlockItem> I registerBlockItem(Block block, Function<Item.Properties, I> factory) {
+    Item.Properties props = new Item.Properties();
+    return registerBlockItem(withPendingId(BuiltInRegistries.BLOCK.getKey(block), true, () -> factory.apply(props)));
   }
 
   /** Registers the block item named as its block */
@@ -35,12 +41,12 @@ public class ItemRegistryAdapter extends RegistryAdapter<Item> {
 
   /** Registers a block item for every block of the enum object */
   public <B extends Block> void registerBlockItem(EnumObject<?, B> blocks, Item.Properties props) {
-    blocks.forEach(block -> registerBlockItem(block, props));
+    blocks.forEach(block -> registerBlockItem(withPendingId(BuiltInRegistries.BLOCK.getKey(block), true, () -> new BlockItem(block, props))));
   }
 
   /** Registers a block item for every block of the enum object */
   public <B extends Block> void registerBlockItem(EnumObject<?, B> blocks, Function<B, ? extends BlockItem> mapper) {
-    blocks.forEach(block -> registerBlockItem(mapper.apply(block)));
+    blocks.forEach(block -> registerBlockItem(withPendingId(BuiltInRegistries.BLOCK.getKey(block), true, () -> mapper.apply(block))));
   }
 
   /** Registers default block items for every block of the enum object */
@@ -55,6 +61,6 @@ public class ItemRegistryAdapter extends RegistryAdapter<Item> {
 
   /** Registers the bucket of the fluid, named {@code <name>_bucket} */
   public BucketItem registerBucket(Supplier<? extends Fluid> fluid, String name) {
-    return register(new BucketItem(fluid.get(), new Item.Properties().craftRemainder(Items.BUCKET).stacksTo(1)), name + "_bucket");
+    return make(() -> new BucketItem(fluid.get(), new Item.Properties().craftRemainder(Items.BUCKET).stacksTo(1)), name + "_bucket");
   }
 }

@@ -7,8 +7,6 @@ import knightminer.inspirations.common.network.InspirationsNetwork;
 import knightminer.inspirations.common.network.InventorySlotSyncPacket;
 import knightminer.inspirations.library.InspirationsRegistry;
 import net.minecraft.core.BlockPos;
-import net.minecraft.nbt.CompoundTag;
-import net.minecraft.nbt.Tag;
 import net.minecraft.network.chat.Component;
 import net.minecraft.util.Mth;
 import net.minecraft.world.InteractionHand;
@@ -21,19 +19,20 @@ import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.Vec3;
-import net.neoforged.neoforge.client.model.data.ModelData;
-import net.neoforged.neoforge.client.model.data.ModelProperty;
+import net.neoforged.neoforge.model.data.ModelData;
+import net.neoforged.neoforge.model.data.ModelProperty;
 
 
-import net.neoforged.neoforge.items.ItemHandlerHelper;
 import dev.vladeezyy.kilnwork.retexture.IRetexturedBlockEntity;
 import dev.vladeezyy.kilnwork.block.NameableBlockEntity;
 import dev.vladeezyy.kilnwork.retexture.RetexturedHelper;
 import dev.vladeezyy.kilnwork.retexture.RetexturedBlockEntity;
 import dev.vladeezyy.kilnwork.KilnworkRegistries;
 import net.minecraft.core.Direction;
-import net.minecraft.core.HolderLookup;
+import net.minecraft.core.component.DataComponentGetter;
 import net.minecraft.core.component.DataComponentMap;
+import net.minecraft.world.level.storage.ValueInput;
+import net.minecraft.world.level.storage.ValueOutput;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
@@ -139,8 +138,8 @@ public class ShelfBlockEntity extends NameableBlockEntity implements IRetextured
     // if it contains a book, take the book out
     ItemStack current = inventory.getStackInSlot(index);
     if (!current.isEmpty()) {
-      if (level != null && !level.isClientSide) {
-        ItemHandlerHelper.giveItemToPlayer(player, current, player.getInventory().selected);
+      if (level != null && !level.isClientSide()) {
+        player.getInventory().placeItemBackInInventory(current);
         inventory.setStackInSlot(index, ItemStack.EMPTY);
       }
       return true;
@@ -148,7 +147,7 @@ public class ShelfBlockEntity extends NameableBlockEntity implements IRetextured
 
     // try adding book
     if (inventory.canInsertItem(index, stack)) {
-      if (level != null && !level.isClientSide) {
+      if (level != null && !level.isClientSide()) {
         inventory.setStackInSlot(index, stack.split(1));
       }
       return true;
@@ -167,7 +166,7 @@ public class ShelfBlockEntity extends NameableBlockEntity implements IRetextured
     setChangedFast();
     Level world = getLevel();
     if (world != null) {
-      if (!world.isClientSide) {
+      if (!world.isClientSide()) {
         InspirationsNetwork.sendToClients(world, this.worldPosition, new InventorySlotSyncPacket(newStack, slot, worldPosition));
       }
       else {
@@ -259,9 +258,9 @@ public class ShelfBlockEntity extends NameableBlockEntity implements IRetextured
   /* Item stack components: the texture moves between the block and its item */
 
   @Override
-  protected void applyImplicitComponents(DataComponentInput input) {
-    super.applyImplicitComponents(input);
-    Block block = input.get(KilnworkRegistries.TEXTURE);
+  protected void applyImplicitComponents(DataComponentGetter components) {
+    super.applyImplicitComponents(components);
+    Block block = components.get(KilnworkRegistries.TEXTURE);
     this.texture = block != null ? block : Blocks.AIR;
   }
 
@@ -271,11 +270,10 @@ public class ShelfBlockEntity extends NameableBlockEntity implements IRetextured
     IRetexturedBlockEntity.collectImplicitComponents(this, components);
   }
 
-  @SuppressWarnings("deprecation")
   @Override
-  public void removeComponentsFromTag(CompoundTag tag) {
-    super.removeComponentsFromTag(tag);
-    tag.remove(TAG_TEXTURE);
+  public void removeComponentsFromTag(ValueOutput output) {
+    super.removeComponentsFromTag(output);
+    output.discard(TAG_TEXTURE);
   }
 
   /*
@@ -336,24 +334,23 @@ public class ShelfBlockEntity extends NameableBlockEntity implements IRetextured
   private static final String TAG_ITEMS = "Items";
 
   @Override
-  public void saveSynced(CompoundTag tags, HolderLookup.Provider registries) {
-    super.saveSynced(tags, registries);
-    tags.put(TAG_ITEMS, inventory.serialize(registries));
+  public void saveSynced(ValueOutput output) {
+    super.saveSynced(output);
+    inventory.serialize(output, TAG_ITEMS);
     if (texture != Blocks.AIR) {
-      tags.putString(TAG_TEXTURE, getTextureName());
+      output.putString(TAG_TEXTURE, getTextureName());
     }
   }
 
   @Override
-  protected void loadAdditional(CompoundTag tags, HolderLookup.Provider registries) {
-    super.loadAdditional(tags, registries);
+  protected void loadAdditional(ValueInput input) {
+    super.loadAdditional(input);
     boolean needsUpdate = false;
-    if (tags.contains(TAG_ITEMS, Tag.TAG_LIST)) {
-      inventory.deserialize(registries, tags.getList(TAG_ITEMS, Tag.TAG_COMPOUND));
+    if (inventory.deserialize(input, TAG_ITEMS)) {
       refreshBooks();
       needsUpdate = true;
     }
-    String textureName = RetexturedBlockEntity.readTextureName(tags);
+    String textureName = RetexturedBlockEntity.readTextureName(input);
     if (textureName != null) {
       texture = RetexturedHelper.getBlock(textureName);
       needsUpdate = true;

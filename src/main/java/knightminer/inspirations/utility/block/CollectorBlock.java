@@ -1,5 +1,7 @@
 package knightminer.inspirations.utility.block;
 
+import net.neoforged.neoforge.transfer.ResourceHandlerUtil;
+import net.minecraft.world.level.redstone.Orientation;
 import knightminer.inspirations.utility.block.entity.CollectorBlockEntity;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
@@ -22,16 +24,15 @@ import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.StateDefinition;
 import net.minecraft.world.level.block.state.properties.BlockStateProperties;
 import net.minecraft.world.level.block.state.properties.BooleanProperty;
-import net.minecraft.world.level.block.state.properties.DirectionProperty;
+import net.minecraft.world.level.block.state.properties.EnumProperty;
 import net.neoforged.neoforge.capabilities.Capabilities;
-import net.neoforged.neoforge.items.ItemHandlerHelper;
 import dev.vladeezyy.kilnwork.block.InventoryBlock;
 
 import javax.annotation.Nullable;
 
 public class CollectorBlock extends InventoryBlock {
 
-  public static final DirectionProperty FACING = BlockStateProperties.FACING;
+  public static final EnumProperty<Direction> FACING = BlockStateProperties.FACING;
   private static final BooleanProperty TRIGGERED = BlockStateProperties.TRIGGERED;
 
   public CollectorBlock(BlockBehaviour.Properties props) {
@@ -88,8 +89,8 @@ public class CollectorBlock extends InventoryBlock {
   @SuppressWarnings("deprecation")
   @Deprecated
   @Override
-  public int getAnalogOutputSignal(BlockState blockState, Level world, BlockPos pos) {
-    return ItemHandlerHelper.calcRedstoneFromInventory(world.getCapability(Capabilities.ItemHandler.BLOCK, pos, null));
+  protected int getAnalogOutputSignal(BlockState blockState, Level world, BlockPos pos, Direction direction) {
+    return ResourceHandlerUtil.getRedstoneSignalFromResourceHandler(world.getCapability(Capabilities.Item.BLOCK, pos, null));
   }
 
   @SuppressWarnings("deprecation")
@@ -105,7 +106,7 @@ public class CollectorBlock extends InventoryBlock {
   @SuppressWarnings("deprecation")
   @Deprecated
   @Override
-  public void neighborChanged(BlockState state, Level world, BlockPos pos, Block block, BlockPos neighbor, boolean isMoving) {
+  public void neighborChanged(BlockState state, Level world, BlockPos pos, Block block, @Nullable Orientation orientation, boolean isMoving) {
     // update powered state
     boolean powered = world.hasNeighborSignal(pos) || world.hasNeighborSignal(pos.above());
     boolean triggered = state.getValue(TRIGGERED);
@@ -121,7 +122,7 @@ public class CollectorBlock extends InventoryBlock {
   @Deprecated
   @Override
   public void tick(BlockState state, ServerLevel world, BlockPos pos, RandomSource random) {
-    if (world.isClientSide) {
+    if (world.isClientSide()) {
       return;
     }
     BlockEntity te = world.getBlockEntity(pos);

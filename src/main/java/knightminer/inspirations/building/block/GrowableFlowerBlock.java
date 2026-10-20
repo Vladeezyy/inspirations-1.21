@@ -3,7 +3,7 @@ package knightminer.inspirations.building.block;
 import knightminer.inspirations.Inspirations;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.registries.BuiltInRegistries;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.effect.MobEffect;
@@ -73,7 +73,7 @@ public class GrowableFlowerBlock extends FlowerBlock implements BonemealableBloc
     if (table.removePool("main") == null) {
       return; // Wasn't removed.
     }
-    ResourceLocation location = Inspirations.getResource("blocks/inject/" + BuiltInRegistries.BLOCK.getKey(this).getPath());
+    Identifier location = Inspirations.getResource("blocks/inject/" + BuiltInRegistries.BLOCK.getKey(this).getPath());
     table.addPool(new LootPool.Builder()
                       .name(location.toString())
                       .setRolls(ConstantValue.exactly(1))

@@ -5,10 +5,13 @@
   "compatibilityLevel": "JAVA_21",
   "mixins": [
     "AxeItemMixin",
+    "BlockPropertiesMixin",
     "EnchantmentHelperMixin",
     "EnchantmentMixin",
     "HopperBlockMixin",
     "IronBarsBlockMixin",
+    "ItemPropertiesMixin",
+    "ItemStackMixin",
     "LayeredCauldronBlockMixin",
     "ShieldItemMixin",
     "WoolCarpetBlockMixin"

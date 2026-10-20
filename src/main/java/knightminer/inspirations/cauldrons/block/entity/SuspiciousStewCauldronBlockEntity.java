@@ -1,5 +1,7 @@
 package knightminer.inspirations.cauldrons.block.entity;
 
+import net.minecraft.world.level.storage.ValueOutput;
+import net.minecraft.world.level.storage.ValueInput;
 import dev.vladeezyy.kilnwork.block.SyncedBlockEntity;
 import knightminer.inspirations.Inspirations;
 import knightminer.inspirations.cauldrons.InspirationsCaudrons;
@@ -11,7 +13,7 @@ import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.ListTag;
 import net.minecraft.nbt.NbtOps;
 import net.minecraft.nbt.Tag;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.world.effect.MobEffect;
 import net.minecraft.world.item.component.SuspiciousStewEffects;
 import net.minecraft.world.level.block.state.BlockState;
@@ -81,45 +83,42 @@ public class SuspiciousStewCauldronBlockEntity extends SyncedBlockEntity {
 	}
 
 	@Override
-	protected void loadAdditional(CompoundTag nbt, HolderLookup.Provider registries) {
-		super.loadAdditional(nbt, registries);
-		if (nbt.contains(TAG_EFFECTS, Tag.TAG_LIST)) {
-			this.effects = SuspiciousStewEffects.CODEC.parse(registries.createSerializationContext(NbtOps.INSTANCE), nbt.get(TAG_EFFECTS))
-				.resultOrPartial(error -> Inspirations.log.error("Failed to read suspicious stew effects: {}", error))
-				.map(SuspiciousStewEffects::effects).orElse(List.of());
-		} else if (nbt.contains(LEGACY_EFFECTS, Tag.TAG_LIST)) {
-			this.effects = readLegacy(nbt.getList(LEGACY_EFFECTS, Tag.TAG_COMPOUND));
+	protected void loadAdditional(ValueInput input) {
+		super.loadAdditional(input);
+		var effects = input.read(TAG_EFFECTS, SuspiciousStewEffects.CODEC);
+		if (effects.isPresent()) {
+			this.effects = effects.get().effects();
+		} else {
+			input.read(LEGACY_EFFECTS, CompoundTag.CODEC.listOf()).ifPresent(list -> this.effects = readLegacy(list));
 		}
 	}
 
 	/** Reads the effects of a 1.20 world */
-	private static List<SuspiciousStewEffects.Entry> readLegacy(ListTag list) {
+	private static List<SuspiciousStewEffects.Entry> readLegacy(List<CompoundTag> list) {
 		List<SuspiciousStewEffects.Entry> entries = new ArrayList<>();
-		for (int i = 0; i < list.size(); i++) {
-			CompoundTag tag = list.getCompound(i);
+		for (CompoundTag tag : list) {
 			Holder<MobEffect> effect = null;
-			if (tag.contains(LEGACY_EFFECT_NAME, Tag.TAG_STRING)) {
-				ResourceLocation id = ResourceLocation.tryParse(tag.getString(LEGACY_EFFECT_NAME));
+			var name = tag.getString(LEGACY_EFFECT_NAME);
+			if (name.isPresent()) {
+				Identifier id = Identifier.tryParse(name.get());
 				if (id != null) {
-					effect = BuiltInRegistries.MOB_EFFECT.getHolder(id).orElse(null);
+					effect = BuiltInRegistries.MOB_EFFECT.get(id).orElse(null);
 				}
 			}
-			if (effect == null && tag.contains(LEGACY_EFFECT_ID, Tag.TAG_ANY_NUMERIC)) {
+			if (effect == null && tag.get(LEGACY_EFFECT_ID) instanceof net.minecraft.nbt.NumericTag numeric) {
 				// 1.20 numeric ids are the vanilla registration order, ids start at 1
-				effect = BuiltInRegistries.MOB_EFFECT.getHolder(tag.getByte(LEGACY_EFFECT_ID) - 1).orElse(null);
+				effect = BuiltInRegistries.MOB_EFFECT.get(numeric.byteValue() - 1).orElse(null);
 			}
 			if (effect != null) {
-				entries.add(new SuspiciousStewEffects.Entry(effect, tag.getInt(LEGACY_DURATION)));
+				entries.add(new SuspiciousStewEffects.Entry(effect, tag.getIntOr(LEGACY_DURATION, 0)));
 			}
 		}
 		return List.copyOf(entries);
 	}
 
 	@Override
-	protected void saveAdditional(CompoundTag nbt, HolderLookup.Provider registries) {
-		super.saveAdditional(nbt, registries);
-		SuspiciousStewEffects.CODEC.encodeStart(registries.createSerializationContext(NbtOps.INSTANCE), getEffects())
-			.resultOrPartial(error -> Inspirations.log.error("Failed to save suspicious stew effects: {}", error))
-			.ifPresent(tag -> nbt.put(TAG_EFFECTS, tag));
+	protected void saveAdditional(ValueOutput output) {
+		super.saveAdditional(output);
+		output.store(TAG_EFFECTS, SuspiciousStewEffects.CODEC, getEffects());
 	}
 }

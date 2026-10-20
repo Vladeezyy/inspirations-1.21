@@ -1,0 +1,12 @@
+{
+  "model": {
+    "type": "kilnwork:retextured",
+    "model": "inspirations:item/white_enlightened_bush",
+    "tints": [
+      {
+        "type": "inspirations:item_color",
+        "index": 0
+      }
+    ]
+  }
+}

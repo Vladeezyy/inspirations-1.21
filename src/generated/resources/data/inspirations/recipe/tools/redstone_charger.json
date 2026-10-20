@@ -8,12 +8,8 @@
   "type": "minecraft:crafting_shapeless",
   "category": "equipment",
   "ingredients": [
-    {
-      "tag": "c:dusts/redstone"
-    },
-    {
-      "tag": "c:ingots/gold"
-    }
+    "#c:dusts/redstone",
+    "#c:ingots/gold"
   ],
   "result": {
     "count": 1,

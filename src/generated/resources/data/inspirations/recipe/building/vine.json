@@ -8,9 +8,7 @@
   "type": "minecraft:crafting_shaped",
   "category": "misc",
   "key": {
-    "V": {
-      "item": "minecraft:vine"
-    }
+    "V": "minecraft:vine"
   },
   "pattern": [
     "V",

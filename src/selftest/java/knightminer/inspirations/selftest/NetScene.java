@@ -15,7 +15,7 @@ import net.minecraft.core.Direction;
 import net.minecraft.core.component.DataComponents;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.entity.Entity;
-import net.minecraft.world.entity.animal.Cow;
+import net.minecraft.world.entity.animal.cow.Cow;
 import net.minecraft.world.item.DyeColor;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.item.alchemy.PotionContents;
@@ -81,7 +81,7 @@ public final class NetScene {
       return;
     }
     mc.options.pauseOnLostFocus = false;
-    mc.getToasts().clear();
+    mc.getToastManager().clear();
     tick++;
     try {
       step(mc);
@@ -96,7 +96,7 @@ public final class NetScene {
       case 40 -> {
         check("joined the dedicated server with the mod", mc.getConnection().getConnection().isConnected() && mc.getSingleplayerServer() == null, "no connection");
         command(mc, "time set day");
-        command(mc, "gamerule doMobSpawning false");
+        command(mc, "gamerule minecraft:spawn_mobs false");
         command(mc, "forceload add -3 -3 10 10");
       }
       // the forced chunks are loaded now
@@ -106,7 +106,7 @@ public final class NetScene {
         command(mc, "setblock " + pos(SHELF) + " inspirations:shelf[facing=north]");
         command(mc, "setblock " + pos(WATER) + " minecraft:water_cauldron[level=3]");
         command(mc, "setblock " + pos(EMPTY) + " minecraft:cauldron");
-        command(mc, "setblock " + pos(LECTERN) + " minecraft:lectern[facing=north,has_book=true]{Book:{id:\"inspirations:colored_book\",count:1,components:{\"minecraft:dyed_color\":{rgb:65280}}}}");
+        command(mc, "setblock " + pos(LECTERN) + " minecraft:lectern[facing=north,has_book=true]{Book:{id:\"inspirations:colored_book\",count:1,components:{\"minecraft:dyed_color\":65280}}}");
         command(mc, "setblock " + pos(COLLECTOR) + " inspirations:collector");
         command(mc, "kill @e[type=minecraft:cow]");
         command(mc, "summon minecraft:cow 2.5 " + Y + " 1.5 {NoAI:1b,Tags:[\"insp_cow\"]}");
@@ -117,7 +117,7 @@ public final class NetScene {
         command(mc, "tp @s 4.5 " + Y + " 0.5 0 20");
       }
       // a red book on the shelf
-      case 80 -> hold(mc, "inspirations:colored_book[minecraft:dyed_color={rgb:16711680}]");
+      case 80 -> hold(mc, "inspirations:colored_book[minecraft:dyed_color=16711680]");
       case 90 -> use(mc, SHELF, 0.2, 0.8, 0.75);
       case 105 -> check("book put on a shelf reached the client", mc.level.getBlockEntity(SHELF) instanceof ShelfBlockEntity shelf && countBooks(shelf, 0xFF0000) == 1 && mc.player.getMainHandItem().isEmpty(),
         mc.level.getBlockEntity(SHELF) instanceof ShelfBlockEntity shelf ? countBooks(shelf, 0xFF0000) + " " + mc.player.getMainHandItem() : "no shelf");
@@ -152,7 +152,7 @@ public final class NetScene {
       case 245 -> {
         check("cow milked into a bucket", mc.player.getMainHandItem().is(Items.MILK_BUCKET), mc.player.getMainHandItem());
         // the client marks 600 itself when milking, the server's packet sets 100
-        check("milk cooldown packet reached the client", cow(mc).getPersistentData().getShort(TweaksEvents.TAG_MILKCOOLDOWN) == 100, cow(mc).getPersistentData());
+        check("milk cooldown packet reached the client", cow(mc).getPersistentData().getShortOr(TweaksEvents.TAG_MILKCOOLDOWN, (short) 0) == 100, cow(mc).getPersistentData());
         hold(mc, "minecraft:bucket");
       }
       case 255 -> mc.gameMode.interact(mc.player, cow(mc), InteractionHand.MAIN_HAND);
@@ -166,8 +166,8 @@ public final class NetScene {
       }
       case 410 -> {
         Inspirations.log.info("[scene] DONE " + (checks - failures) + "/" + checks + (failures == 0 ? " passed" : " (" + failures + " failed)"));
-        mc.level.disconnect();
-        mc.disconnect(new TitleScreen());
+        mc.level.disconnect(net.minecraft.network.chat.Component.empty());
+        mc.disconnect(new TitleScreen(), false);
         mc.stop();
       }
       default -> { }

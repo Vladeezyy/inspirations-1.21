@@ -18,7 +18,7 @@ import net.neoforged.neoforge.common.loot.LootModifier;
  */
 public class ReplaceItemLootModifier extends LootModifier {
   public static final MapCodec<ReplaceItemLootModifier> CODEC = RecordCodecBuilder.mapCodec(inst -> codecStart(inst).and(inst.group(
-    Ingredient.CODEC_NONEMPTY.fieldOf("original").forGetter(m -> m.original),
+    Ingredient.CODEC.fieldOf("original").forGetter(m -> m.original),
     BuiltInRegistries.ITEM.byNameCodec().fieldOf("replacement").forGetter(m -> m.replacement)
   )).apply(inst, ReplaceItemLootModifier::new));
 

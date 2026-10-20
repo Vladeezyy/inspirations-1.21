@@ -1,5 +1,6 @@
 package knightminer.inspirations.selftest;
 
+import knightminer.inspirations.common.client.ItemColorSources;
 import com.mojang.blaze3d.platform.NativeImage;
 import com.mojang.datafixers.util.Pair;
 import dev.vladeezyy.kilnwork.client.render.RenderItem;
@@ -31,17 +32,20 @@ import net.minecraft.client.gui.screens.TitleScreen;
 import net.minecraft.client.gui.screens.inventory.AbstractContainerScreen;
 import net.minecraft.client.particle.Particle;
 import net.minecraft.client.renderer.block.model.BakedQuad;
-import net.minecraft.client.renderer.item.ItemProperties;
 import net.minecraft.client.renderer.texture.MissingTextureAtlasSprite;
 import net.minecraft.client.resources.language.I18n;
-import net.minecraft.client.resources.model.BakedModel;
+import net.minecraft.client.renderer.block.model.BlockModelPart;
+import net.minecraft.client.renderer.block.model.BlockStateModel;
+import net.minecraft.client.renderer.item.ItemStackRenderState;
+import net.minecraft.world.item.ItemDisplayContext;
+import net.minecraft.world.level.BlockAndTintGetter;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.core.component.DataComponents;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.locale.Language;
 import net.minecraft.network.chat.Component;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
@@ -58,8 +62,7 @@ import net.minecraft.world.item.alchemy.PotionContents;
 import net.minecraft.world.item.alchemy.Potions;
 import net.minecraft.world.item.enchantment.EnchantmentInstance;
 import net.minecraft.world.item.enchantment.Enchantments;
-import net.minecraft.world.item.EnchantedBookItem;
-import net.minecraft.world.level.GameRules;
+import net.minecraft.world.level.gamerules.GameRules;
 import net.minecraft.world.level.GameType;
 import net.minecraft.world.level.LevelSettings;
 import net.minecraft.world.level.block.Block;
@@ -83,7 +86,7 @@ import net.neoforged.api.distmarker.Dist;
 import net.neoforged.bus.api.SubscribeEvent;
 import net.neoforged.fml.common.EventBusSubscriber;
 import net.neoforged.neoforge.client.event.ClientTickEvent;
-import net.neoforged.neoforge.client.model.data.ModelData;
+import net.neoforged.neoforge.model.data.ModelData;
 import org.lwjgl.glfw.GLFW;
 
 import java.util.ArrayList;
@@ -137,7 +140,7 @@ public final class ClientScene {
   }
 
   static void shot(Minecraft mc, String name) {
-    Screenshot.grab(mc.gameDirectory, "scene_" + name + ".png", mc.getMainRenderTarget(), c -> Inspirations.log.info("[scene] " + c.getString()));
+    Screenshot.grab(mc.gameDirectory, "scene_" + name + ".png", mc.getMainRenderTarget(), 1, c -> Inspirations.log.info("[scene] " + c.getString()));
   }
 
   static BlockPos at(int x, int y, int z) {
@@ -149,7 +152,7 @@ public final class ClientScene {
     double dx = tx - x, dy = ty - (y + player.getEyeHeight()), dz = tz - z;
     float yaw = (float) Math.toDegrees(Math.atan2(-dx, dz));
     float pitch = (float) -Math.toDegrees(Math.atan2(dy, Math.sqrt(dx * dx + dz * dz)));
-    player.teleportTo(player.serverLevel(), stage.getX() + x, stage.getY() + y, stage.getZ() + z, yaw, pitch);
+    player.teleportTo(player.level(), stage.getX() + x, stage.getY() + y, stage.getZ() + z, java.util.Set.of(), yaw, pitch, true);
   }
 
   static {
@@ -216,11 +219,11 @@ public final class ClientScene {
       lookAt(p, 9.5, 1, -7, 9.5, 3, 3);
       Inventory inventory = p.getInventory();
       inventory.clearContent();
-      List<ItemStack> hotbar = hotbarItems(p.serverLevel());
+      List<ItemStack> hotbar = hotbarItems(p.level());
       for (int i = 0; i < hotbar.size(); i++) {
         inventory.setItem(i, hotbar.get(i));
       }
-      inventory.selected = 0;
+      inventory.setSelectedSlot(0);
     }));
     at(t += 25, mc -> {
       shot(mc, "hotbar");
@@ -237,8 +240,8 @@ public final class ClientScene {
     at(t += 5, ClientScene::checkTranslations);
     at(t += 10, mc -> {
       Inspirations.log.info("[scene] DONE " + (checks - failures) + "/" + checks + (failures == 0 ? " passed" : " (" + failures + " failed)"));
-      mc.level.disconnect();
-      mc.disconnect(new TitleScreen());
+      mc.level.disconnect(net.minecraft.network.chat.Component.empty());
+      mc.disconnect(new TitleScreen(), false);
       mc.stop();
     });
   }
@@ -267,12 +270,12 @@ public final class ClientScene {
         return;
       }
       opened = true;
-      GLFW.glfwSetWindowSize(mc.getWindow().getWindow(), 1600, 900);
+      GLFW.glfwSetWindowSize(mc.getWindow().handle(), 1600, 900);
       mc.options.guiScale().set(3);
       mc.options.cloudStatus().set(CloudStatus.OFF);
       mc.options.pauseOnLostFocus = false;
       mc.resizeDisplay();
-      LevelSettings settings = new LevelSettings(WORLD, GameType.CREATIVE, false, Difficulty.PEACEFUL, true, new GameRules(), net.minecraft.world.level.WorldDataConfiguration.DEFAULT);
+      LevelSettings settings = new LevelSettings(WORLD, GameType.CREATIVE, false, Difficulty.PEACEFUL, true, new GameRules(net.minecraft.world.level.WorldDataConfiguration.DEFAULT.enabledFeatures()), net.minecraft.world.level.WorldDataConfiguration.DEFAULT);
       mc.createWorldOpenFlows().createFreshLevel(WORLD, settings, new WorldOptions(20261013L, false, false), WorldPresets::createNormalWorldDimensions, new TitleScreen());
       return;
     }
@@ -282,7 +285,7 @@ public final class ClientScene {
     mc.options.pauseOnLostFocus = false;
     mc.options.hideGui = false;
     mc.getTutorial().setStep(net.minecraft.client.tutorial.TutorialSteps.NONE);
-    mc.getToasts().clear();
+    mc.getToastManager().clear();
     if (mc.screen instanceof PauseScreen) {
       mc.setScreen(null);
     }
@@ -308,12 +311,12 @@ public final class ClientScene {
 
   /** The showcase: rows of blocks on a stone floor, in the sky above spawn */
   private static void build(ServerPlayer player) {
-    ServerLevel level = player.serverLevel();
-    BlockPos spawn = level.getSharedSpawnPos();
+    ServerLevel level = player.level();
+    BlockPos spawn = level.getRespawnData().pos();
     stage = new BlockPos(spawn.getX(), 140, spawn.getZ());
     level.setDayTime(6000);
-    level.getGameRules().getRule(GameRules.RULE_DAYLIGHT).set(false, level.getServer());
-    level.getGameRules().getRule(GameRules.RULE_WEATHER_CYCLE).set(false, level.getServer());
+    level.getGameRules().set(GameRules.ADVANCE_TIME, false, level.getServer());
+    level.getGameRules().set(GameRules.ADVANCE_WEATHER, false, level.getServer());
     level.setWeatherParameters(6000, 0, false, false);
     for (BlockPos pos : BlockPos.betweenClosed(at(-3, 0, -9), at(22, 8, 16))) {
       level.setBlock(pos, pos.getY() == stage.getY() ? Blocks.SMOOTH_STONE.defaultBlockState() : Blocks.AIR.defaultBlockState(), Block.UPDATE_CLIENTS);
@@ -441,8 +444,8 @@ public final class ClientScene {
   static List<ItemStack> hotbarItems(ServerLevel level) {
     List<ItemStack> items = new ArrayList<>();
     items.add(MiscUtil.setColor(new ItemStack(InspirationsBuilding.coloredBook), MiscUtil.getColor(DyeColor.CYAN)));
-    items.add(EnchantedBookItem.createForEnchantment(new EnchantmentInstance(level.registryAccess().lookupOrThrow(net.minecraft.core.registries.Registries.ENCHANTMENT).getOrThrow(Enchantments.SHARPNESS), 1)));
-    items.add(EnchantedBookItem.createForEnchantment(new EnchantmentInstance(level.registryAccess().lookupOrThrow(net.minecraft.core.registries.Registries.ENCHANTMENT).getOrThrow(Enchantments.MENDING), 1)));
+    items.add(net.minecraft.world.item.enchantment.EnchantmentHelper.createBook(new EnchantmentInstance(level.registryAccess().lookupOrThrow(net.minecraft.core.registries.Registries.ENCHANTMENT).getOrThrow(Enchantments.SHARPNESS), 1)));
+    items.add(net.minecraft.world.item.enchantment.EnchantmentHelper.createBook(new EnchantmentInstance(level.registryAccess().lookupOrThrow(net.minecraft.core.registries.Registries.ENCHANTMENT).getOrThrow(Enchantments.MENDING), 1)));
     ItemStack rocket = new ItemStack(Items.FIREWORK_ROCKET);
     rocket.set(DataComponents.FIREWORKS, new net.minecraft.world.item.component.Fireworks(2, List.of(
       new net.minecraft.world.item.component.FireworkExplosion(net.minecraft.world.item.component.FireworkExplosion.Shape.STAR, it.unimi.dsi.fastutil.ints.IntList.of(0xFF2020), it.unimi.dsi.fastutil.ints.IntList.of(), false, false),
@@ -458,30 +461,119 @@ public final class ClientScene {
 
   /* Checks */
 
-  /** Sprites of the model's quads, all sides */
-  private static Set<ResourceLocation> sprites(BakedModel model, BlockState state, ModelData data) {
-    Set<ResourceLocation> sprites = new HashSet<>();
-    RandomSource random = RandomSource.create(42);
-    for (Direction side : new Direction[] {null, Direction.UP, Direction.DOWN, Direction.NORTH, Direction.SOUTH, Direction.EAST, Direction.WEST}) {
-      for (BakedQuad quad : model.getQuads(state, side, random, data, null)) {
-        sprites.add(quad.getSprite().contents().name());
+  /** The client level with fixed model data at every position, for the model checks */
+  private static BlockAndTintGetter withData(Minecraft mc, ModelData data) {
+    BlockAndTintGetter level = mc.level;
+    return new BlockAndTintGetter() {
+      @Override
+      public float getShade(Direction side, boolean shade) {
+        return level.getShade(side, shade);
       }
+
+      @Override
+      public net.minecraft.world.level.lighting.LevelLightEngine getLightEngine() {
+        return level.getLightEngine();
+      }
+
+      @Override
+      public int getBlockTint(BlockPos pos, net.minecraft.world.level.ColorResolver resolver) {
+        return level.getBlockTint(pos, resolver);
+      }
+
+      @Override
+      public net.minecraft.world.level.block.entity.BlockEntity getBlockEntity(BlockPos pos) {
+        return null;
+      }
+
+      @Override
+      public BlockState getBlockState(BlockPos pos) {
+        return level.getBlockState(pos);
+      }
+
+      @Override
+      public net.minecraft.world.level.material.FluidState getFluidState(BlockPos pos) {
+        return level.getFluidState(pos);
+      }
+
+      @Override
+      public int getHeight() {
+        return level.getHeight();
+      }
+
+      @Override
+      public int getMinY() {
+        return level.getMinY();
+      }
+
+      @Override
+      public ModelData getModelData(BlockPos pos) {
+        return data;
+      }
+    };
+  }
+
+  /** Quads of the block model with the model data, all sides */
+  private static List<BakedQuad> quads(BlockStateModel model, BlockState state, BlockAndTintGetter level) {
+    List<BakedQuad> quads = new ArrayList<>();
+    for (BlockModelPart part : model.collectParts(level, BlockPos.ZERO, state, RandomSource.create(42))) {
+      for (Direction side : new Direction[] {null, Direction.UP, Direction.DOWN, Direction.NORTH, Direction.SOUTH, Direction.EAST, Direction.WEST}) {
+        quads.addAll(part.getQuads(side));
+      }
+    }
+    return quads;
+  }
+
+  private static Set<Identifier> sprites(List<BakedQuad> quads) {
+    Set<Identifier> sprites = new HashSet<>();
+    for (BakedQuad quad : quads) {
+      sprites.add(quad.sprite().contents().name());
     }
     return sprites;
   }
 
-  private static int quadCount(BakedModel model, BlockState state, ModelData data) {
-    int count = 0;
-    RandomSource random = RandomSource.create(42);
-    for (Direction side : new Direction[] {null, Direction.UP, Direction.DOWN, Direction.NORTH, Direction.SOUTH, Direction.EAST, Direction.WEST}) {
-      count += model.getQuads(state, side, random, data, null).size();
+  /** How the item model resolver sets up a stack in the GUI: quads, tints and lighting of its layers (private fields) */
+  private record ItemLook(List<BakedQuad> quads, List<int[]> tints, boolean blockLight, @org.jetbrains.annotations.Nullable net.minecraft.client.renderer.texture.TextureAtlasSprite particle) {}
+
+  private static ItemLook look(Minecraft mc, ItemStack stack) {
+    ItemStackRenderState state = new ItemStackRenderState();
+    mc.getItemModelResolver().updateForTopItem(state, stack, ItemDisplayContext.GUI, mc.level, mc.player, 0);
+    List<BakedQuad> quads = new ArrayList<>();
+    List<int[]> tints = new ArrayList<>();
+    try {
+      var count = ItemStackRenderState.class.getDeclaredField("activeLayerCount");
+      var layers = ItemStackRenderState.class.getDeclaredField("layers");
+      var layerQuads = ItemStackRenderState.LayerRenderState.class.getDeclaredField("quads");
+      var layerTints = ItemStackRenderState.LayerRenderState.class.getDeclaredField("tintLayers");
+      for (var field : List.of(count, layers, layerQuads, layerTints)) {
+        field.setAccessible(true);
+      }
+      Object[] array = (Object[]) layers.get(state);
+      for (int i = 0; i < count.getInt(state); i++) {
+        @SuppressWarnings("unchecked")
+        List<BakedQuad> list = (List<BakedQuad>) layerQuads.get(array[i]);
+        quads.addAll(list);
+        tints.add((int[]) layerTints.get(array[i]));
+      }
+    } catch (ReflectiveOperationException e) {
+      throw new IllegalStateException(e);
     }
-    return count;
+    return new ItemLook(quads, tints, state.usesBlockLight(), state.pickParticleIcon(RandomSource.create(42)));
+  }
+
+  /** Tint of the stack's first layer with that tint index, -1 for none */
+  private static int itemTint(Minecraft mc, ItemStack stack, int index) {
+    for (int[] tints : look(mc, stack).tints()) {
+      if (index < tints.length) {
+        return tints[index];
+      }
+    }
+    return -1;
   }
 
   private static void checkModels(Minecraft mc) {
     var shaper = mc.getModelManager().getBlockModelShaper();
-    ResourceLocation missing = MissingTextureAtlasSprite.getLocation();
+    Identifier missing = MissingTextureAtlasSprite.getLocation();
+    BlockAndTintGetter noData = withData(mc, ModelData.EMPTY);
     // every block state and item model of the mod has real sprites
     List<String> bad = new ArrayList<>();
     for (Block block : BuiltInRegistries.BLOCK) {
@@ -489,8 +581,8 @@ public final class ClientScene {
         continue;
       }
       for (BlockState state : block.getStateDefinition().getPossibleStates()) {
-        BakedModel model = shaper.getBlockModel(state);
-        if (model == mc.getModelManager().getMissingModel() || sprites(model, state, ModelData.EMPTY).contains(missing) || model.getParticleIcon(ModelData.EMPTY).contents().name().equals(missing)) {
+        BlockStateModel model = shaper.getBlockModel(state);
+        if (model == mc.getModelManager().getMissingBlockStateModel() || sprites(quads(model, state, noData)).contains(missing) || model.particleIcon(noData, BlockPos.ZERO, state).contents().name().equals(missing)) {
           bad.add(state.toString());
           break;
         }
@@ -498,40 +590,43 @@ public final class ClientScene {
     }
     check("every block state has a model with real textures", bad.isEmpty(), bad);
     List<String> badItems = new ArrayList<>();
+    var missingItem = mc.getModelManager().getItemModel(Inspirations.getResource("selftest_missing"));
     for (Item item : BuiltInRegistries.ITEM) {
-      if (!BuiltInRegistries.ITEM.getKey(item).getNamespace().equals(Inspirations.modID)) {
+      Identifier id = BuiltInRegistries.ITEM.getKey(item);
+      if (!id.getNamespace().equals(Inspirations.modID)) {
         continue;
       }
-      BakedModel model = mc.getItemRenderer().getModel(new ItemStack(item), mc.level, mc.player, 0);
-      if (model == mc.getModelManager().getMissingModel() || model.getParticleIcon(ModelData.EMPTY).contents().name().equals(missing)) {
-        badItems.add(BuiltInRegistries.ITEM.getKey(item).toString());
+      ItemLook look = look(mc, new ItemStack(item));
+      if (mc.getModelManager().getItemModel(id) == missingItem || sprites(look.quads()).contains(missing) || (look.particle() != null && look.particle().contents().name().equals(missing))) {
+        badItems.add(id.toString());
       }
     }
     check("every item has a model with real textures", badItems.isEmpty(), badItems);
 
     // retextured models
     BlockState shelf = InspirationsBuilding.shelf.get(ShelfType.NORMAL).defaultBlockState();
-    BakedModel shelfModel = shaper.getBlockModel(shelf);
-    Set<ResourceLocation> birch = sprites(shelfModel, shelf, ModelData.builder().with(RetexturedHelper.BLOCK_PROPERTY, Blocks.BIRCH_SLAB).with(ShelfBlockEntity.BOOKS, 0).build());
-    check("shelf model takes the texture of a birch slab", birch.contains(ResourceLocation.withDefaultNamespace("block/birch_planks")), birch);
-    int empty = quadCount(shelfModel, shelf, ModelData.builder().with(RetexturedHelper.BLOCK_PROPERTY, Blocks.OAK_SLAB).with(ShelfBlockEntity.BOOKS, 0).build());
-    int full = quadCount(shelfModel, shelf, ModelData.builder().with(RetexturedHelper.BLOCK_PROPERTY, Blocks.OAK_SLAB).with(ShelfBlockEntity.BOOKS, 0xFFFF).build());
-    check("shelf model adds books from the model data", full > empty, empty + " -> " + full);
+    BlockStateModel shelfModel = shaper.getBlockModel(shelf);
+    Set<Identifier> birch = sprites(quads(shelfModel, shelf, withData(mc, ModelData.builder().with(RetexturedHelper.BLOCK_PROPERTY, Blocks.BIRCH_SLAB).with(ShelfBlockEntity.BOOKS, 0).build())));
+    check("shelf model takes the texture of a birch slab", birch.contains(Identifier.withDefaultNamespace("block/birch_planks")), birch);
+    int empty = quads(shelfModel, shelf, withData(mc, ModelData.builder().with(RetexturedHelper.BLOCK_PROPERTY, Blocks.OAK_SLAB).with(ShelfBlockEntity.BOOKS, 0).build())).size();
+    int full = quads(shelfModel, shelf, withData(mc, ModelData.builder().with(RetexturedHelper.BLOCK_PROPERTY, Blocks.OAK_SLAB).with(ShelfBlockEntity.BOOKS, 0xFFFF).build())).size();
+    check("shelf model adds books from the model data (" + empty + " -> " + full + " quads)", full > empty, empty + " -> " + full);
     ItemStack shelfItem = RetexturedHelper.setTexture(new ItemStack(InspirationsBuilding.shelf.get(ShelfType.NORMAL)), Blocks.CRIMSON_SLAB);
-    BakedModel itemModel = mc.getItemRenderer().getModel(shelfItem, mc.level, mc.player, 0);
-    check("shelf item model takes the texture from the component", sprites(itemModel, null, ModelData.EMPTY).contains(ResourceLocation.withDefaultNamespace("block/crimson_planks")), sprites(itemModel, null, ModelData.EMPTY));
+    Set<Identifier> crimson = sprites(look(mc, shelfItem).quads());
+    check("shelf item model takes the texture from the component", crimson.contains(Identifier.withDefaultNamespace("block/crimson_planks")), crimson);
     BlockState bush = InspirationsBuilding.enlightenedBush.get(BushType.WHITE).defaultBlockState();
-    Set<ResourceLocation> leaves = sprites(shaper.getBlockModel(bush), bush, RetexturedHelper.getModelData(Blocks.BIRCH_LEAVES));
-    check("enlightened bush model takes the texture of birch leaves", leaves.contains(ResourceLocation.withDefaultNamespace("block/birch_leaves")), leaves);
+    Set<Identifier> leaves = sprites(quads(shaper.getBlockModel(bush), bush, withData(mc, RetexturedHelper.getModelData(Blocks.BIRCH_LEAVES))));
+    check("enlightened bush model takes the texture of birch leaves", leaves.contains(Identifier.withDefaultNamespace("block/birch_leaves")), leaves);
+    var bushLayer = shaper.getBlockModel(bush).collectParts(withData(mc, RetexturedHelper.getModelData(Blocks.BIRCH_LEAVES)), BlockPos.ZERO, bush, RandomSource.create(42)).get(0).getRenderType(bush);
+    check("retextured enlightened bush keeps its cutout render type", bushLayer != net.minecraft.client.renderer.chunk.ChunkSectionLayer.SOLID, bushLayer);
     check("shelf item positions loaded (Kilnwork item lists)", RenderItem.ITEM_LISTS.get(shelf, List.of()).size() == 16, RenderItem.ITEM_LISTS.get(shelf, List.of()).size());
     // config resource pack: the 3D cauldron item model
     check("config resource pack is on", mc.getResourcePackRepository().getSelectedIds().contains(Inspirations.getResource("config_resources").toString()), mc.getResourcePackRepository().getSelectedIds());
-    check("cauldron item uses the block model (config pack)", mc.getItemRenderer().getModel(new ItemStack(Items.CAULDRON), mc.level, mc.player, 0).isGui3d(), "flat");
+    check("cauldron item uses the block model (config pack)", look(mc, new ItemStack(Items.CAULDRON)).blockLight(), "flat");
   }
 
   private static void checkColors(Minecraft mc) {
     var blockColors = mc.getBlockColors();
-    var itemColors = mc.getItemColors();
     BlockState dye = mc.level.getBlockState(at(1, 1, 6));
     int dyeColor = blockColors.getColor(dye, mc.level, at(1, 1, 6), 0);
     check("dye cauldron tint is the red dye", dyeColor == (0xFF000000 | MiscUtil.getColor(DyeColor.RED)), Integer.toHexString(dyeColor));
@@ -540,15 +635,15 @@ public final class ClientScene {
     check("potion cauldron tint is the swiftness color", potionColor == new PotionContents(Potions.SWIFTNESS).getColor(), Integer.toHexString(potionColor));
     int portal = blockColors.getColor(mc.level.getBlockState(at(16, 2, 13)), mc.level, at(16, 2, 13), 0);
     check("portal over blue glass is tinted blue", portal == (0xFF000000 | MiscUtil.getColor(DyeColor.BLUE)), Integer.toHexString(portal));
-    int book = itemColors.getColor(MiscUtil.setColor(new ItemStack(InspirationsBuilding.coloredBook), 0x3366CC), 0);
+    int book = itemTint(mc, MiscUtil.setColor(new ItemStack(InspirationsBuilding.coloredBook), 0x3366CC), 0);
     check("colored book item color is opaque ARGB", book == 0xFF3366CC, Integer.toHexString(book));
-    int bottle = itemColors.getColor(new ItemStack(InspirationsCaudrons.simpleDyedWaterBottle.get(DyeColor.LIME)), 0);
+    int bottle = itemTint(mc, new ItemStack(InspirationsCaudrons.simpleDyedWaterBottle.get(DyeColor.LIME)), 0);
     check("dyed bottle item color is the lime dye", bottle == (0xFF000000 | MiscUtil.getColor(DyeColor.LIME)), Integer.toHexString(bottle));
     List<ItemStack> hotbar = hotbarItems(mc.getSingleplayerServer().overworld());
-    int sharpness = itemColors.getColor(hotbar.get(1), 0);
-    int mending = itemColors.getColor(hotbar.get(2), 0);
+    int sharpness = itemTint(mc, hotbar.get(1), 0);
+    int mending = itemTint(mc, hotbar.get(2), 0);
     check("enchanted book ribbons: common red, rare green", sharpness == 0xFFFF2151 && mending == 0xFF00FF21, Integer.toHexString(sharpness) + " " + Integer.toHexString(mending));
-    int rocketTop = itemColors.getColor(hotbar.get(3), 1);
+    int rocketTop = itemTint(mc, hotbar.get(3), 1);
     check("firework item shows the second star's color", rocketTop == 0xFF2020FF, Integer.toHexString(rocketTop));
     int vine = blockColors.getColor(InspirationsBuilding.vine.defaultBlockState(), mc.level, at(12, 2, 2), 0);
     check("vine rope is tinted like foliage", vine != -1 && (vine & 0xFFFFFF) != 0xFFFFFF, Integer.toHexString(vine));
@@ -556,11 +651,11 @@ public final class ClientScene {
 
   private static void checkClientData(Minecraft mc) {
     // fluid textures from client extensions
-    var atlas = mc.getModelManager().getAtlas(net.minecraft.world.inventory.InventoryMenu.BLOCK_ATLAS);
-    ResourceLocation honey = net.neoforged.neoforge.client.extensions.common.IClientFluidTypeExtensions.of(InspirationsCaudrons.honeyType).getStillTexture();
+    var atlas = mc.getAtlasManager().getAtlasOrThrow(net.minecraft.data.AtlasIds.BLOCKS);
+    Identifier honey = net.neoforged.neoforge.client.extensions.common.IClientFluidTypeExtensions.of(InspirationsCaudrons.honeyType).getStillTexture();
     check("honey fluid texture is in the block atlas", !atlas.getSprite(honey).contents().name().equals(MissingTextureAtlasSprite.getLocation()), honey);
     for (String sprite : List.of("fluid/colorless_still", "fluid/potion", "fluid/suspicious_stew", "entity/lectern_book")) {
-      ResourceLocation id = Inspirations.getResource(sprite);
+      Identifier id = Inspirations.getResource(sprite);
       check("sprite " + sprite + " is in the block atlas", !atlas.getSprite(id).contents().name().equals(MissingTextureAtlasSprite.getLocation()), id);
     }
     // the client asked the server for the lectern book, the tinted renderer needs it
@@ -573,8 +668,8 @@ public final class ClientScene {
     Particle particle = mc.particleEngine.createParticle(InspirationsCaudrons.boilingParticle, stage.getX(), stage.getY() + 2.5, stage.getZ() + 6, 0, 0, 0);
     check("boiling particle is created", particle instanceof BoilingParticle, particle);
     // item model properties
-    float barometer = ItemProperties.getProperty(new ItemStack(InspirationsTools.barometer), Inspirations.getResource("height")).call(new ItemStack(InspirationsTools.barometer), mc.level, mc.player, 0);
-    float photometer = ItemProperties.getProperty(new ItemStack(InspirationsTools.photometer), Inspirations.getResource("light")).call(new ItemStack(InspirationsTools.photometer), mc.level, mc.player, 0);
+    float barometer = new ItemColorSources.Property("height").get(new ItemStack(InspirationsTools.barometer), mc.level, mc.player, 0);
+    float photometer = new ItemColorSources.Property("light").get(new ItemStack(InspirationsTools.photometer), mc.level, mc.player, 0);
     check("barometer and photometer properties", barometer >= 0 && barometer <= 1 && photometer >= 0 && photometer <= 15, barometer + " " + photometer);
     // tooltips
     List<Component> tooltip = RetexturedHelper.setTexture(new ItemStack(InspirationsBuilding.shelf.get(ShelfType.NORMAL)), Blocks.BIRCH_SLAB)
@@ -596,7 +691,7 @@ public final class ClientScene {
       }
     }
     for (FluidType type : NeoForgeRegistries.FLUID_TYPES) {
-      ResourceLocation id = NeoForgeRegistries.FLUID_TYPES.getKey(type);
+      Identifier id = NeoForgeRegistries.FLUID_TYPES.getKey(type);
       if (id != null && id.getNamespace().equals(Inspirations.modID)) {
         keys.add(type.getDescriptionId());
       }
@@ -622,7 +717,7 @@ public final class ClientScene {
     }
     check("translations: every name in " + LANG, missing.isEmpty(), missing);
     List<String> unused = new ArrayList<>();
-    ResourceLocation file = Inspirations.getResource("lang/" + LANG + ".json");
+    Identifier file = Inspirations.getResource("lang/" + LANG + ".json");
     try (var reader = mc.getResourceManager().openAsReader(file)) {
       for (String key : com.google.gson.JsonParser.parseReader(reader).getAsJsonObject().keySet()) {
         if (!needed.contains(key)) {
@@ -640,17 +735,19 @@ public final class ClientScene {
    * magenta and black checkers
    */
   private static void checkNoMissingTexture(Minecraft mc, String name) {
-    int magenta = 0;
-    try (NativeImage image = Screenshot.takeScreenshot(mc.getMainRenderTarget())) {
-      int[] pixels = image.getPixelsRGBA();
-      for (int pixel : pixels) {
-        // ABGR in memory: red low byte
-        int r = pixel & 0xFF, g = pixel >> 8 & 0xFF, b = pixel >> 16 & 0xFF;
-        if (r > 200 && b > 200 && g < 40) {
-          magenta++;
+    // the frame is read back from the GPU later since 1.21.5, the check runs in the callback
+    Screenshot.takeScreenshot(mc.getMainRenderTarget(), image -> {
+      int magenta = 0;
+      try (image) {
+        for (int pixel : image.getPixelsABGR()) {
+          // ABGR: red low byte
+          int r = pixel & 0xFF, g = pixel >> 8 & 0xFF, b = pixel >> 16 & 0xFF;
+          if (r > 200 && b > 200 && g < 40) {
+            magenta++;
+          }
         }
       }
-    }
-    check(name + ": no missing texture on screen", magenta < 50, magenta + " magenta pixels");
+      check(name + ": no missing texture on screen", magenta < 50, magenta + " magenta pixels");
+    });
   }
 }

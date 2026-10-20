@@ -14,6 +14,9 @@ import net.minecraft.world.item.enchantment.EnchantmentHelper;
 import net.minecraft.world.item.enchantment.ItemEnchantments;
 import it.unimi.dsi.fastutil.objects.Object2IntMap;
 import org.apache.commons.lang3.mutable.MutableFloat;
+import com.llamalad7.mixinextras.injector.ModifyExpressionValue;
+import com.llamalad7.mixinextras.sugar.Local;
+import net.minecraft.world.item.enchantment.Enchantable;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
@@ -48,7 +51,7 @@ public abstract class EnchantmentHelperMixin {
 
   @ModifyVariable(method = "runIterationOnItem(Lnet/minecraft/world/item/ItemStack;Lnet/minecraft/world/entity/EquipmentSlot;Lnet/minecraft/world/entity/LivingEntity;Lnet/minecraft/world/item/enchantment/EnchantmentHelper$EnchantmentInSlotVisitor;)V", at = @At("HEAD"), argsOnly = true)
   private static EnchantmentHelper.EnchantmentInSlotVisitor inspirations$skipShieldInSlot(EnchantmentHelper.EnchantmentInSlotVisitor visitor, ItemStack stack, EquipmentSlot slot, LivingEntity entity, EnchantmentHelper.EnchantmentInSlotVisitor original) {
-    if (!stack.isEmpty() && Config.moreShieldEnchantments.getAsBoolean() && stack.canPerformAction(net.neoforged.neoforge.common.ItemAbilities.SHIELD_BLOCK)) {
+    if (!stack.isEmpty() && Config.moreShieldEnchantments.getAsBoolean() && stack.has(net.minecraft.core.component.DataComponents.BLOCKS_ATTACKS)) {
       return (enchantment, enchantmentLevel, item) -> {
         if (!InspirationsEnchanting.skipVanillaEffect(stack, enchantment)) {
           visitor.accept(enchantment, enchantmentLevel, item);
@@ -60,7 +63,7 @@ public abstract class EnchantmentHelperMixin {
 
   @ModifyVariable(method = "runIterationOnItem(Lnet/minecraft/world/item/ItemStack;Lnet/minecraft/world/item/enchantment/EnchantmentHelper$EnchantmentVisitor;)V", at = @At("HEAD"), argsOnly = true)
   private static EnchantmentHelper.EnchantmentVisitor inspirations$skipShield(EnchantmentHelper.EnchantmentVisitor visitor, ItemStack stack, EnchantmentHelper.EnchantmentVisitor original) {
-    if (!stack.isEmpty() && Config.moreShieldEnchantments.getAsBoolean() && stack.canPerformAction(net.neoforged.neoforge.common.ItemAbilities.SHIELD_BLOCK)) {
+    if (!stack.isEmpty() && Config.moreShieldEnchantments.getAsBoolean() && stack.has(net.minecraft.core.component.DataComponents.BLOCKS_ATTACKS)) {
       return (enchantment, enchantmentLevel) -> {
         if (!InspirationsEnchanting.skipVanillaEffect(stack, enchantment)) {
           visitor.accept(enchantment, enchantmentLevel);
@@ -68,5 +71,12 @@ public abstract class EnchantmentHelperMixin {
       };
     }
     return visitor;
+  }
+
+  /** Shields are enchantable at the table (config tools.enchantments.shieldTable), 1.20's EnchantableShieldItem */
+  @ModifyExpressionValue(method = {"getEnchantmentCost", "selectEnchantment"}, at = @At(value = "INVOKE", target = "Lnet/minecraft/world/item/ItemStack;get(Lnet/minecraft/core/component/DataComponentType;)Ljava/lang/Object;"))
+  private static Object inspirations$shieldEnchantable(Object original, @Local(argsOnly = true) ItemStack stack) {
+    int value = InspirationsEnchanting.shieldEnchantability(stack);
+    return value > 0 ? new Enchantable(value) : original;
   }
 }

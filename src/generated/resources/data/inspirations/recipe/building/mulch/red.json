@@ -8,12 +8,8 @@
   "type": "minecraft:crafting_shapeless",
   "category": "building",
   "ingredients": [
-    {
-      "item": "inspirations:plain_mulch"
-    },
-    {
-      "tag": "c:dyes/red"
-    }
+    "inspirations:plain_mulch",
+    "#c:dyes/red"
   ],
   "result": {
     "count": 1,

@@ -1,19 +1,15 @@
 package knightminer.inspirations.common;
 
+import knightminer.inspirations.common.client.ItemColorSources;
 import knightminer.inspirations.Inspirations;
 import net.minecraft.client.color.block.BlockColor;
 import net.minecraft.client.color.block.BlockColors;
-import net.minecraft.client.color.item.ItemColor;
-import net.minecraft.client.color.item.ItemColors;
 import net.minecraft.client.gui.screens.MenuScreens;
 import net.neoforged.neoforge.client.event.RegisterMenuScreensEvent;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.client.gui.screens.inventory.MenuAccess;
-import net.minecraft.client.renderer.item.ItemProperties;
-import net.minecraft.client.renderer.item.ItemPropertyFunction;
 import net.minecraft.world.inventory.AbstractContainerMenu;
 import net.minecraft.world.inventory.MenuType;
-import net.minecraft.world.item.Items;
 import net.minecraft.world.level.ItemLike;
 import net.minecraft.world.level.block.Block;
 
@@ -39,29 +35,23 @@ public abstract class AbstractClientEvents {
   }
 
   /**
-   * Null safe method to register item colors. Works around an issue where registry events do not fire
-   * @param itemColors Item colors instance
+   * Null safe method to register item colors, read by the {@code inspirations:item_color} tint sources of the item
+   * definitions
    * @param handler    Color handler logic
    * @param items      List of items to register
    */
-  protected static void registerItemColors(ItemColors itemColors, ItemColor handler, ItemLike... items) {
-    for (ItemLike item : items) {
-      if (item != null && item.asItem() != Items.AIR) {
-        itemColors.register(handler, item);
-      }
-    }
+  protected static void registerItemColors(ItemColorSources.ItemColor handler, ItemLike... items) {
+    ItemColorSources.registerColor(handler, items);
   }
 
   /**
-   * Null safe way to register a model property. Works around an issue where registry events do not fire
+   * Null safe way to register a model property, read by the {@code inspirations:property} of the item definitions
    * @param item Item with the property
-   * @param name Property name, will be namespaced under Inspirations
+   * @param name Property name, as in the item definition
    * @param prop Property getter instance
    */
-  protected static void registerModelProperty(@Nullable ItemLike item, String name, ItemPropertyFunction prop) {
-    if (item != null) {
-      ItemProperties.register(item.asItem(), Inspirations.getResource(name), prop);
-    }
+  protected static void registerModelProperty(@Nullable ItemLike item, String name, ItemColorSources.ItemProperty prop) {
+    ItemColorSources.registerProperty(item, name, prop);
   }
 
   /**

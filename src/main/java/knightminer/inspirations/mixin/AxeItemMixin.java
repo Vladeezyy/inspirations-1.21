@@ -3,7 +3,7 @@ package knightminer.inspirations.mixin;
 import knightminer.inspirations.tools.enchantment.InspirationsEnchanting;
 import net.minecraft.core.Holder;
 import net.minecraft.world.item.AxeItem;
-import net.minecraft.world.item.DiggerItem;
+import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.enchantment.Enchantment;
 import org.spongepowered.asm.mixin.Mixin;
@@ -13,9 +13,9 @@ import org.spongepowered.asm.mixin.Mixin;
  * at the table (tools.enchantments.axeTable). 1.20 replaced the vanilla enchantments with axe aware classes.
  */
 @Mixin(AxeItem.class)
-public abstract class AxeItemMixin extends DiggerItem {
-  private AxeItemMixin(net.minecraft.world.item.Tier tier, net.minecraft.tags.TagKey<net.minecraft.world.level.block.Block> blocks, Properties properties) {
-    super(tier, blocks, properties);
+public abstract class AxeItemMixin extends Item {
+  private AxeItemMixin(Properties properties) {
+    super(properties);
   }
 
   @Override

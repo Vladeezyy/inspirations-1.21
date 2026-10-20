@@ -2,7 +2,7 @@ package knightminer.inspirations.tools.client;
 
 import knightminer.inspirations.tools.capability.DimensionCompass;
 import net.minecraft.client.multiplayer.ClientLevel;
-import net.minecraft.client.renderer.item.ItemPropertyFunction;
+import knightminer.inspirations.common.client.ItemColorSources;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.GlobalPos;
 import net.minecraft.nbt.CompoundTag;
@@ -22,14 +22,14 @@ import net.minecraft.world.phys.Vec3;
 
 import javax.annotation.Nullable;
 
-public class DimensionCompassPropertyGetter implements ItemPropertyFunction {
+public class DimensionCompassPropertyGetter implements ItemColorSources.ItemProperty {
 	/* Last rotation for a target position */
 	private final Angle positionWobble = new Angle();
 	/** Last rotation for random position */
 	private final Angle randomRotation = new Angle();
 
 	@Override
-	public float call(ItemStack stack, @Nullable ClientLevel clientWorld, @Nullable LivingEntity living, int seed) {
+	public float get(ItemStack stack, @Nullable ClientLevel clientWorld, @Nullable LivingEntity living, int seed) {
 		Entity entity = living != null ? living : stack.getEntityRepresentation();
 		if (entity == null) {
 			return 0.0F;
@@ -60,7 +60,7 @@ public class DimensionCompassPropertyGetter implements ItemPropertyFunction {
 			} else if (entity instanceof ItemFrame) {
 				holderAngle = Angle.getFrameRotation((ItemFrame)entity);
 			} else if (entity instanceof ItemEntity) {
-				holderAngle = (180.0F - ((ItemEntity)entity).getSpin(0.5F) / 6.2831855F * 360.0F);
+				holderAngle = ((ItemEntity)entity).getVisualRotationYInDegrees();
 			} else if (living != null) {
 				holderAngle = living.yBodyRot;
 			}

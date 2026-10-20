@@ -7,9 +7,13 @@ import net.minecraft.client.renderer.texture.MissingTextureAtlasSprite;
 import net.minecraft.client.renderer.texture.SpriteContents;
 import net.minecraft.client.renderer.texture.TextureAtlas;
 import net.minecraft.client.renderer.texture.TextureAtlasSprite;
-import net.minecraft.client.resources.model.BakedModel;
+import net.minecraft.client.renderer.item.ItemStackRenderState;
+import net.minecraft.data.AtlasIds;
+import net.minecraft.util.RandomSource;
+import net.minecraft.world.item.ItemDisplayContext;
+import knightminer.inspirations.common.client.ItemColorSources;
 import net.minecraft.core.BlockPos;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.server.packs.resources.ResourceManagerReloadListener;
 import net.minecraft.world.inventory.InventoryMenu;
 import net.minecraft.world.item.BlockItem;
@@ -17,7 +21,7 @@ import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.BlockAndTintGetter;
 import net.minecraft.world.level.block.state.BlockState;
-import net.neoforged.neoforge.client.model.data.ModelData;
+import net.neoforged.neoforge.model.data.ModelData;
 import org.apache.commons.lang3.math.NumberUtils;
 import net.minecraft.core.registries.BuiltInRegistries;
 
@@ -50,11 +54,9 @@ public final class ClientUtil {
    * Gets the color for an item stack, used internally by colorCache. Licensed under <a href="http://www.apache.org/licenses/LICENSE-2.0">Apache 2.0</a>
    */
   private static final Function<Item,Integer> GET_ITEM_COLOR = key -> {
-    BakedModel model = mc.getItemRenderer().getModel(new ItemStack(key), null, null, 0);
-    if (model == mc.getModelManager().getMissingModel()) {
-      return -1;
-    }
-    TextureAtlasSprite sprite = model.getParticleIcon(ModelData.EMPTY);
+    ItemStackRenderState state = new ItemStackRenderState();
+    mc.getItemModelResolver().updateForTopItem(state, new ItemStack(key), ItemDisplayContext.GUI, null, null, 0);
+    TextureAtlasSprite sprite = state.pickParticleIcon(RandomSource.create(42));
     //noinspection ConstantValue  eh, its better to be safe
     if (sprite == null || sprite.contents().name() == MissingTextureAtlasSprite.getLocation()) {
       return -1;
@@ -65,11 +67,11 @@ public final class ClientUtil {
       SpriteContents contents = sprite.contents();
       for (int x = 0; x < contents.width(); x++) {
         for (int y = 0; y < contents.height(); y++) {
+          // ARGB since 1.21.2 (it was 0xAABBGGRR)
           int argb = sprite.getPixelRGBA(0, x, y);
-          // integer is in format of 0xAABBGGRR
-          int cr = argb & 0xFF;
+          int cr = argb >> 16 & 0xFF;
           int cg = argb >> 8 & 0xFF;
-          int cb = argb >> 16 & 0xFF;
+          int cb = argb & 0xFF;
           int ca = argb >> 24 & 0xFF;
           if (ca > 0x7F && NumberUtils.max(cr, cg, cb) > 0x1F) {
             // 1.20 passed (alpha, red, green), weighting pixels by the wrong saturation
@@ -99,8 +101,8 @@ public final class ClientUtil {
   /**
    * Gets the sprite for the given texture location, or Missing Texture if no sprite is found
    */
-  public static TextureAtlasSprite getSprite(@Nullable ResourceLocation location) {
-    TextureAtlas atlas = mc.getModelManager().getAtlas(InventoryMenu.BLOCK_ATLAS);
+  public static TextureAtlasSprite getSprite(@Nullable Identifier location) {
+    TextureAtlas atlas = mc.getAtlasManager().getAtlasOrThrow(AtlasIds.BLOCKS);
     if (location == null) {
       return atlas.getSprite(MissingTextureAtlasSprite.getLocation());
     }
@@ -137,8 +139,8 @@ public final class ClientUtil {
       }
     }
 
-    // fallback to item colors
-    return mc.getItemColors().getColor(stack, index);
+    // fallback to the item colors of this mod (vanilla item tints are in the item definitions since 1.21.4)
+    return ItemColorSources.getColor(stack, index);
   }
 
   /**

@@ -1,5 +1,6 @@
 package knightminer.inspirations.building;
 
+import knightminer.inspirations.common.client.ItemColorSources;
 import knightminer.inspirations.Inspirations;
 import knightminer.inspirations.building.block.entity.ShelfBlockEntity;
 import knightminer.inspirations.building.block.type.BushType;
@@ -12,10 +13,8 @@ import knightminer.inspirations.library.client.ClientUtil;
 import knightminer.inspirations.library.client.model.ShelfModel;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.color.block.BlockColors;
-import net.minecraft.client.color.item.ItemColors;
 import net.minecraft.client.renderer.BiomeColors;
 import net.minecraft.client.renderer.ItemBlockRenderTypes;
-import net.minecraft.client.renderer.RenderType;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.FoliageColor;
 import net.minecraft.world.level.block.Block;
@@ -23,14 +22,16 @@ import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.neoforged.api.distmarker.Dist;
 import net.neoforged.neoforge.client.event.EntityRenderersEvent;
-import net.neoforged.neoforge.client.event.ModelEvent.RegisterGeometryLoaders;
+import net.neoforged.neoforge.client.event.ModelEvent;
+import net.neoforged.fml.event.lifecycle.FMLClientSetupEvent;
+import dev.vladeezyy.kilnwork.client.KilnworkClient;
+import knightminer.inspirations.building.block.ShelfBlock;
 import net.neoforged.neoforge.client.event.RegisterColorHandlersEvent;
 import net.neoforged.neoforge.client.event.RegisterMenuScreensEvent;
-import net.minecraft.util.FastColor;
+import net.minecraft.util.ARGB;
 import net.minecraft.world.item.component.DyedItemColor;
 import net.neoforged.bus.api.SubscribeEvent;
 import net.neoforged.fml.common.EventBusSubscriber;
-import net.neoforged.fml.common.EventBusSubscriber.Bus;
 import net.neoforged.fml.event.lifecycle.FMLClientSetupEvent;
 import net.neoforged.fml.event.lifecycle.FMLCommonSetupEvent;
 import dev.vladeezyy.kilnwork.retexture.IRetexturedBlockEntity;
@@ -39,7 +40,7 @@ import dev.vladeezyy.kilnwork.retexture.RetexturedHelper;
 
 import java.util.Optional;
 
-@EventBusSubscriber(modid = Inspirations.modID, value = Dist.CLIENT, bus = Bus.MOD)
+@EventBusSubscriber(modid = Inspirations.modID, value = Dist.CLIENT)
 public class BuildingClientEvents extends AbstractClientEvents {
   private static final Minecraft mc = Minecraft.getInstance();
 
@@ -49,8 +50,14 @@ public class BuildingClientEvents extends AbstractClientEvents {
   }
 
   @SubscribeEvent
-  static void registerModelLoaders(RegisterGeometryLoaders event) {
+  static void registerModelLoaders(ModelEvent.RegisterLoaders event) {
     event.register(Inspirations.getResource("shelf"), ShelfModel.LOADER);
+  }
+
+  @SubscribeEvent
+  static void clientSetup(FMLClientSetupEvent event) {
+    // the shelf model keeps the books of the filled slots and takes the texture of the block entity
+    KilnworkClient.wrapBlockModels(block -> block instanceof ShelfBlock, ShelfModel.Block::new);
   }
 
   @SubscribeEvent
@@ -71,7 +78,7 @@ public class BuildingClientEvents extends AbstractClientEvents {
           ItemStack stack = ((ShelfBlockEntity)te).getInventory().getStackInSlot(tintIndex - 1);
           if (!stack.isEmpty()) {
             int color = ClientUtil.getItemColor(stack.getItem());
-            int itemColors = mc.getItemColors().getColor(stack, 0);
+            int itemColors = ItemColorSources.getColor(stack, 0);
             if (itemColors > -1) {
               // combine twice to make sure the item colors result is dominant
               color = MiscUtil.combineColors(color, itemColors, 3);
@@ -89,14 +96,14 @@ public class BuildingClientEvents extends AbstractClientEvents {
       if (world != null && pos != null) {
         return BiomeColors.getAverageFoliageColor(world, pos);
       }
-      return FoliageColor.getDefaultColor();
+      return FoliageColor.FOLIAGE_DEFAULT;
     }, InspirationsBuilding.vine);
 
     // bush block coloring
     // First the three which never change tint.
     InspirationsBuilding.enlightenedBush.forEach((type, bush) -> {
       if (type != BushType.WHITE) {
-        int color = FastColor.ARGB32.opaque(type.getColor()); // Make closure capture just the int.
+        int color = ARGB.opaque(type.getColor()); // Make closure capture just the int.
         event.register((state, world, pos, tintIndex) -> tintIndex == 0 ? color : -1, bush);
       }
     });
@@ -112,50 +119,50 @@ public class BuildingClientEvents extends AbstractClientEvents {
           return ClientUtil.getStackBlockColorsSafe(new ItemStack(block), world, pos, 0);
         }
       }
-      return FoliageColor.getDefaultColor();
+      return FoliageColor.FOLIAGE_DEFAULT;
     }, InspirationsBuilding.enlightenedBush.getOrNull(BushType.WHITE));
   }
 
   @SubscribeEvent
-  static void registerItemColors(RegisterColorHandlersEvent.Item event) {
-    ItemColors itemColors = event.getItemColors();
+  static void registerItemColors(RegisterColorHandlersEvent.ItemTintSources event) {
 
     // coloring of books for normal bookshelf
-    registerItemColors(itemColors, (stack, tintIndex) -> {
+    registerItemColors((stack, tintIndex) -> {
       if (tintIndex > 0 && tintIndex <= 16) {
-        return FastColor.ARGB32.opaque(0x654B17);
+        return ARGB.opaque(0x654B17);
       }
       return -1;
     }, InspirationsBuilding.shelf.getOrNull(ShelfType.NORMAL));
 
     // book covers, too lazy to make 16 cover textures
     // 1.21 item colors are ARGB; an uncolored book keeps the leather default color it had in 1.20
-    event.register((stack, index) -> index == 0 ? FastColor.ARGB32.opaque(DyedItemColor.getOrDefault(stack, DyedItemColor.LEATHER_COLOR)) : -1, InspirationsBuilding.coloredBook);
+    registerItemColors((stack, index) -> index == 0 ? ARGB.opaque(DyedItemColor.getOrDefault(stack, DyedItemColor.LEATHER_COLOR)) : -1, InspirationsBuilding.coloredBook);
 
     // bush block colors
     // First the three blocks which never change tint.
     InspirationsBuilding.enlightenedBush.forEach((type, bush) -> {
       if (type != BushType.WHITE) {
-        int color = FastColor.ARGB32.opaque(type.getColor());
-        event.register((stack, tintIndex) -> tintIndex == 0 ? color : -1, bush);
+        int color = ARGB.opaque(type.getColor());
+        registerItemColors((stack, tintIndex) -> tintIndex == 0 ? color : -1, bush);
       }
     });
 
     // The main one uses the tint of the textured stack
-    registerItemColors(itemColors, (stack, tintIndex) -> {
+    registerItemColors((stack, tintIndex) -> {
       if (tintIndex != 0) {
         return -1;
       }
       // redirect to block for colors
       Block block = RetexturedHelper.getTexture(stack);
       if (block != Blocks.AIR) {
-        return itemColors.getColor(new ItemStack(block), 0);
+        // the default color of the texture block (its block colors without a world)
+        return ClientUtil.getStackBlockColorsSafe(new ItemStack(block), null, null, 0);
       } else {
-        return FoliageColor.getDefaultColor();
+        return FoliageColor.FOLIAGE_DEFAULT;
       }
     }, InspirationsBuilding.enlightenedBush.getOrNull(BushType.WHITE));
 
     // We can't get the world position of the item, so use the default tint.
-    registerItemColors(itemColors, (stack, tintIndex) -> FoliageColor.getDefaultColor(), InspirationsBuilding.vine);
+    registerItemColors((stack, tintIndex) -> FoliageColor.FOLIAGE_DEFAULT, InspirationsBuilding.vine);
   }
 }

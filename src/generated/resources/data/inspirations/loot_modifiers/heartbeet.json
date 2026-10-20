@@ -27,8 +27,6 @@
       "enchantment": "minecraft:fortune"
     }
   ],
-  "original": {
-    "item": "minecraft:beetroot"
-  },
+  "original": "minecraft:beetroot",
   "replacement": "inspirations:heartbeet"
 }

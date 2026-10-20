@@ -1,5 +1,7 @@
 package knightminer.inspirations.cauldrons.block.entity;
 
+import net.minecraft.world.level.storage.ValueOutput;
+import net.minecraft.world.level.storage.ValueInput;
 import knightminer.inspirations.cauldrons.InspirationsCaudrons;
 import knightminer.inspirations.common.network.CauldronColorUpdatePacket;
 import knightminer.inspirations.common.network.InspirationsNetwork;
@@ -48,7 +50,7 @@ public class DyeCauldronBlockEntity extends SyncedBlockEntity {
 		if (color != this.color) {
 			this.color = color;
 			this.dyeDirty = true;
-			if (level != null && !level.isClientSide) {
+			if (level != null && !level.isClientSide()) {
 				InspirationsNetwork.sendToClients(level, worldPosition, new CauldronColorUpdatePacket(worldPosition, color));
 			}
 			this.setChangedFast();
@@ -63,18 +65,18 @@ public class DyeCauldronBlockEntity extends SyncedBlockEntity {
 	}
 
 	@Override
-	protected void saveSynced(CompoundTag nbt, HolderLookup.Provider registries) {
-		super.saveSynced(nbt, registries);
+	protected void saveSynced(ValueOutput output) {
+		super.saveSynced(output);
 
-		nbt.putInt(TAG_COLOR, color);
+		output.putInt(TAG_COLOR, color);
 	}
 
 	@Override
-	protected void loadAdditional(CompoundTag nbt, HolderLookup.Provider registries) {
-		super.loadAdditional(nbt, registries);
+	protected void loadAdditional(ValueInput input) {
+		super.loadAdditional(input);
 
-		color = nbt.getInt(TAG_COLOR);
-		if (level != null && level.isClientSide) {
+		color = input.getIntOr(TAG_COLOR, 0);
+		if (level != null && level.isClientSide()) {
 			MiscUtil.notifyClientUpdate(this);
 		}
 		this.dyeDirty = true;

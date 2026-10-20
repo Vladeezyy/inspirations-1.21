@@ -9,18 +9,12 @@
   "category": "misc",
   "group": "inspirations:colored_book",
   "ingredients": [
-    {
-      "item": "minecraft:book"
-    },
-    {
-      "tag": "c:dyes/light_blue"
-    }
+    "minecraft:book",
+    "#c:dyes/light_blue"
   ],
   "result": {
     "components": {
-      "minecraft:dyed_color": {
-        "rgb": 3847130
-      }
+      "minecraft:dyed_color": 3847130
     },
     "count": 1,
     "id": "inspirations:colored_book"

@@ -9,12 +9,8 @@
   "category": "misc",
   "group": "dyed_bed",
   "ingredients": [
-    {
-      "tag": "minecraft:beds"
-    },
-    {
-      "item": "inspirations:brown_dyed_bottle"
-    }
+    "#minecraft:beds",
+    "inspirations:brown_dyed_bottle"
   ],
   "result": {
     "count": 1,

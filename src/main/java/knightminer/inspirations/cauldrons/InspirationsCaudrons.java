@@ -1,6 +1,5 @@
 package knightminer.inspirations.cauldrons;
 
-import knightminer.inspirations.common.datagen.IInspirationsRecipeBuilder;
 import knightminer.inspirations.library.InspirationsTags;
 
 import knightminer.inspirations.Inspirations;
@@ -13,7 +12,6 @@ import knightminer.inspirations.cauldrons.block.SuspiciousStewCauldronBlock;
 import knightminer.inspirations.cauldrons.block.entity.DyeCauldronBlockEntity;
 import knightminer.inspirations.cauldrons.block.entity.PotionCauldronBlockEntity;
 import knightminer.inspirations.cauldrons.block.entity.SuspiciousStewCauldronBlockEntity;
-import knightminer.inspirations.cauldrons.data.RecipesRecipeProvider;
 import knightminer.inspirations.cauldrons.interaction.DecreaseLayerCauldronInteraction;
 import knightminer.inspirations.cauldrons.interaction.EmptyCauldronInteraction;
 import knightminer.inspirations.cauldrons.interaction.FillCauldronInteraction;
@@ -50,14 +48,12 @@ import knightminer.inspirations.library.MiscUtil;
 import knightminer.inspirations.library.recipe.cauldron.CauldronRegistry;
 import knightminer.inspirations.tools.InspirationsTools;
 import knightminer.inspirations.utility.InspirationsUtility;
-import net.minecraft.Util;
+import net.minecraft.util.Util;
 import net.minecraft.core.Registry;
 import net.minecraft.core.cauldron.CauldronInteraction;
 import net.minecraft.core.particles.ParticleType;
 import net.minecraft.core.particles.SimpleParticleType;
 import net.minecraft.core.registries.Registries;
-import net.minecraft.data.DataGenerator;
-import net.minecraft.data.PackOutput;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.tags.ItemTags;
@@ -97,7 +93,6 @@ import net.neoforged.neoforge.common.NeoForgeMod;
 import net.neoforged.neoforge.common.SoundActions;
 import net.neoforged.neoforge.common.Tags;
 import net.neoforged.neoforge.common.brewing.BrewingRecipeRegistry;
-import net.neoforged.neoforge.data.event.GatherDataEvent;
 import net.neoforged.bus.api.SubscribeEvent;
 import net.neoforged.neoforge.fluids.FluidStack;
 import net.neoforged.neoforge.fluids.FluidType;
@@ -224,12 +219,12 @@ public class InspirationsCaudrons extends ModuleBase {
       BlockRegistryAdapter registry = new BlockRegistryAdapter(helper);
 
       BlockBehaviour.Properties cauldronProps = Properties.ofFullCopy(Blocks.CAULDRON);
-      mushroomStewCauldron = registry.register(new BoilingFourLayerCauldronBlock(cauldronProps, MUSHROOM_STEW_CAULDRON_INTERACTIONS), "mushroom_stew_cauldron");
-      beetrootSoupCauldron = registry.register(new BoilingFourLayerCauldronBlock(cauldronProps, BEETROOT_SOUP_CAULDRON_INTERACTIONS), "beetroot_soup_cauldron");
-      rabbitStewCauldron = registry.register(new BoilingFourLayerCauldronBlock(cauldronProps, RABBIT_STEW_CAULDRON_INTERACTIONS), "rabbit_stew_cauldron");
-      potatoSoupCauldron = registry.register(new BoilingFourLayerCauldronBlock(cauldronProps, POTATO_SOUP_CAULDRON_INTERACTIONS), "potato_soup_cauldron");
-      honeyCauldron = registry.register(new FourLayerCauldronBlock(cauldronProps, HONEY_CAULDRON_INTERACTIONS), "honey_cauldron");
-      milkCauldron = registry.register(new BoilingFourLayerCauldronBlock(cauldronProps, MILK_CAULDRON_INTERACTIONS), "milk_cauldron");
+      mushroomStewCauldron = registry.make(() -> new BoilingFourLayerCauldronBlock(cauldronProps, MUSHROOM_STEW_CAULDRON_INTERACTIONS), "mushroom_stew_cauldron");
+      beetrootSoupCauldron = registry.make(() -> new BoilingFourLayerCauldronBlock(cauldronProps, BEETROOT_SOUP_CAULDRON_INTERACTIONS), "beetroot_soup_cauldron");
+      rabbitStewCauldron = registry.make(() -> new BoilingFourLayerCauldronBlock(cauldronProps, RABBIT_STEW_CAULDRON_INTERACTIONS), "rabbit_stew_cauldron");
+      potatoSoupCauldron = registry.make(() -> new BoilingFourLayerCauldronBlock(cauldronProps, POTATO_SOUP_CAULDRON_INTERACTIONS), "potato_soup_cauldron");
+      honeyCauldron = registry.make(() -> new FourLayerCauldronBlock(cauldronProps, HONEY_CAULDRON_INTERACTIONS), "honey_cauldron");
+      milkCauldron = registry.make(() -> new BoilingFourLayerCauldronBlock(cauldronProps, MILK_CAULDRON_INTERACTIONS), "milk_cauldron");
 
       mushroomStewBlock = registry.registerFluidBlock(() -> mushroomStew, MapColor.TERRACOTTA_LIGHT_GRAY, 0, "mushroom_stew");
       beetrootSoupBlock = registry.registerFluidBlock(() -> beetrootSoup, MapColor.NETHER, 0, "beetroot_soup");
@@ -237,9 +232,9 @@ public class InspirationsCaudrons extends ModuleBase {
       potatoSoupBlock = registry.registerFluidBlock(() -> potatoSoup, MapColor.TERRACOTTA_WHITE, 0, "potato_soup");
       honeyFluidBlock = registry.registerFluidBlock(() -> honey, MapColor.COLOR_ORANGE, 0, "honey");
 
-      dyeCauldron = registry.register(new DyeCauldronBlock(cauldronProps), "dye_cauldron");
-      potionCauldron = registry.register(new PotionCauldronBlock(cauldronProps), "potion_cauldron");
-      suspiciousStewCauldron = registry.register(new SuspiciousStewCauldronBlock(cauldronProps), "suspicious_stew_cauldron");
+      dyeCauldron = registry.make(() -> new DyeCauldronBlock(cauldronProps), "dye_cauldron");
+      potionCauldron = registry.make(() -> new PotionCauldronBlock(cauldronProps), "potion_cauldron");
+      suspiciousStewCauldron = registry.make(() -> new SuspiciousStewCauldronBlock(cauldronProps), "suspicious_stew_cauldron");
       // boiling particles in vanilla water cauldrons come from a mixin (WaterCauldronMixin), NeoForge cannot replace the block
     });
     event.register(Registries.BLOCK_ENTITY_TYPE, helper -> {
@@ -260,41 +255,34 @@ public class InspirationsCaudrons extends ModuleBase {
       honeyBucket = registry.registerBucket(() -> honey, "honey");
 
       // potato soup, drained as 250 mB of soup by fluid handlers (FluidContainerItem)
-      potatoSoupItem = registry.register(new Item(
-        new Item.Properties().stacksTo(1).food(new FoodProperties.Builder().nutrition(8).saturationModifier(0.6F).usingConvertsTo(Items.BOWL).build())
+      potatoSoupItem = registry.make(() -> new Item(
+        new Item.Properties().stacksTo(1).food(new FoodProperties.Builder().nutrition(8).saturationModifier(0.6F).build()).usingConvertsTo(Items.BOWL)
       ), "potato_soup");
 
       // empty bottles
       Item.Properties props = new Item.Properties();
-      splashBottle = registry.register(new EmptyBottleItem(props, () -> Items.SPLASH_POTION), "splash_bottle");
-      lingeringBottle = registry.register(new EmptyBottleItem(props, () -> Items.LINGERING_POTION), "lingering_bottle");
+      splashBottle = registry.make(() -> new EmptyBottleItem(props, () -> Items.SPLASH_POTION), "splash_bottle");
+      lingeringBottle = registry.make(() -> new EmptyBottleItem(props, () -> Items.LINGERING_POTION), "lingering_bottle");
       Item.Properties bottleProps = new Item.Properties().stacksTo(16).craftRemainder(Items.GLASS_BOTTLE);
-      milkBottle = registry.register(new MilkBottleItem(bottleProps), "milk_bottle");
+      milkBottle = registry.make(() -> new MilkBottleItem(bottleProps), "milk_bottle");
 
       // dyed bottles
       simpleDyedWaterBottle = registry.registerEnum(color -> new SimpleDyedBottleItem(bottleProps, DyeItem.byColor(color)), DyeColor.values(), "dyed_bottle");
-      mixedDyedWaterBottle = registry.register(new MixedDyedBottleItem(bottleProps), "mixed_dyed_bottle");
+      mixedDyedWaterBottle = registry.make(() -> new MixedDyedBottleItem(bottleProps), "mixed_dyed_bottle");
     });
     event.register(Registries.PARTICLE_TYPE, helper -> {
       RegistryAdapter<ParticleType<?>> registry = new RegistryAdapter<>(helper);
-      boilingParticle = registry.register(new SimpleParticleType(false), "boiling");
+      boilingParticle = registry.make(() -> new SimpleParticleType(false), "boiling");
     });
   }
 
   @SubscribeEvent
   void registerCapabilities(RegisterCapabilitiesEvent event) {
     // milk bottles and potato soup act as small fluid containers, like Mantle's constant containers of 1.20
-    event.registerItem(Capabilities.FluidHandler.ITEM, (stack, context) -> new FluidContainerItem(stack, new FluidStack(potatoSoup, FluidContainerItem.BOWL), Items.BOWL), potatoSoupItem);
-    event.registerItem(Capabilities.FluidHandler.ITEM, (stack, context) -> NeoForgeMod.MILK.isBound() ? new FluidContainerItem(stack, new FluidStack(NeoForgeMod.MILK.get(), FluidContainerItem.BOTTLE), Items.GLASS_BOTTLE) : null, milkBottle);
+    event.registerItem(Capabilities.Fluid.ITEM, (stack, access) -> new FluidContainerItem(access, potatoSoupItem, new FluidStack(potatoSoup, FluidContainerItem.BOWL), Items.BOWL), potatoSoupItem);
+    event.registerItem(Capabilities.Fluid.ITEM, (stack, access) -> NeoForgeMod.MILK.isBound() ? new FluidContainerItem(access, milkBottle, new FluidStack(NeoForgeMod.MILK.get(), FluidContainerItem.BOTTLE), Items.GLASS_BOTTLE) : null, milkBottle);
   }
 
-  @SubscribeEvent
-  void gatherData(GatherDataEvent event) {
-    DataGenerator gen = event.getGenerator();
-    PackOutput packOutput = gen.getPackOutput();
-    gen.addProvider(event.includeServer(), IInspirationsRecipeBuilder.named("Inspirations Recipes - Cauldrons", new RecipesRecipeProvider(packOutput, event.getLookupProvider())));
-    // fluid blockstates, bucket models and fluid textures are plain files and client extensions in 1.21
-  }
 
   /** Brewing glass bottles into splash and lingering bottles, with the ingredients of the potion container mixes */
   private static void registerBrewing(RegisterBrewingRecipesEvent event) {
@@ -303,22 +291,23 @@ public class InspirationsCaudrons extends ModuleBase {
     }
     Ingredient toSplash = containerMix(event.getBuilder(), Items.POTION, Items.SPLASH_POTION);
     Ingredient toLingering = containerMix(event.getBuilder(), Items.SPLASH_POTION, Items.LINGERING_POTION);
-    if (!toSplash.isEmpty()) {
+    if (toSplash != null) {
       event.getBuilder().addRecipe(new BottleBrewingRecipe(Ingredient.of(Items.GLASS_BOTTLE), toSplash, new ItemStack(splashBottle)));
     }
-    if (!toLingering.isEmpty()) {
-      event.getBuilder().addRecipe(new BottleBrewingRecipe(Ingredient.of(InspirationsTags.Common.SPLASH_BOTTLE), toLingering, new ItemStack(lingeringBottle)));
+    if (toLingering != null) {
+      event.getBuilder().addRecipe(new BottleBrewingRecipe(Ingredient.of(BuiltInRegistries.ITEM.getOrThrow(InspirationsTags.Common.SPLASH_BOTTLE)), toLingering, new ItemStack(lingeringBottle)));
     }
   }
 
   /** Ingredient turning one potion container into another, as registered so far (vanilla: gunpowder, dragon's breath) */
+  @Nullable
   private static Ingredient containerMix(PotionBrewing.Builder builder, Item from, Item to) {
     for (PotionBrewing.Mix<Item> mix : builder.containerMixes) {
       if (mix.from().value() == from && mix.to().value() == to) {
         return mix.ingredient();
       }
     }
-    return Ingredient.EMPTY;
+    return null;
   }
 
   @SubscribeEvent
@@ -395,7 +384,7 @@ public class InspirationsCaudrons extends ModuleBase {
                   Arrays.stream(DyeColor.values()).filter(dye -> dye != DyeColor.WHITE).map(color -> InspirationsUtility.carpetedTrapdoors.get(color).asItem()).toArray(Item[]::new));
 
         // wash the compass
-        CauldronInteraction.WATER.map().put(InspirationsTools.dimensionCompass, CauldronInteraction.DYED_ITEM);
+        CauldronInteraction.WATER.map().put(InspirationsTools.dimensionCompass, CauldronInteraction.WATER.map().get(Items.LEATHER_HELMET));
       }
 
       // milk
@@ -685,7 +674,7 @@ public class InspirationsCaudrons extends ModuleBase {
   /* Helpers */
 
   private static void register(Map<BlockState, Holder<PoiType>> map, ResourceKey<PoiType> key, Block... blocks) {
-    Holder<PoiType> poi = BuiltInRegistries.POINT_OF_INTEREST_TYPE.getHolder(key).orElse(null);
+    Holder<PoiType> poi = BuiltInRegistries.POINT_OF_INTEREST_TYPE.get(key).orElse(null);
     if (poi != null) {
       for (Block block : blocks) {
         if (block != null) {

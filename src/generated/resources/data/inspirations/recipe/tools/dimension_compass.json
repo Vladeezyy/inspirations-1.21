@@ -8,12 +8,8 @@
   "type": "minecraft:crafting_shaped",
   "category": "equipment",
   "key": {
-    "E": {
-      "tag": "c:ender_pearls"
-    },
-    "G": {
-      "tag": "c:ingots/gold"
-    }
+    "E": "#c:ender_pearls",
+    "G": "#c:ingots/gold"
   },
   "pattern": [
     " G ",

@@ -1,0 +1,227 @@
+{
+  "model": {
+    "type": "minecraft:range_dispatch",
+    "property": "inspirations:property",
+    "name": "light",
+    "entries": [
+      {
+        "threshold": 0,
+        "model": {
+          "type": "minecraft:model",
+          "model": "inspirations:item/photometer",
+          "tints": [
+            {
+              "type": "inspirations:item_color",
+              "index": 0
+            }
+          ]
+        }
+      },
+      {
+        "threshold": 1,
+        "model": {
+          "type": "minecraft:model",
+          "model": "inspirations:item/photometer/01",
+          "tints": [
+            {
+              "type": "inspirations:item_color",
+              "index": 0
+            }
+          ]
+        }
+      },
+      {
+        "threshold": 2,
+        "model": {
+          "type": "minecraft:model",
+          "model": "inspirations:item/photometer/02",
+          "tints": [
+            {
+              "type": "inspirations:item_color",
+              "index": 0
+            }
+          ]
+        }
+      },
+      {
+        "threshold": 3,
+        "model": {
+          "type": "minecraft:model",
+          "model": "inspirations:item/photometer/03",
+          "tints": [
+            {
+              "type": "inspirations:item_color",
+              "index": 0
+            }
+          ]
+        }
+      },
+      {
+        "threshold": 4,
+        "model": {
+          "type": "minecraft:model",
+          "model": "inspirations:item/photometer/04",
+          "tints": [
+            {
+              "type": "inspirations:item_color",
+              "index": 0
+            }
+          ]
+        }
+      },
+      {
+        "threshold": 5,
+        "model": {
+          "type": "minecraft:model",
+          "model": "inspirations:item/photometer/05",
+          "tints": [
+            {
+              "type": "inspirations:item_color",
+              "index": 0
+            }
+          ]
+        }
+      },
+      {
+        "threshold": 6,
+        "model": {
+          "type": "minecraft:model",
+          "model": "inspirations:item/photometer/06",
+          "tints": [
+            {
+              "type": "inspirations:item_color",
+              "index": 0
+            }
+          ]
+        }
+      },
+      {
+        "threshold": 7,
+        "model": {
+          "type": "minecraft:model",
+          "model": "inspirations:item/photometer/07",
+          "tints": [
+            {
+              "type": "inspirations:item_color",
+              "index": 0
+            }
+          ]
+        }
+      },
+      {
+        "threshold": 8,
+        "model": {
+          "type": "minecraft:model",
+          "model": "inspirations:item/photometer/08",
+          "tints": [
+            {
+              "type": "inspirations:item_color",
+              "index": 0
+            }
+          ]
+        }
+      },
+      {
+        "threshold": 9,
+        "model": {
+          "type": "minecraft:model",
+          "model": "inspirations:item/photometer/09",
+          "tints": [
+            {
+              "type": "inspirations:item_color",
+              "index": 0
+            }
+          ]
+        }
+      },
+      {
+        "threshold": 10,
+        "model": {
+          "type": "minecraft:model",
+          "model": "inspirations:item/photometer/10",
+          "tints": [
+            {
+              "type": "inspirations:item_color",
+              "index": 0
+            }
+          ]
+        }
+      },
+      {
+        "threshold": 11,
+        "model": {
+          "type": "minecraft:model",
+          "model": "inspirations:item/photometer/11",
+          "tints": [
+            {
+              "type": "inspirations:item_color",
+              "index": 0
+            }
+          ]
+        }
+      },
+      {
+        "threshold": 12,
+        "model": {
+          "type": "minecraft:model",
+          "model": "inspirations:item/photometer/12",
+          "tints": [
+            {
+              "type": "inspirations:item_color",
+              "index": 0
+            }
+          ]
+        }
+      },
+      {
+        "threshold": 13,
+        "model": {
+          "type": "minecraft:model",
+          "model": "inspirations:item/photometer/13",
+          "tints": [
+            {
+              "type": "inspirations:item_color",
+              "index": 0
+            }
+          ]
+        }
+      },
+      {
+        "threshold": 14,
+        "model": {
+          "type": "minecraft:model",
+          "model": "inspirations:item/photometer/14",
+          "tints": [
+            {
+              "type": "inspirations:item_color",
+              "index": 0
+            }
+          ]
+        }
+      },
+      {
+        "threshold": 15,
+        "model": {
+          "type": "minecraft:model",
+          "model": "inspirations:item/photometer/15",
+          "tints": [
+            {
+              "type": "inspirations:item_color",
+              "index": 0
+            }
+          ]
+        }
+      }
+    ],
+    "fallback": {
+      "type": "minecraft:model",
+      "model": "inspirations:item/photometer",
+      "tints": [
+        {
+          "type": "inspirations:item_color",
+          "index": 0
+        }
+      ]
+    }
+  }
+}

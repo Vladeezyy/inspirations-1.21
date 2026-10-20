@@ -34,13 +34,8 @@ configurations {
 }
 
 neoForge {
-    // -Pneo_version=21.1.197 checks the oldest supported NeoForge
+    // -Pneo_version=<build> checks another NeoForge build
     version = project.neo_version
-
-    parchment {
-        mappingsVersion = project.parchment_mappings_version
-        minecraftVersion = project.parchment_minecraft_version
-    }
 
     runs {
         client {
@@ -55,6 +50,7 @@ neoForge {
             client()
             systemProperty 'inspirations.scene', project.findProperty('scene') ?: 'main'
             systemProperty 'inspirations.scene.lang', project.findProperty('scene_lang') ?: 'en_us'
+            if (project.hasProperty('jfr')) jvmArgument '-XX:StartFlightRecording=filename=' + file('run/stress.jfr') + ',settings=profile'
         }
         // tools/selftest.sh: functional checks on a fresh world, then stops (src/selftest)
         selftest {
@@ -72,11 +68,6 @@ neoForge {
             client()
             systemProperty 'inspirations.scene', 'net'
             programArguments.addAll('--quickPlayMultiplayer', 'localhost:25565')
-        }
-        data {
-            data()
-            programArguments.addAll '--mod', mod_id, '--all', '--output', file('src/generated/resources/').absolutePath,
-                    '--existing', file('src/main/resources/').absolutePath
         }
         configureEach {
             systemProperty 'forge.logging.markers', 'REGISTRIES'
@@ -107,7 +98,7 @@ dependencies {
     }
     compileOnly "mezz.jei:jei-${minecraft_version}-common-api:${jei_version}"
     compileOnly "mezz.jei:jei-${minecraft_version}-neoforge-api:${jei_version}"
-    // JEI 19.64 needs NeoForge 21.1.238+, so runs on older NeoForge pass -Pno_jei
+    // runs without JEI: -Pno_jei
     if (!project.hasProperty('no_jei')) {
         localRuntime "mezz.jei:jei-${minecraft_version}-neoforge:${jei_version}"
     }
@@ -168,3 +159,4 @@ idea {
         downloadJavadoc = true
     }
 }
+tasks.withType(JavaCompile).configureEach { options.compilerArgs += ['-Xmaxerrs', '10000'] }

@@ -2,25 +2,26 @@ package knightminer.inspirations.utility.dispenser;
 
 import knightminer.inspirations.library.InspirationsTags;
 import net.minecraft.core.BlockPos;
-import net.minecraft.core.dispenser.BlockSource;
 import net.minecraft.core.Direction;
+import net.minecraft.core.dispenser.BlockSource;
 import net.minecraft.core.dispenser.DefaultDispenseItemBehavior;
 import net.minecraft.core.dispenser.DispenseItemBehavior;
-import net.minecraft.sounds.SoundEvent;
-import net.minecraft.sounds.SoundEvents;
-import net.minecraft.sounds.SoundSource;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.DispenserBlock;
-import net.minecraft.world.level.block.entity.DispenserBlockEntity;
-import net.neoforged.neoforge.common.SoundActions;
-import net.neoforged.neoforge.fluids.FluidActionResult;
-import net.neoforged.neoforge.fluids.FluidStack;
-import net.neoforged.neoforge.fluids.FluidUtil;
+import net.minecraft.world.phys.Vec3;
+import net.neoforged.neoforge.capabilities.Capabilities;
+import net.neoforged.neoforge.transfer.ResourceHandler;
+import net.neoforged.neoforge.transfer.ResourceHandlerUtil;
+import net.neoforged.neoforge.transfer.access.ItemAccess;
+import net.neoforged.neoforge.transfer.fluid.FluidResource;
+import net.neoforged.neoforge.transfer.fluid.FluidUtil;
+import net.neoforged.neoforge.transfer.item.ItemResource;
+import net.neoforged.neoforge.transfer.item.ItemStacksResourceHandler;
+import net.neoforged.neoforge.transfer.item.ItemUtil;
+import net.neoforged.neoforge.transfer.resource.ResourceStack;
 
-import java.util.Objects;
-import java.util.Optional;
-
+/** Dispensers empty fluid containers into the fluid handler in front of them, or fill empty ones from it */
 public class DispenseFluidTank extends DefaultDispenseItemBehavior {
   private static final DefaultDispenseItemBehavior DEFAULT = new DefaultDispenseItemBehavior();
   private final DispenseItemBehavior fallback;
@@ -38,43 +39,26 @@ public class DispenseFluidTank extends DefaultDispenseItemBehavior {
     Direction side = source.state().getValue(DispenserBlock.FACING);
     BlockPos pos = source.pos().relative(side);
     Level world = source.level();
-    return FluidUtil.getFluidHandler(world, pos, side.getOpposite()).map((handler) -> {
-      FluidActionResult result;
-      Optional<FluidStack> optFluid = FluidUtil.getFluidContained(stack);
-      if (optFluid.isPresent()) {
-        result = FluidUtil.tryEmptyContainer(stack, handler, Integer.MAX_VALUE, null, true);
-      } else {
-        result = FluidUtil.tryFillContainer(stack, handler, Integer.MAX_VALUE, null, true);
+    ResourceHandler<FluidResource> tank = world.getCapability(Capabilities.Fluid.BLOCK, pos, side.getOpposite());
+    if (tank == null) {
+      return fallback.dispense(source, stack);
+    }
+
+    // one item of the stack, the handler holds it after the exchange
+    ItemStacksResourceHandler container = new ItemStacksResourceHandler(1);
+    container.set(0, ItemResource.of(stack), 1);
+    ResourceHandler<FluidResource> item = ItemAccess.forHandlerIndex(container, 0).getCapability(Capabilities.Fluid.ITEM);
+    if (item != null) {
+      // a filled container is emptied into the tank, an empty one filled from it
+      boolean empty = !ResourceHandlerUtil.isEmpty(item);
+      ResourceStack<FluidResource> moved = empty
+        ? ResourceHandlerUtil.moveFirst(item, tank, fluid -> true, Integer.MAX_VALUE, null)
+        : ResourceHandlerUtil.moveFirst(tank, item, fluid -> true, Integer.MAX_VALUE, null);
+      if (moved != null) {
+        FluidUtil.triggerSoundAndGameEvent(moved.resource(), world, Vec3.atCenterOf(pos), null, !empty);
+        return consumeWithRemainder(source, stack, ItemUtil.getStack(container, 0));
       }
-
-      if (result.isSuccess()) {
-        ItemStack resultStack = result.getResult();
-        // play sound
-        SoundEvent sound = optFluid.map((fluid) -> Objects.requireNonNullElse(fluid.getFluid().getFluidType().getSound(fluid, SoundActions.BUCKET_EMPTY), SoundEvents.BUCKET_EMPTY))
-                                   .orElseGet(() -> {
-          FluidStack resultFluid = FluidUtil.getFluidContained(resultStack).orElseThrow(AssertionError::new);
-          return Objects.requireNonNullElse(resultFluid.getFluid().getFluidType().getSound(resultFluid, SoundActions.BUCKET_FILL), SoundEvents.BUCKET_FILL);
-        });
-
-        world.playSound(null, pos, sound, SoundSource.BLOCKS, 1.0F, 1.0F);
-
-        if (stack.getCount() == 1) {
-          return resultStack;
-        }
-
-        if (!resultStack.isEmpty()) {
-          ItemStack remainder = source.blockEntity().insertItem(resultStack);
-          if (!remainder.isEmpty()) {
-            DEFAULT.dispense(source, remainder);
-          }
-        }
-
-        ItemStack shrink = stack.copy();
-        shrink.shrink(1);
-        return shrink;
-      }
-      // TODO: fallback?
-      return DEFAULT.dispense(source, stack);
-    }).orElseGet(() -> fallback.dispense(source, stack));
+    }
+    return DEFAULT.dispense(source, stack);
   }
 }

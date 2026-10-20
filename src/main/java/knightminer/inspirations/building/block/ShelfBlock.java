@@ -7,7 +7,6 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
-import net.minecraft.world.ItemInteractionResult;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.TooltipFlag;
 import net.minecraft.network.chat.Component;
@@ -28,7 +27,7 @@ import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.StateDefinition;
 import net.minecraft.world.level.block.state.properties.BlockStateProperties;
-import net.minecraft.world.level.block.state.properties.DirectionProperty;
+import net.minecraft.world.level.block.state.properties.EnumProperty;
 import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.phys.HitResult;
 import net.minecraft.world.phys.Vec3;
@@ -43,7 +42,7 @@ import javax.annotation.Nullable;
 import java.util.Map;
 
 public class ShelfBlock extends InventoryBlock {
-  public static final DirectionProperty FACING = BlockStateProperties.HORIZONTAL_FACING;
+  public static final EnumProperty<Direction> FACING = BlockStateProperties.HORIZONTAL_FACING;
 
   public ShelfBlock(Properties properties) {
     super(properties);
@@ -67,42 +66,38 @@ public class ShelfBlock extends InventoryBlock {
     return defaultBlockState().setValue(FACING, context.getHorizontalDirection().getOpposite());
   }
 
-  @Override
-  public void appendHoverText(ItemStack stack, Item.TooltipContext context, List<Component> tooltip, TooltipFlag flag) {
-    RetexturedHelper.addTooltip(stack, tooltip, flag);
-  }
 
 
   /* Activation */
 
   @Override
-  protected ItemInteractionResult useItemOn(ItemStack stack, BlockState state, Level world, BlockPos pos, Player player, InteractionHand hand, BlockHitResult trace) {
+  protected InteractionResult useItemOn(ItemStack stack, BlockState state, Level world, BlockPos pos, Player player, InteractionHand hand, BlockHitResult trace) {
     Direction facing = state.getValue(FACING);
 
     // skip opposite, not needed as the back is never clicked for books
     if (facing.getOpposite() == trace.getDirection()) {
-      return ItemInteractionResult.SKIP_DEFAULT_BLOCK_INTERACTION;
+      return InteractionResult.PASS;
     }
 
     // if sneaking, just do the GUI
     if (player.isCrouching()) {
-      return openGui(state, world, pos, player).consumesAction() ? ItemInteractionResult.sidedSuccess(world.isClientSide) : ItemInteractionResult.SKIP_DEFAULT_BLOCK_INTERACTION;
+      return openGui(state, world, pos, player).consumesAction() ? InteractionResult.SUCCESS : InteractionResult.PASS;
     }
 
     // if we did not click a book, just do the GUI as well
     Vec3 hitWorld = trace.getLocation();
     Vec3 click = new Vec3(hitWorld.x - pos.getX(), hitWorld.y - pos.getY(), hitWorld.z - pos.getZ());
     if (!isBookClicked(facing, click)) {
-      return openGui(state, world, pos, player).consumesAction() ? ItemInteractionResult.sidedSuccess(world.isClientSide) : ItemInteractionResult.SKIP_DEFAULT_BLOCK_INTERACTION;
+      return openGui(state, world, pos, player).consumesAction() ? InteractionResult.SUCCESS : InteractionResult.PASS;
     }
     BlockEntity te = world.getBlockEntity(pos);
     if (te instanceof ShelfBlockEntity) {
       // try interacting
       if (((ShelfBlockEntity)te).interact(player, hand, click)) {
-        return ItemInteractionResult.sidedSuccess(world.isClientSide);
+        return InteractionResult.SUCCESS;
       }
     }
-    return ItemInteractionResult.CONSUME;
+    return InteractionResult.CONSUME;
   }
 
   @Override
@@ -195,7 +190,7 @@ public class ShelfBlock extends InventoryBlock {
   @SuppressWarnings("deprecation")
   @Deprecated
   @Override
-  public int getAnalogOutputSignal(BlockState state, Level world, BlockPos pos) {
+  public int getAnalogOutputSignal(BlockState state, Level world, BlockPos pos, Direction direction) {
     BlockEntity te = world.getBlockEntity(pos);
     if (te instanceof ShelfBlockEntity) {
       return ((ShelfBlockEntity)te).getComparatorPower();
@@ -222,7 +217,7 @@ public class ShelfBlock extends InventoryBlock {
   /* Drops */
 
   @Override
-  public ItemStack getCloneItemStack(BlockState state, HitResult target, LevelReader level, BlockPos pos, Player player) {
+  protected ItemStack getCloneItemStack(LevelReader level, BlockPos pos, BlockState state, boolean includeData) {
     return RetexturedBlock.getPickBlock(level, pos, state);
   }
 

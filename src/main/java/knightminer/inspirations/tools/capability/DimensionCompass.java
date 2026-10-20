@@ -1,5 +1,7 @@
 package knightminer.inspirations.tools.capability;
 
+import net.minecraft.world.level.storage.ValueOutput;
+import net.minecraft.world.level.storage.ValueInput;
 import knightminer.inspirations.Inspirations;
 import knightminer.inspirations.common.network.DimensionCompassPositionPacket;
 import knightminer.inspirations.common.network.InspirationsNetwork;
@@ -7,7 +9,7 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.core.HolderLookup;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.Tag;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.player.Player;
@@ -30,21 +32,24 @@ import javax.annotation.Nullable;
  * same id; positions saved by 1.20 worlds are not read (they reset on the next dimension change).
  */
 public class DimensionCompass implements IDimensionCompass {
-	public static final ResourceLocation KEY = Inspirations.getResource("dimension_compass");
+	public static final Identifier KEY = Inspirations.getResource("dimension_compass");
 
 	/** Attachment type, saved with the player */
-	public static final AttachmentType<DimensionCompass> TYPE = AttachmentType.builder(DimensionCompass::new).serialize(new IAttachmentSerializer<CompoundTag, DimensionCompass>() {
+	public static final AttachmentType<DimensionCompass> TYPE = AttachmentType.builder(DimensionCompass::new).serialize(new IAttachmentSerializer<DimensionCompass>() {
 		@Override
-		public DimensionCompass read(IAttachmentHolder holder, CompoundTag tag, HolderLookup.Provider provider) {
+		public DimensionCompass read(IAttachmentHolder holder, ValueInput input) {
 			DimensionCompass compass = new DimensionCompass();
-			compass.deserializeNBT(tag);
+			compass.read(input);
 			return compass;
 		}
 
-		@Nullable
 		@Override
-		public CompoundTag write(DimensionCompass attachment, HolderLookup.Provider provider) {
-			return attachment.enteredPosition == null ? null : attachment.serializeNBT();
+		public boolean write(DimensionCompass attachment, ValueOutput output) {
+			if (attachment.enteredPosition == null) {
+				return false;
+			}
+			attachment.write(output);
+			return true;
 		}
 	}).build();
 
@@ -80,19 +85,20 @@ public class DimensionCompass implements IDimensionCompass {
 	}
 
 	/** Writes {X, Y, Z}, the 1.20 format */
-	public CompoundTag serializeNBT() {
-		CompoundTag tag = new CompoundTag();
+	public void write(ValueOutput output) {
 		if (enteredPosition != null) {
-			tag.putInt("X", enteredPosition.getX());
-			tag.putInt("Y", enteredPosition.getY());
-			tag.putInt("Z", enteredPosition.getZ());
+			output.putInt("X", enteredPosition.getX());
+			output.putInt("Y", enteredPosition.getY());
+			output.putInt("Z", enteredPosition.getZ());
 		}
-		return tag;
 	}
 
-	public void deserializeNBT(CompoundTag nbt) {
-		if (nbt.contains("X", Tag.TAG_ANY_NUMERIC) && nbt.contains("Y", Tag.TAG_ANY_NUMERIC) && nbt.contains("Z", Tag.TAG_ANY_NUMERIC)) {
-			setEnteredPosition(new BlockPos(nbt.getInt("X"), nbt.getInt("Y"), nbt.getInt("Z")));
+	public void read(ValueInput input) {
+		var x = input.getInt("X");
+		var y = input.getInt("Y");
+		var z = input.getInt("Z");
+		if (x.isPresent() && y.isPresent() && z.isPresent()) {
+			setEnteredPosition(new BlockPos(x.get(), y.get(), z.get()));
 		} else {
 			setEnteredPosition(null);
 		}

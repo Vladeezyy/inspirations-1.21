@@ -6,9 +6,7 @@
     }
   ],
   "type": "minecraft:stonecutting",
-  "ingredient": {
-    "item": "minecraft:stone_bricks"
-  },
+  "ingredient": "minecraft:stone_bricks",
   "result": {
     "count": 6,
     "id": "inspirations:tile_path"

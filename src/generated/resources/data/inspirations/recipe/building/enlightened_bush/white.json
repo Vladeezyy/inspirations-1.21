@@ -9,12 +9,8 @@
   "category": "building",
   "group": "inspirations:enlightened_bush",
   "key": {
-    "G": {
-      "tag": "c:dusts/glowstone"
-    },
-    "L": {
-      "tag": "minecraft:leaves"
-    }
+    "G": "#c:dusts/glowstone",
+    "L": "#minecraft:leaves"
   },
   "pattern": [
     "GLG"
@@ -23,7 +19,5 @@
     "count": 1,
     "id": "inspirations:white_enlightened_bush"
   },
-  "texture": {
-    "tag": "minecraft:leaves"
-  }
+  "texture": "#minecraft:leaves"
 }

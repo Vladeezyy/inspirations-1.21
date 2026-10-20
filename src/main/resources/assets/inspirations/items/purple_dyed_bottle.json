@@ -1,0 +1,16 @@
+{
+  "model": {
+    "type": "minecraft:model",
+    "model": "inspirations:item/purple_dyed_bottle",
+    "tints": [
+      {
+        "type": "inspirations:item_color",
+        "index": 0
+      },
+      {
+        "type": "inspirations:item_color",
+        "index": 1
+      }
+    ]
+  }
+}

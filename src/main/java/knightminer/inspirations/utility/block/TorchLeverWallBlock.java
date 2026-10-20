@@ -1,5 +1,6 @@
 package knightminer.inspirations.utility.block;
 
+import net.minecraft.server.level.ServerLevel;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.core.particles.SimpleParticleType;
@@ -19,12 +20,12 @@ import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.StateDefinition;
 import net.minecraft.world.level.block.state.properties.BlockStateProperties;
 import net.minecraft.world.level.block.state.properties.BooleanProperty;
-import net.minecraft.world.level.block.state.properties.DirectionProperty;
+import net.minecraft.world.level.block.state.properties.EnumProperty;
 import net.minecraft.world.phys.BlockHitResult;
 
 public class TorchLeverWallBlock extends WallTorchBlock {
   private static final BooleanProperty POWERED = BlockStateProperties.POWERED;
-  public static final DirectionProperty FACING = BlockStateProperties.HORIZONTAL_FACING;
+  public static final EnumProperty<Direction> FACING = BlockStateProperties.HORIZONTAL_FACING;
 
   public TorchLeverWallBlock(BlockBehaviour.Properties props, SimpleParticleType particles) {
     super(particles, props);
@@ -63,7 +64,7 @@ public class TorchLeverWallBlock extends WallTorchBlock {
 
   @Override
   protected InteractionResult useWithoutItem(BlockState state, Level world, BlockPos pos, Player player, BlockHitResult trace) {
-    if (world.isClientSide) {
+    if (world.isClientSide()) {
       return InteractionResult.SUCCESS;
     }
 
@@ -84,15 +85,13 @@ public class TorchLeverWallBlock extends WallTorchBlock {
    * Called serverside after this block is replaced with another in Chunk, but before the Tile Entity is updated
    */
 
-  @Deprecated
   @Override
-  public void onRemove(BlockState state, Level world, BlockPos pos, BlockState newState, boolean isMoving) {
+  protected void affectNeighborsAfterRemoval(BlockState state, ServerLevel world, BlockPos pos, boolean isMoving) {
     // if powered, send updates for power
-    if (state.getBlock() != newState.getBlock() && !isMoving && state.getValue(POWERED)) {
+    if (!isMoving && state.getValue(POWERED)) {
       world.updateNeighborsAt(pos, this);
       world.updateNeighborsAt(pos.relative(state.getValue(FACING).getOpposite()), this);
     }
-    super.onRemove(state, world, pos, newState, isMoving);
   }
 
   @Deprecated

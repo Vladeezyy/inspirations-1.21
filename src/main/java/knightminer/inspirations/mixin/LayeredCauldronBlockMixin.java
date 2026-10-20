@@ -7,6 +7,7 @@ import knightminer.inspirations.library.MiscUtil;
 import net.minecraft.core.BlockPos;
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.entity.Entity;
+import net.minecraft.world.entity.InsideBlockEffectApplier;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.AbstractCauldronBlock;
 import net.minecraft.world.level.block.Blocks;
@@ -33,8 +34,8 @@ public abstract class LayeredCauldronBlockMixin extends AbstractCauldronBlock {
   }
 
   @Inject(method = "entityInside", at = @At("HEAD"))
-  private void inspirations$boil(BlockState state, Level level, BlockPos pos, Entity entity, CallbackInfo ci) {
-    if (!level.isClientSide && inspirations$boils() && isEntityInsideContent(state, pos, entity) && BoilingFourLayerCauldronBlock.isBoiling(level, pos)) {
+  private void inspirations$boil(BlockState state, Level level, BlockPos pos, Entity entity, InsideBlockEffectApplier effects, boolean intersects, CallbackInfo ci) {
+    if (!level.isClientSide() && inspirations$boils() && BoilingFourLayerCauldronBlock.isBoiling(level, pos)) {
       BoilingFourLayerCauldronBlock.boil(entity);
     }
   }

@@ -1,0 +1,16 @@
+{
+  "model": {
+    "type": "minecraft:model",
+    "model": "inspirations:item/redstone_barrel",
+    "tints": [
+      {
+        "type": "inspirations:item_color",
+        "index": 0
+      },
+      {
+        "type": "inspirations:item_color",
+        "index": 1
+      }
+    ]
+  }
+}

@@ -11,6 +11,6 @@ public class EntityTypeRegistryAdapter extends RegistryAdapter<EntityType<?>> {
   }
 
   public <T extends Entity> EntityType<T> register(EntityType.Builder<T> builder, String name) {
-    return register(builder.build(getResource(name).toString()), name);
+    return register(builder.build(net.minecraft.resources.ResourceKey.create(net.minecraft.core.registries.Registries.ENTITY_TYPE, getResource(name))), name);
   }
 }

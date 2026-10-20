@@ -1,6 +1,9 @@
 {
   "type": "fill_item",
-  "input": {"item": "minecraft:bowl"},
-  "fluid": {"tag": "inspirations:potato_soup", "amount": 250},
+  "input": "minecraft:bowl",
+  "fluid": {
+    "tag": "inspirations:potato_soup",
+    "amount": 250
+  },
   "result": "inspirations:potato_soup"
 }

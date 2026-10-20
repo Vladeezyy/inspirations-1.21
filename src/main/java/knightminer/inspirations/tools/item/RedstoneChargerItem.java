@@ -66,12 +66,8 @@ public class RedstoneChargerItem extends Item {
     }
 
     // damage it and return
-    stack.hurtAndBreak(1, player, LivingEntity.getSlotForHand(context.getHand()));
+    stack.hurtAndBreak(1, player, context.getHand());
     return InteractionResult.SUCCESS;
   }
 
-  @Override
-  public boolean isValidRepairItem(ItemStack toRepair, ItemStack repair) {
-    return repair.getItem() == Items.REDSTONE;
-  }
 }

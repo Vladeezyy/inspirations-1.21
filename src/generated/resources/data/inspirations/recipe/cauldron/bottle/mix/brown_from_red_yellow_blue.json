@@ -13,15 +13,9 @@
   "category": "misc",
   "group": "inspirations:brown_dyed_bottle",
   "ingredients": [
-    {
-      "item": "inspirations:red_dyed_bottle"
-    },
-    {
-      "item": "inspirations:yellow_dyed_bottle"
-    },
-    {
-      "item": "inspirations:blue_dyed_bottle"
-    }
+    "inspirations:red_dyed_bottle",
+    "inspirations:yellow_dyed_bottle",
+    "inspirations:blue_dyed_bottle"
   ],
   "result": {
     "count": 3,

@@ -8,9 +8,7 @@
   "type": "minecraft:crafting_shaped",
   "category": "misc",
   "key": {
-    "C": {
-      "item": "minecraft:stone_bricks"
-    }
+    "C": "minecraft:stone_bricks"
   },
   "pattern": [
     "CC"

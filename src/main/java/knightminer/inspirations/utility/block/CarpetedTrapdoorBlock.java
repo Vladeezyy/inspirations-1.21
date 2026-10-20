@@ -18,6 +18,11 @@ public class CarpetedTrapdoorBlock extends TrapDoorBlock {
   private static final VoxelShape NORTH_OPEN_CARP_AABB = Block.box(0.0D, 0.0D, 12.0D, 16.0D, 16.0D, 16.0D);
   private static final VoxelShape BOTTOM_CARP_AABB = Block.box(0.0D, 0.0D, 0.0D, 16.0D, 4.0D, 16.0D);
   private static final VoxelShape TOP_CARP_AABB = Block.box(0.0D, 13.0D, 0.0D, 16.0D, 16.9D, 16.0D);
+  // the open trapdoor shapes of 1.21.1 (TrapDoorBlock keeps them in a map since 1.21.5)
+  private static final VoxelShape EAST_OPEN_AABB = Block.box(0.0D, 0.0D, 0.0D, 3.0D, 16.0D, 16.0D);
+  private static final VoxelShape WEST_OPEN_AABB = Block.box(13.0D, 0.0D, 0.0D, 16.0D, 16.0D, 16.0D);
+  private static final VoxelShape SOUTH_OPEN_AABB = Block.box(0.0D, 0.0D, 0.0D, 16.0D, 16.0D, 3.0D);
+  private static final VoxelShape NORTH_OPEN_AABB = Block.box(0.0D, 0.0D, 13.0D, 16.0D, 16.0D, 16.0D);
 
   public CarpetedTrapdoorBlock(BlockBehaviour.Properties properties) {
     super(BlockSetType.OAK, properties);

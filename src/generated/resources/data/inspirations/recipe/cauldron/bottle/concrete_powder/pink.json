@@ -9,33 +9,15 @@
   "category": "building",
   "group": "concrete_powder",
   "ingredients": [
-    {
-      "item": "inspirations:pink_dyed_bottle"
-    },
-    {
-      "tag": "minecraft:sand"
-    },
-    {
-      "tag": "minecraft:sand"
-    },
-    {
-      "tag": "minecraft:sand"
-    },
-    {
-      "tag": "minecraft:sand"
-    },
-    {
-      "tag": "c:gravels"
-    },
-    {
-      "tag": "c:gravels"
-    },
-    {
-      "tag": "c:gravels"
-    },
-    {
-      "tag": "c:gravels"
-    }
+    "inspirations:pink_dyed_bottle",
+    "#minecraft:sand",
+    "#minecraft:sand",
+    "#minecraft:sand",
+    "#minecraft:sand",
+    "#c:gravels",
+    "#c:gravels",
+    "#c:gravels",
+    "#c:gravels"
   ],
   "result": {
     "count": 8,

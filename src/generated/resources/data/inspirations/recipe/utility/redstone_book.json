@@ -12,18 +12,10 @@
   "type": "minecraft:crafting_shapeless",
   "category": "redstone",
   "ingredients": [
-    {
-      "tag": "c:leathers"
-    },
-    {
-      "item": "minecraft:paper"
-    },
-    {
-      "item": "minecraft:paper"
-    },
-    {
-      "tag": "c:dusts/redstone"
-    }
+    "#c:leathers",
+    "minecraft:paper",
+    "minecraft:paper",
+    "#c:dusts/redstone"
   ],
   "result": {
     "count": 1,

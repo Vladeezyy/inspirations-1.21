@@ -1,6 +1,0 @@
-{
-  "parent": "neoforge:item/bucket_drip",
-  "flip_gas": false,
-  "fluid": "inspirations:mushroom_stew",
-  "loader": "neoforge:fluid_container"
-}

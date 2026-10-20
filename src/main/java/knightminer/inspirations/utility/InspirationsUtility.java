@@ -1,6 +1,5 @@
 package knightminer.inspirations.utility;
 
-import knightminer.inspirations.common.datagen.IInspirationsRecipeBuilder;
 
 import knightminer.inspirations.common.ModuleBase;
 import knightminer.inspirations.utility.block.CarpetedPressurePlateBlock;
@@ -13,12 +12,10 @@ import knightminer.inspirations.utility.block.entity.CollectorBlockEntity;
 import knightminer.inspirations.utility.block.entity.PipeBlockEntity;
 import knightminer.inspirations.utility.block.menu.CollectorContainerMenu;
 import knightminer.inspirations.utility.block.menu.PipeContainerMenu;
-import knightminer.inspirations.utility.datagen.UtilityRecipeProvider;
 import net.minecraft.core.Direction;
 import net.minecraft.core.Registry;
 import net.minecraft.core.particles.ParticleTypes;
 import net.minecraft.core.registries.Registries;
-import net.minecraft.data.DataGenerator;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.world.inventory.MenuType;
 import net.minecraft.world.item.DyeColor;
@@ -31,7 +28,6 @@ import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.minecraft.world.level.block.state.BlockBehaviour;
 import net.minecraft.world.level.block.state.properties.NoteBlockInstrument;
 import net.minecraft.world.level.material.MapColor;
-import net.neoforged.neoforge.data.event.GatherDataEvent;
 import net.neoforged.bus.api.SubscribeEvent;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.neoforged.neoforge.registries.RegisterEvent;
@@ -73,21 +69,21 @@ public class InspirationsUtility extends ModuleBase {
     event.register(Registries.BLOCK, helper -> {
       BlockRegistryAdapter registry = new BlockRegistryAdapter(helper);
 
-      torchLeverFloor = registry.register(new TorchLeverBlock(
+      torchLeverFloor = registry.make(() -> new TorchLeverBlock(
           BlockBehaviour.Properties.ofFullCopy(Blocks.TORCH).sound(SoundType.WOOD),
           ParticleTypes.FLAME
       ), "torch_lever");
-      torchLeverWall = registry.register(new TorchLeverWallBlock(
-          BlockBehaviour.Properties.ofFullCopy(Blocks.WALL_TORCH).lootFrom(() -> torchLeverFloor),
+      torchLeverWall = registry.make(() -> new TorchLeverWallBlock(
+          BlockBehaviour.Properties.ofFullCopy(Blocks.WALL_TORCH).overrideLootTable(torchLeverFloor.getLootTable()).overrideDescription(torchLeverFloor.getDescriptionId()),
           ParticleTypes.FLAME
       ), "wall_torch_lever");
 
-      soulLeverFloor = registry.register(new TorchLeverBlock(
+      soulLeverFloor = registry.make(() -> new TorchLeverBlock(
           BlockBehaviour.Properties.ofFullCopy(Blocks.SOUL_TORCH),
           ParticleTypes.SOUL_FIRE_FLAME
       ), "soul_torch_lever");
-      soulLeverWall = registry.register(new TorchLeverWallBlock(
-          BlockBehaviour.Properties.ofFullCopy(Blocks.SOUL_WALL_TORCH).lootFrom(() -> soulLeverFloor),
+      soulLeverWall = registry.make(() -> new TorchLeverWallBlock(
+          BlockBehaviour.Properties.ofFullCopy(Blocks.SOUL_WALL_TORCH).overrideLootTable(soulLeverFloor.getLootTable()).overrideDescription(soulLeverFloor.getDescriptionId()),
           ParticleTypes.SOUL_FIRE_FLAME
       ), "wall_soul_torch_lever");
 
@@ -99,13 +95,15 @@ public class InspirationsUtility extends ModuleBase {
         Block.Properties.of().mapColor(color).ignitedByLava().instrument(NoteBlockInstrument.BASS).strength(3.0F).sound(SoundType.WOOL)
       ), DyeColor.values(), "carpeted_trapdoor");
       carpetedPressurePlates = registry.registerEnum(color -> new CarpetedPressurePlateBlock(
-        Block.Properties.of().mapColor(color).strength(0.5F).sound(SoundType.WOOL), color
+        // named like the carpet on top, other mods (Jade) show it
+        Block.Properties.of().mapColor(color).strength(0.5F).sound(SoundType.WOOL)
+          .overrideDescription(String.format("block.minecraft.%s_carpet", color.getName())), color
       ), DyeColor.values(), "carpeted_pressure_plate");
 
-      collector = registry.register(new CollectorBlock(
+      collector = registry.make(() -> new CollectorBlock(
         Block.Properties.of().mapColor(MapColor.STONE).instrument(NoteBlockInstrument.BASEDRUM).strength(3.5F).sound(SoundType.STONE)
       ), "collector");
-      pipe = registry.register(new PipeBlock(
+      pipe = registry.make(() -> new PipeBlock(
         Block.Properties.of().mapColor(MapColor.STONE).strength(3.0F, 8.0F).sound(SoundType.METAL)
       ), "pipe");
     });
@@ -126,8 +124,8 @@ public class InspirationsUtility extends ModuleBase {
       ItemRegistryAdapter registry = new ItemRegistryAdapter(helper);
 
       // itemblocks
-      torchLeverItem = registry.register(new StandingAndWallBlockItem(InspirationsUtility.torchLeverFloor, InspirationsUtility.torchLeverWall, props, Direction.DOWN), "torch_lever");
-      soulLeverItem = registry.register(new StandingAndWallBlockItem(InspirationsUtility.soulLeverFloor, InspirationsUtility.soulLeverWall, props, Direction.DOWN), "soul_torch_lever");
+      torchLeverItem = registry.registerBlockItem(torchLeverFloor, p -> new StandingAndWallBlockItem(torchLeverFloor, torchLeverWall, Direction.DOWN, props));
+      soulLeverItem = registry.registerBlockItem(soulLeverFloor, p -> new StandingAndWallBlockItem(soulLeverFloor, soulLeverWall, Direction.DOWN, props));
       //registerBlockItem(r, bricksButton, ItemGroup.REDSTONE);
       //registerBlockItem(r, netherBricksButton, ItemGroup.REDSTONE);
       registry.registerDefaultBlockItem(carpetedTrapdoors);
@@ -138,13 +136,8 @@ public class InspirationsUtility extends ModuleBase {
 
   @SubscribeEvent
   void registerCapabilities(RegisterCapabilitiesEvent event) {
-    event.registerBlockEntity(Capabilities.ItemHandler.BLOCK, tileCollector, (collector, side) -> collector.getItemHandler());
-    event.registerBlockEntity(Capabilities.ItemHandler.BLOCK, tilePipe, (pipe, side) -> pipe.getItemHandler());
+    event.registerBlockEntity(Capabilities.Item.BLOCK, tileCollector, (collector, side) -> collector.getItemHandler());
+    event.registerBlockEntity(Capabilities.Item.BLOCK, tilePipe, (pipe, side) -> pipe.getItemHandler());
   }
 
-  @SubscribeEvent
-  public void gatherData(GatherDataEvent event) {
-    DataGenerator gen = event.getGenerator();
-    gen.addProvider(event.includeServer(), IInspirationsRecipeBuilder.named("Inspirations Recipes - Utility", new UtilityRecipeProvider(gen.getPackOutput(), event.getLookupProvider())));
-  }
 }

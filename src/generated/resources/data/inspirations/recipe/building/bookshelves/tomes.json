@@ -9,12 +9,8 @@
   "category": "misc",
   "group": "inspirations:bookshelf",
   "key": {
-    "B": {
-      "item": "minecraft:book"
-    },
-    "S": {
-      "tag": "minecraft:wooden_slabs"
-    }
+    "B": "minecraft:book",
+    "S": "#minecraft:wooden_slabs"
   },
   "match_all": true,
   "pattern": [
@@ -26,7 +22,5 @@
     "count": 2,
     "id": "inspirations:tomes_shelf"
   },
-  "texture": {
-    "tag": "minecraft:wooden_slabs"
-  }
+  "texture": "#minecraft:wooden_slabs"
 }

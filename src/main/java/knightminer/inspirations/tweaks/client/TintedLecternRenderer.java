@@ -1,111 +1,136 @@
 package knightminer.inspirations.tweaks.client;
 
 import com.mojang.blaze3d.vertex.PoseStack;
-import com.mojang.blaze3d.vertex.VertexConsumer;
 import com.mojang.math.Axis;
 import knightminer.inspirations.Inspirations;
+import knightminer.inspirations.common.client.ItemColorSources;
 import knightminer.inspirations.common.network.InspirationsNetwork;
 import knightminer.inspirations.library.MiscUtil;
 import knightminer.inspirations.library.client.ClientUtil;
 import knightminer.inspirations.tweaks.network.RequestLecternBookPacket;
-import net.minecraft.client.Minecraft;
-import net.minecraft.client.model.BookModel;
 import net.minecraft.client.model.geom.ModelLayers;
 import net.minecraft.client.model.geom.ModelPart;
-import net.minecraft.client.renderer.MultiBufferSource;
-import net.minecraft.client.renderer.RenderType;
+import net.minecraft.client.model.object.book.BookModel;
+import net.minecraft.client.renderer.SubmitNodeCollector;
 import net.minecraft.client.renderer.blockentity.BlockEntityRenderer;
 import net.minecraft.client.renderer.blockentity.BlockEntityRendererProvider;
 import net.minecraft.client.renderer.blockentity.EnchantTableRenderer;
+import net.minecraft.client.renderer.blockentity.state.BlockEntityRenderState;
+import net.minecraft.client.renderer.feature.ModelFeatureRenderer;
+import net.minecraft.client.renderer.rendertype.RenderType;
+import net.minecraft.client.renderer.rendertype.RenderTypes;
+import net.minecraft.client.renderer.state.CameraRenderState;
+import net.minecraft.client.renderer.texture.OverlayTexture;
+import net.minecraft.client.renderer.texture.TextureAtlas;
 import net.minecraft.client.resources.model.Material;
+import net.minecraft.client.resources.model.MaterialSet;
 import net.minecraft.nbt.CompoundTag;
-import net.minecraft.util.FastColor;
-import net.minecraft.world.inventory.InventoryMenu;
+import net.minecraft.util.ARGB;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.level.block.LecternBlock;
 import net.minecraft.world.level.block.entity.LecternBlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.phys.Vec3;
+
+import javax.annotation.Nullable;
+import java.util.List;
 
 /** Based on {@link net.minecraft.client.renderer.blockentity.LecternRenderer}, but tints the book cover */
-public class TintedLecternRenderer implements BlockEntityRenderer<LecternBlockEntity>  {
+public class TintedLecternRenderer implements BlockEntityRenderer<LecternBlockEntity, TintedLecternRenderer.State> {
   private static final String TAG_REQUESTED = "inspirations_requested";
-  public static final Material BOOK_LOCATION = new Material(InventoryMenu.BLOCK_ATLAS, Inspirations.getResource("entity/lectern_book"));
+  public static final Material BOOK_LOCATION = new Material(TextureAtlas.LOCATION_BLOCKS, Inspirations.getResource("entity/lectern_book"));
+  private static final BookModel.State BOOK_STATE = new BookModel.State(0.0F, 0.1F, 0.9F, 1.2F);
 
-  private final Minecraft mc = Minecraft.getInstance();
-  private final ModelPart book;
-  private final ModelPart leftLid, rightLid, seam;
-  public TintedLecternRenderer(BlockEntityRendererProvider.Context pContext) {
-    this.book = pContext.bakeLayer(ModelLayers.BOOK);
-    this.leftLid = book.getChild("left_lid");
-    this.rightLid = book.getChild("right_lid");
-    this.seam = book.getChild("seam");
-    // we only need to call this once, so might as well call it in the constructor
-    new BookModel(book).setupAnim(0.0f, 0.1f, 0.9f, 1.2f);
+  private final MaterialSet materials;
+  private final BookModel bookModel;
+  /** Parts drawn with the tint, and the rest of the book */
+  private final List<ModelPart> cover, pages;
+
+  public TintedLecternRenderer(BlockEntityRendererProvider.Context context) {
+    this.materials = context.materials();
+    ModelPart book = context.bakeLayer(ModelLayers.BOOK);
+    this.bookModel = new BookModel(book);
+    // the pose never changes, the parts below are drawn alone with it
+    bookModel.setupAnim(BOOK_STATE);
+    this.cover = List.of(book.getChild("left_lid"), book.getChild("right_lid"), book.getChild("seam"));
+    this.pages = List.of(book.getChild("left_pages"), book.getChild("right_pages"), book.getChild("flip_page1"), book.getChild("flip_page2"));
+  }
+
+  public static class State extends BlockEntityRenderState {
+    boolean hasBook;
+    float yRot;
+    /** Cover color, -1 for the vanilla book */
+    int tint = -1;
   }
 
   @Override
-  public void render(LecternBlockEntity lectern, float pPartialTick, PoseStack poseStack, MultiBufferSource pBuffer, int pPackedLight, int pPackedOverlay) {
-    BlockState state = lectern.getBlockState();
-    if (state.getValue(LecternBlock.HAS_BOOK)) {
-      poseStack.pushPose();
-      poseStack.translate(0.5F, 1.0625F, 0.5F);
-      float rotation = state.getValue(LecternBlock.FACING).getClockWise().toYRot();
-      poseStack.mulPose(Axis.YP.rotationDegrees(-rotation));
-      poseStack.mulPose(Axis.ZP.rotationDegrees(67.5F));
-      poseStack.translate(0, -0.125f, 0);
+  public State createRenderState() {
+    return new State();
+  }
 
-      // reset the cover to render again in case last frame was a different book
-      this.leftLid.visible = true;
-      this.rightLid.visible = true;
-      this.seam.visible = true;
-
-      // if we have not requested it, request the book from the server
-      CompoundTag persistent = lectern.getPersistentData();
-      if (!persistent.getBoolean(TAG_REQUESTED)) {
-        persistent.putBoolean(TAG_REQUESTED, true);
-        InspirationsNetwork.sendToServer(new RequestLecternBookPacket(lectern.getBlockPos()));
-      }
-
-      // check if we care about this book, use default for vanilla or unfetched
-      ItemStack book = lectern.getBook();
-      if (!book.isEmpty() && !book.is(Items.WRITTEN_BOOK) && !book.is(Items.WRITABLE_BOOK)) {
-        // we need to tint the cover, so start tinting
-        VertexConsumer vertexConsumer = BOOK_LOCATION.buffer(pBuffer, RenderType::entitySolid);
-        // figure out our tint
-        int color = ClientUtil.getItemColor(book.getItem());
-        int itemColors = mc.getItemColors().getColor(book, 0);
-
-        // if we have a color, use it
-        if (color != -1 || itemColors != -1) {
-          if (itemColors != -1) {
-            // make item colors result dominate
-            color = MiscUtil.combineColors(color, itemColors, 3);
-          }
-
-          // calculate final tint, ARGB in 1.21
-          int tint = FastColor.ARGB32.opaque(color);
-          // render the cover with the tint
-          this.leftLid.render(poseStack, vertexConsumer, pPackedLight, pPackedOverlay, tint);
-          this.rightLid.render(poseStack, vertexConsumer, pPackedLight, pPackedOverlay, tint);
-          this.seam.render(poseStack, vertexConsumer, pPackedLight, pPackedOverlay, tint);
-          // render the rest of the book
-          this.leftLid.visible = false;
-          this.rightLid.visible = false;
-          this.seam.visible = false;
-          this.book.render(poseStack, vertexConsumer, pPackedLight, pPackedOverlay);
-          poseStack.popPose();
-          return;
-        }
-      }
-
-      // render with default settings
-      VertexConsumer vertexConsumer = EnchantTableRenderer.BOOK_LOCATION.buffer(pBuffer, RenderType::entitySolid);
-      this.book.render(poseStack, vertexConsumer, pPackedLight, pPackedOverlay);
-      poseStack.popPose();
-    } else {
+  @Override
+  public void extractRenderState(LecternBlockEntity lectern, State state, float partialTicks, Vec3 camera, @Nullable ModelFeatureRenderer.CrumblingOverlay crumbling) {
+    BlockEntityRenderer.super.extractRenderState(lectern, state, partialTicks, camera, crumbling);
+    BlockState block = lectern.getBlockState();
+    state.hasBook = block.getValue(LecternBlock.HAS_BOOK);
+    state.yRot = block.getValue(LecternBlock.FACING).getClockWise().toYRot();
+    state.tint = -1;
+    if (!state.hasBook) {
       // mark the book as not requested so changing books requests it again
       lectern.getPersistentData().remove(TAG_REQUESTED);
+      return;
     }
+    // if we have not requested it, request the book from the server
+    CompoundTag persistent = lectern.getPersistentData();
+    if (!persistent.getBooleanOr(TAG_REQUESTED, false)) {
+      persistent.putBoolean(TAG_REQUESTED, true);
+      InspirationsNetwork.sendToServer(new RequestLecternBookPacket(lectern.getBlockPos()));
+    }
+    // check if we care about this book, use default for vanilla or unfetched
+    ItemStack book = lectern.getBook();
+    if (!book.isEmpty() && !book.is(Items.WRITTEN_BOOK) && !book.is(Items.WRITABLE_BOOK)) {
+      int color = ClientUtil.getItemColor(book.getItem());
+      int itemColors = ItemColorSources.getColor(book, 0);
+      if (color != -1 || itemColors != -1) {
+        if (itemColors != -1) {
+          // make item colors result dominate
+          color = MiscUtil.combineColors(color, itemColors, 3);
+        }
+        state.tint = ARGB.opaque(color);
+      }
+    }
+  }
+
+  @Override
+  public void submit(State state, PoseStack pose, SubmitNodeCollector collector, CameraRenderState camera) {
+    if (!state.hasBook) {
+      return;
+    }
+    pose.pushPose();
+    pose.translate(0.5F, 1.0625F, 0.5F);
+    pose.mulPose(Axis.YP.rotationDegrees(-state.yRot));
+    pose.mulPose(Axis.ZP.rotationDegrees(67.5F));
+    pose.translate(0.0F, -0.125F, 0.0F);
+    if (state.tint == -1) {
+      collector.submitModel(bookModel, BOOK_STATE, pose, EnchantTableRenderer.BOOK_TEXTURE.renderType(RenderTypes::entitySolid),
+        state.lightCoords, OverlayTexture.NO_OVERLAY, -1, materials.get(EnchantTableRenderer.BOOK_TEXTURE), 0, state.breakProgress);
+    } else {
+      RenderType type = BOOK_LOCATION.renderType(RenderTypes::entitySolid);
+      var sprite = materials.get(BOOK_LOCATION);
+      for (ModelPart part : cover) {
+        collector.submitModelPart(part, pose, type, state.lightCoords, OverlayTexture.NO_OVERLAY, sprite, false, false, state.tint, state.breakProgress, 0);
+      }
+      for (ModelPart part : pages) {
+        collector.submitModelPart(part, pose, type, state.lightCoords, OverlayTexture.NO_OVERLAY, sprite, false, false, -1, state.breakProgress, 0);
+      }
+    }
+    pose.popPose();
+  }
+
+  @Override
+  public net.minecraft.world.phys.AABB getRenderBoundingBox(LecternBlockEntity blockEntity) {
+    net.minecraft.core.BlockPos pos = blockEntity.getBlockPos();
+    return new net.minecraft.world.phys.AABB(pos.getX(), pos.getY(), pos.getZ(), pos.getX() + 1.0, pos.getY() + 1.5, pos.getZ() + 1.0);
   }
 }

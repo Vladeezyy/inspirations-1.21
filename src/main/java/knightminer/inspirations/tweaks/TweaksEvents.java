@@ -16,8 +16,8 @@ import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.LivingEntity;
-import net.minecraft.world.entity.animal.Cow;
-import net.minecraft.world.entity.animal.Pig;
+import net.minecraft.world.entity.animal.cow.Cow;
+import net.minecraft.world.entity.animal.pig.Pig;
 import net.minecraft.world.entity.animal.goat.Goat;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
@@ -26,7 +26,6 @@ import net.minecraft.world.item.Items;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.Blocks;
-import net.minecraft.world.level.block.BushBlock;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.Vec3;
 import net.neoforged.neoforge.event.tick.EntityTickEvent;
@@ -56,9 +55,10 @@ public class TweaksEvents {
       Entity target = event.getTarget();
       if (target instanceof Pig pig) {
         if (pig.isSaddled()) {
-          pig.steering.setSaddle(false);
+          // the saddle is equipment since 1.21.5
+          pig.setItemSlot(net.minecraft.world.entity.EquipmentSlot.SADDLE, ItemStack.EMPTY);
           pig.level().playSound(player, pig.getX(), pig.getY(), pig.getZ(), SoundEvents.PIG_SADDLE, SoundSource.NEUTRAL, 0.5F, 1.0F);
-          ItemHandlerHelper.giveItemToPlayer(player, new ItemStack(Items.SADDLE), player.getInventory().selected);
+          player.getInventory().placeItemBackInInventory(new ItemStack(Items.SADDLE));
           event.setCanceled(true);
         }
       }
@@ -73,7 +73,7 @@ public class TweaksEvents {
 
     // running client side acts weird
     Level world = event.getLevel();
-    if (world.isClientSide) {
+    if (world.isClientSide()) {
       return;
     }
 
@@ -102,7 +102,8 @@ public class TweaksEvents {
   private static void bonemealPlants(Block base, Level world, BlockPos pos) {
     // this is mostly copied from grass block code, so its a bit weird
     BlockPos up = pos.above();
-    BushBlock bush = (BushBlock)Blocks.DEAD_BUSH;
+    // the dead bush is a DryVegetationBlock since 1.21.5, plants share VegetationBlock
+    Block bush = Blocks.DEAD_BUSH;
     BlockState state = bush.defaultBlockState();
 
     // 128 chances, this affects how far blocks are spread
@@ -118,7 +119,7 @@ public class TweaksEvents {
             if (world.random.nextInt(128) == 0) {
               // mycelium randomly picks between red and brown
               if (isMycelium) {
-                bush = (BushBlock)(world.random.nextInt(2) == 0 ? Blocks.RED_MUSHROOM : Blocks.BROWN_MUSHROOM);
+                bush = world.random.nextInt(2) == 0 ? Blocks.RED_MUSHROOM : Blocks.BROWN_MUSHROOM;
                 state = bush.defaultBlockState();
               }
               // if it can be planted here, plant it
@@ -277,7 +278,7 @@ public class TweaksEvents {
     // ensure client world
     LivingEntity entity = event.getEntity();
     Level world = entity.level();
-    if (world.isClientSide) {
+    if (world.isClientSide()) {
       return;
     }
     // actually hit the lily pad
@@ -352,14 +353,14 @@ public class TweaksEvents {
     ItemStack stack = player.getItemInHand(hand);
     if (Config.get(Config.milkCooldown) && stack.is(InspirationsTags.Items.MILK_CONTAINERS)) {
       CompoundTag tags = target.getPersistentData();
-      if (tags.getShort(TAG_MILKCOOLDOWN) > 0) {
+      if (tags.getShortOr(TAG_MILKCOOLDOWN, (short) 0) > 0) {
         event.setCancellationResult(InteractionResult.PASS);
         event.setCanceled(true);
         return;
       } else {
         // no tag means we add it as part of milking
         tags.putShort(TAG_MILKCOOLDOWN, Config.milkCooldownTime.get().shortValue());
-        if (!event.getLevel().isClientSide) {
+        if (!event.getLevel().isClientSide()) {
           InspirationsNetwork.sendToClients(event.getLevel(), target.blockPosition(), new MilkablePacket(target, false));
         }
       }
@@ -380,7 +381,7 @@ public class TweaksEvents {
     }
     Level world = entity.level();
     // only run every 20 ticks on serverside
-    if (world.isClientSide || (world.getGameTime() % 20) != 0) {
+    if (world.isClientSide() || (world.getGameTime() % 20) != 0) {
       return;
     }
 
@@ -388,7 +389,7 @@ public class TweaksEvents {
     if (Config.get(Config.milkCooldown) && !entity.isBaby()) {
       // if not already cooled down, cool down
       CompoundTag tags = entity.getPersistentData();
-      short cooldown = tags.getShort(TAG_MILKCOOLDOWN);
+      short cooldown = tags.getShortOr(TAG_MILKCOOLDOWN, (short) 0);
       if (cooldown > 0) {
         tags.putShort(TAG_MILKCOOLDOWN, (short)(cooldown - 1));
 

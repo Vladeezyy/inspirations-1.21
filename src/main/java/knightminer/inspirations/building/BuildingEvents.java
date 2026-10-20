@@ -67,7 +67,7 @@ public class BuildingEvents {
     RopeBlock rope = (RopeBlock)state.getBlock();
     SoundType soundtype = rope.getSoundType(state, world, pos, player);
     world.playSound(player, pos, soundtype.getBreakSound(), SoundSource.BLOCKS, (soundtype.getVolume() + 1.0F) / 2.0F, soundtype.getPitch() * 0.8F);
-    ItemHandlerHelper.giveItemToPlayer(player, new ItemStack(rope.getRungsItem(), RopeBlock.RUNG_ITEM_COUNT), player.getInventory().selected);
+    player.getInventory().placeItemBackInInventory(new ItemStack(rope.getRungsItem(), RopeBlock.RUNG_ITEM_COUNT));
     player.stopUsingItem();
 
     return true;

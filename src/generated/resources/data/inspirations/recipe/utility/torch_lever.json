@@ -8,12 +8,8 @@
   "type": "minecraft:crafting_shaped",
   "category": "redstone",
   "key": {
-    "S": {
-      "tag": "c:cobblestones"
-    },
-    "T": {
-      "item": "minecraft:torch"
-    }
+    "S": "#c:cobblestones",
+    "T": "minecraft:torch"
   },
   "pattern": [
     "T",

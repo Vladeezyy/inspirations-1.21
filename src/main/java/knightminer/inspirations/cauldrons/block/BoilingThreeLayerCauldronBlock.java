@@ -1,5 +1,6 @@
 package knightminer.inspirations.cauldrons.block;
 
+import net.minecraft.world.entity.InsideBlockEffectApplier;
 import knightminer.inspirations.cauldrons.InspirationsCaudrons;
 import knightminer.inspirations.library.MiscUtil;
 import net.minecraft.core.BlockPos;
@@ -24,12 +25,12 @@ public class BoilingThreeLayerCauldronBlock extends LayeredCauldronBlock {
 	}
 
 	@Override
-	public void entityInside(BlockState state, Level world, BlockPos pos, Entity entity) {
-		if (!world.isClientSide && isEntityInsideContent(state, pos, entity) && isBoiling(world, pos)) {
+	public void entityInside(BlockState state, Level world, BlockPos pos, Entity entity, InsideBlockEffectApplier effects, boolean intersects) {
+		if (!world.isClientSide() && isBoiling(world, pos)) {
 			BoilingFourLayerCauldronBlock.boil(entity);
 		}
 		// puts out burning entities like vanilla
-		super.entityInside(state, world, pos, entity);
+		super.entityInside(state, world, pos, entity, effects, intersects);
 	}
 
 	@Override

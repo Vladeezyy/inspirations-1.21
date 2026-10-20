@@ -1,5 +1,7 @@
 package knightminer.inspirations.cauldrons.client;
 
+import net.minecraft.client.renderer.texture.TextureAtlasSprite;
+import net.minecraft.util.RandomSource;
 import net.minecraft.client.multiplayer.ClientLevel;
 import net.minecraft.client.particle.BubbleParticle;
 import net.minecraft.client.particle.Particle;
@@ -9,8 +11,8 @@ import net.minecraft.core.particles.SimpleParticleType;
 
 public class BoilingParticle extends BubbleParticle {
 
-  public BoilingParticle(ClientLevel world, double xCoord, double yCoord, double zCoord, double xSpeed, double ySpeed, double zSpeed) {
-    super(world, xCoord, yCoord, zCoord, xSpeed, ySpeed, zSpeed);
+  public BoilingParticle(ClientLevel world, double xCoord, double yCoord, double zCoord, double xSpeed, double ySpeed, double zSpeed, TextureAtlasSprite sprite) {
+    super(world, xCoord, yCoord, zCoord, xSpeed, ySpeed, zSpeed, sprite);
     this.alpha = 0.5f;
     this.hasPhysics = false;
   }
@@ -45,10 +47,8 @@ public class BoilingParticle extends BubbleParticle {
     }
 
     @Override
-    public Particle createParticle(SimpleParticleType typeIn, ClientLevel worldIn, double x, double y, double z, double xSpeed, double ySpeed, double zSpeed) {
-      BoilingParticle bubble = new BoilingParticle(worldIn, x, y, z, xSpeed, ySpeed, zSpeed);
-      bubble.pickSprite(this.spriteSet);
-      return bubble;
+    public Particle createParticle(SimpleParticleType typeIn, ClientLevel worldIn, double x, double y, double z, double xSpeed, double ySpeed, double zSpeed, RandomSource random) {
+      return new BoilingParticle(worldIn, x, y, z, xSpeed, ySpeed, zSpeed, this.spriteSet.get(random));
     }
   }
 }

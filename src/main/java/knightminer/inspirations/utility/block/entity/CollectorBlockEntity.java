@@ -1,5 +1,8 @@
 package knightminer.inspirations.utility.block.entity;
 
+import net.neoforged.neoforge.transfer.ResourceHandlerUtil;
+import net.neoforged.neoforge.transfer.item.ItemResource;
+import net.neoforged.neoforge.transfer.ResourceHandler;
 import knightminer.inspirations.utility.InspirationsUtility;
 import knightminer.inspirations.utility.block.menu.CollectorContainerMenu;
 import net.minecraft.core.BlockPos;
@@ -18,8 +21,6 @@ import net.minecraft.world.level.block.state.properties.BlockStateProperties;
 import net.minecraft.world.phys.AABB;
 import net.neoforged.neoforge.capabilities.Capabilities;
 
-import net.neoforged.neoforge.items.IItemHandler;
-import net.neoforged.neoforge.items.ItemHandlerHelper;
 import dev.vladeezyy.kilnwork.block.InventoryBlockEntity;
 import net.neoforged.neoforge.capabilities.BlockCapabilityCache;
 import net.minecraft.server.level.ServerLevel;
@@ -31,7 +32,7 @@ public class CollectorBlockEntity extends InventoryBlockEntity {
 
   /** Item handler of the block we are facing, created once per facing (server only) */
   @Nullable
-  private BlockCapabilityCache<IItemHandler, Direction> facingHandler;
+  private BlockCapabilityCache<ResourceHandler<ItemResource>, Direction> facingHandler;
   /** Cache of the bounds to check for items */
   @Nullable
   private AABB itemBounds;
@@ -49,7 +50,7 @@ public class CollectorBlockEntity extends InventoryBlockEntity {
     }
 
     // if there is an item handler, extract the items
-    IItemHandler handler = getHandler();
+    ResourceHandler<ItemResource> handler = getHandler();
     if (handler != null) {
       extractItem(handler);
     } else {
@@ -59,7 +60,8 @@ public class CollectorBlockEntity extends InventoryBlockEntity {
         ItemStack insert = entity.getItem();
         // no need to simulate, if successful we have to modify the stack regardless
         // insert a copy: a stack that fits whole would otherwise be shared with the item entity (issue #227)
-        ItemStack remainder = ItemHandlerHelper.insertItemStacked(itemHandler, insert.copy(), false);
+        int inserted = insert.isEmpty() ? 0 : ResourceHandlerUtil.insertStacking(itemHandler, ItemResource.of(insert), insert.getCount(), null);
+        ItemStack remainder = insert.copyWithCount(insert.getCount() - inserted);
         // if the stack changed, we were successful
         if (remainder.getCount() < insert.getCount()) {
           collected = true;
@@ -81,14 +83,14 @@ public class CollectorBlockEntity extends InventoryBlockEntity {
    * @return  Item handler
    */
   @Nullable
-  private IItemHandler getHandler() {
+  private ResourceHandler<ItemResource> getHandler() {
     if (!(level instanceof ServerLevel serverLevel)) {
       return null;
     }
     if (facingHandler == null) {
       // the cache follows the neighbor by itself, so it is made once per facing
       Direction facing = getBlockState().getValue(BlockStateProperties.FACING);
-      facingHandler = BlockCapabilityCache.create(Capabilities.ItemHandler.BLOCK, serverLevel, worldPosition.relative(facing), facing.getOpposite(), () -> !isRemoved(), () -> {});
+      facingHandler = BlockCapabilityCache.create(Capabilities.Item.BLOCK, serverLevel, worldPosition.relative(facing), facing.getOpposite(), () -> !isRemoved(), () -> {});
     }
     return facingHandler.getCapability();
   }
@@ -109,19 +111,9 @@ public class CollectorBlockEntity extends InventoryBlockEntity {
    * Logic to transfer a single item
    * @param neighbor  Neighbor to extract items from
    */
-  private void extractItem(IItemHandler neighbor) {
-    // basically, we iterate every slot, trying to remove a single item
-    for (int i = 0; i < neighbor.getSlots(); i++) {
-      ItemStack simulated = neighbor.extractItem(i, 1, true);
-      // as soon as we find one we can extract, we try inserting it
-      if (!simulated.isEmpty()) {
-        // if it successfully inserts, extract it from the original inventory
-        if (ItemHandlerHelper.insertItemStacked(itemHandler, simulated, false).isEmpty()) {
-          neighbor.extractItem(i, 1, false);
-          break;
-        }
-      }
-    }
+  private void extractItem(ResourceHandler<ItemResource> neighbor) {
+    // the first single item that fits moves over (one transaction for both sides)
+    ResourceHandlerUtil.moveFirstStacking(neighbor, itemHandler, resource -> true, 1, null);
   }
 
   @Override

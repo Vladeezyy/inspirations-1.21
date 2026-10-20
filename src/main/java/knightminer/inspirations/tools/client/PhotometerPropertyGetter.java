@@ -2,7 +2,7 @@ package knightminer.inspirations.tools.client;
 
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.multiplayer.ClientLevel;
-import net.minecraft.client.renderer.item.ItemPropertyFunction;
+import knightminer.inspirations.common.client.ItemColorSources;
 import net.minecraft.core.BlockPos;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.LivingEntity;
@@ -15,9 +15,9 @@ import net.minecraft.world.phys.HitResult;
 
 import javax.annotation.Nullable;
 
-public class PhotometerPropertyGetter implements ItemPropertyFunction {
+public class PhotometerPropertyGetter implements ItemColorSources.ItemProperty {
   @Override
-  public float call(ItemStack stack, @Nullable ClientLevel clientWorld, @Nullable LivingEntity entityIn, int seed) {
+  public float get(ItemStack stack, @Nullable ClientLevel clientWorld, @Nullable LivingEntity entityIn, int seed) {
     Entity entity = entityIn != null ? entityIn : stack.getFrame();
     Level world = clientWorld;
     if (entity == null) {
@@ -35,7 +35,7 @@ public class PhotometerPropertyGetter implements ItemPropertyFunction {
         HitResult trace = Minecraft.getInstance().hitResult;
         if (trace != null && trace.getType() == HitResult.Type.BLOCK) {
           pos = ((BlockHitResult)trace).getBlockPos();
-          if (world.getBlockState(pos).isSolidRender(world, pos)) {
+          if (world.getBlockState(pos).isSolidRender()) {
             pos = pos.relative(((BlockHitResult)trace).getDirection());
           }
         }

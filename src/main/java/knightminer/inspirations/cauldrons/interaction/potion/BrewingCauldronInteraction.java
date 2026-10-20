@@ -11,7 +11,7 @@ import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.stats.Stats;
 import net.minecraft.world.InteractionHand;
-import net.minecraft.world.ItemInteractionResult;
+import net.minecraft.world.InteractionResult;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
@@ -37,7 +37,7 @@ public class BrewingCauldronInteraction implements CauldronInteraction {
 	}
 
 	@Override
-	public ItemInteractionResult interact(BlockState oldState, Level level, BlockPos pos, Player player, InteractionHand hand, ItemStack stack) {
+	public InteractionResult interact(BlockState oldState, Level level, BlockPos pos, Player player, InteractionHand hand, ItemStack stack) {
 		// cauldron needs to be above fire
 		if (isBoiling(level, pos)) {
 			// if given a fixed input, use that
@@ -46,7 +46,7 @@ public class BrewingCauldronInteraction implements CauldronInteraction {
 			if (oldPotion == null) {
 				cauldron = InspirationsCaudrons.potionCauldronEntity.getBlockEntity(level, pos);
 				if (cauldron == null || cauldron.getPotion() == null) {
-					return ItemInteractionResult.PASS_TO_DEFAULT_BLOCK_INTERACTION;
+					return InteractionResult.TRY_WITH_EMPTY_HAND;
 				}
 				oldPotion = cauldron.getPotion();
 			}
@@ -55,14 +55,14 @@ public class BrewingCauldronInteraction implements CauldronInteraction {
 			Holder<Potion> newPotion = getResult(level.potionBrewing(), oldPotion, stack);
 			// found either?
 			if (newPotion != null) {
-				if (!level.isClientSide) {
+				if (!level.isClientSide()) {
 					// if we have a fixed input, update the cauldron then fetch the BE
 					if (fixedInput != null) {
 						// update the block, if already a potion cauldron it will remain one, but it may be water before
 						level.setBlockAndUpdate(pos, InspirationsCaudrons.potionCauldron.defaultBlockState().setValue(LEVEL, oldState.getValue(LEVEL)));
 						cauldron = InspirationsCaudrons.potionCauldronEntity.getBlockEntity(level, pos);
 						if (cauldron == null) {
-							return ItemInteractionResult.CONSUME;
+							return InteractionResult.CONSUME;
 						}
 					}
 
@@ -70,7 +70,7 @@ public class BrewingCauldronInteraction implements CauldronInteraction {
 					cauldron.setPotion(newPotion);
 
 					// consume items
-					ItemStack container = stack.getCraftingRemainingItem();
+					ItemStack container = stack.getCraftingRemainder();
 					MiscUtil.shrinkHeldItem(player, hand, stack, 1);
 					if (!container.isEmpty()) {
 						MiscUtil.givePlayerItem(player, container.copy());
@@ -79,10 +79,10 @@ public class BrewingCauldronInteraction implements CauldronInteraction {
 					player.awardStat(Stats.USE_CAULDRON);
 					level.playSound(null, pos, SoundEvents.BREWING_STAND_BREW, SoundSource.BLOCKS, 1.0F, 1.0F);
 				}
-				return ItemInteractionResult.sidedSuccess(level.isClientSide);
+				return InteractionResult.SUCCESS;
 			}
 		}
-		return ItemInteractionResult.PASS_TO_DEFAULT_BLOCK_INTERACTION;
+		return InteractionResult.TRY_WITH_EMPTY_HAND;
 	}
 
 	/**

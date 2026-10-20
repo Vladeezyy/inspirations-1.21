@@ -4,7 +4,7 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.core.cauldron.CauldronInteraction;
 import net.minecraft.tags.TagKey;
 import net.minecraft.world.InteractionHand;
-import net.minecraft.world.ItemInteractionResult;
+import net.minecraft.world.InteractionResult;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.BucketItem;
 import net.minecraft.world.item.Item;
@@ -38,18 +38,18 @@ public class CauldronRegistry {
 	}
 
 	/** Tries all overrides, returns the first one that both matches and consumes acton */
-	public static ItemInteractionResult attemptOverride(BlockState state, Level level, BlockPos pos, Player player, InteractionHand hand, ItemStack stack) {
+	public static InteractionResult attemptOverride(BlockState state, Level level, BlockPos pos, Player player, InteractionHand hand, ItemStack stack) {
 		Block block = state.getBlock();
 		Item item = stack.getItem();
 		for (CauldronOverride override : CAULDRON_OVERRIDES) {
 			if (override.matches(block, item)) {
-				ItemInteractionResult result = override.interaction().interact(state, level, pos, player, hand, stack);
+				InteractionResult result = override.interaction().interact(state, level, pos, player, hand, stack);
 				if (result.consumesAction()) {
 					return result;
 				}
 			}
 		}
-		return ItemInteractionResult.PASS_TO_DEFAULT_BLOCK_INTERACTION;
+		return InteractionResult.TRY_WITH_EMPTY_HAND;
 	}
 
 	/** Creates an entry for a fluid tag */

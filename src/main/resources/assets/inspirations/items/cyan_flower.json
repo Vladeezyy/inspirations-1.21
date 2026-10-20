@@ -1,0 +1,12 @@
+{
+  "model": {
+    "type": "minecraft:model",
+    "model": "inspirations:item/cyan_flower",
+    "tints": [
+      {
+        "type": "inspirations:item_color",
+        "index": 0
+      }
+    ]
+  }
+}

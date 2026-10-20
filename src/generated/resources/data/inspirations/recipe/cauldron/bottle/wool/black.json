@@ -9,12 +9,8 @@
   "category": "building",
   "group": "wool",
   "ingredients": [
-    {
-      "tag": "minecraft:wool"
-    },
-    {
-      "item": "inspirations:black_dyed_bottle"
-    }
+    "#minecraft:wool",
+    "inspirations:black_dyed_bottle"
   ],
   "result": {
     "count": 1,

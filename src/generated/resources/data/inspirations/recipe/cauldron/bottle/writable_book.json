@@ -9,15 +9,9 @@
   "category": "misc",
   "group": "writable_book",
   "ingredients": [
-    {
-      "item": "inspirations:black_dyed_bottle"
-    },
-    {
-      "tag": "c:feathers"
-    },
-    {
-      "item": "minecraft:book"
-    }
+    "inspirations:black_dyed_bottle",
+    "#c:feathers",
+    "minecraft:book"
   ],
   "result": {
     "count": 1,

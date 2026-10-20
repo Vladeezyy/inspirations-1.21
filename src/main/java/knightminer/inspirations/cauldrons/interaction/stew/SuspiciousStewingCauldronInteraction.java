@@ -10,7 +10,7 @@ import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.stats.Stats;
 import net.minecraft.world.InteractionHand;
-import net.minecraft.world.ItemInteractionResult;
+import net.minecraft.world.InteractionResult;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.BlockItem;
 import net.minecraft.world.item.ItemStack;
@@ -27,7 +27,7 @@ public enum SuspiciousStewingCauldronInteraction implements CauldronInteraction 
 	INSTANCE;
 
 	@Override
-	public ItemInteractionResult interact(BlockState oldState, Level level, BlockPos pos, Player player, InteractionHand hand, ItemStack stack) {
+	public InteractionResult interact(BlockState oldState, Level level, BlockPos pos, Player player, InteractionHand hand, ItemStack stack) {
 		int soupLevel = oldState.getValue(LEVEL);
 		int itemsNeeded = TransformCauldronInteraction.scaleAmountNeeded(soupLevel);
 
@@ -35,7 +35,7 @@ public enum SuspiciousStewingCauldronInteraction implements CauldronInteraction 
 		if (stack.getCount() >= itemsNeeded && isBoiling(level, pos)
 				&& stack.getItem() instanceof BlockItem blockItem && blockItem.getBlock() instanceof FlowerBlock flower) {
 
-			if (!level.isClientSide) {
+			if (!level.isClientSide()) {
 				// set the block and effect
 				level.setBlockAndUpdate(pos, InspirationsCaudrons.suspiciousStewCauldron.defaultBlockState().setValue(LEVEL, oldState.getValue(LEVEL)));
 				SuspiciousStewCauldronBlockEntity cauldron = InspirationsCaudrons.suspiciousStewCauldronEntity.getBlockEntity(level, pos);
@@ -50,8 +50,8 @@ public enum SuspiciousStewingCauldronInteraction implements CauldronInteraction 
 				player.awardStat(Stats.USE_CAULDRON);
 				level.playSound(null, pos, SoundEvents.BREWING_STAND_BREW, SoundSource.BLOCKS, 1.0F, 1.0F);
 			}
-			return ItemInteractionResult.sidedSuccess(level.isClientSide);
+			return InteractionResult.SUCCESS;
 		}
-		return ItemInteractionResult.PASS_TO_DEFAULT_BLOCK_INTERACTION;
+		return InteractionResult.TRY_WITH_EMPTY_HAND;
 	}
 }

@@ -2,11 +2,11 @@ package knightminer.inspirations.common.data;
 
 import knightminer.inspirations.Inspirations;
 import knightminer.inspirations.tweaks.InspirationsTweaks;
-import net.minecraft.advancements.critereon.StatePropertiesPredicate;
+import net.minecraft.advancements.criterion.StatePropertiesPredicate;
 import net.minecraft.core.HolderLookup;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.data.PackOutput;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.item.crafting.Ingredient;
 import net.minecraft.world.item.enchantment.Enchantment;
@@ -30,7 +30,7 @@ public class GlobalLootProvider extends GlobalLootModifierProvider {
   protected void start() {
     HolderLookup.RegistryLookup<Enchantment> enchantments = registries.lookupOrThrow(Registries.ENCHANTMENT);
     add("heartbeet", new ReplaceItemLootModifier(new LootItemCondition[] {
-        LootTableIdCondition.builder(ResourceLocation.withDefaultNamespace("blocks/beetroots")).build(),
+        LootTableIdCondition.builder(Identifier.withDefaultNamespace("blocks/beetroots")).build(),
         ConfigEnabledCondition.HEARTBEETS,
         new LootItemBlockStatePropertyCondition.Builder(Blocks.BEETROOTS).setProperties(StatePropertiesPredicate.Builder.properties().hasProperty(BeetrootBlock.AGE, 3)).build(),
         BonusLevelTableCondition.bonusLevelFlatChance(enchantments.getOrThrow(Enchantments.FORTUNE), 0.05f, 0.0625f, 0.083333336f, 0.1f).build()

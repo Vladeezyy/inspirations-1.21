@@ -9,18 +9,10 @@
   "category": "misc",
   "group": "inspirations:magenta_dyed_bottle",
   "ingredients": [
-    {
-      "item": "inspirations:blue_dyed_bottle"
-    },
-    {
-      "item": "inspirations:red_dyed_bottle"
-    },
-    {
-      "item": "inspirations:red_dyed_bottle"
-    },
-    {
-      "item": "inspirations:white_dyed_bottle"
-    }
+    "inspirations:blue_dyed_bottle",
+    "inspirations:red_dyed_bottle",
+    "inspirations:red_dyed_bottle",
+    "inspirations:white_dyed_bottle"
   ],
   "result": {
     "count": 4,

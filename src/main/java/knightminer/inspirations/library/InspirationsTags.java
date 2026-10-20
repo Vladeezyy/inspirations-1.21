@@ -8,7 +8,7 @@ import net.minecraft.tags.TagKey;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.material.Fluid;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 
 public class InspirationsTags {
   public static class Blocks {
@@ -74,7 +74,7 @@ public class InspirationsTags {
       return ItemTags.create(Inspirations.getResource(name));
     }
     private static TagKey<Item> commonTag(String name) {
-      return ItemTags.create(ResourceLocation.fromNamespaceAndPath("c", name));
+      return ItemTags.create(Identifier.fromNamespaceAndPath("c", name));
     }
   }
 
@@ -97,13 +97,13 @@ public class InspirationsTags {
 
   /** Common tags of the shared {@code c} namespace, and Mantle's soup tag kept for compatibility */
   public static class Common {
-    public static final TagKey<Item> SPLASH_BOTTLE = ItemTags.create(ResourceLocation.fromNamespaceAndPath("c", "bottles/splash"));
-    public static final TagKey<Item> LINGERING_BOTTLE = ItemTags.create(ResourceLocation.fromNamespaceAndPath("c", "bottles/lingering"));
-    public static final TagKey<Fluid> HONEY = FluidTags.create(ResourceLocation.fromNamespaceAndPath("c", "honey"));
-    public static final TagKey<Fluid> BEETROOT_SOUP = FluidTags.create(ResourceLocation.fromNamespaceAndPath("c", "beetroot_soup"));
-    public static final TagKey<Fluid> MUSHROOM_STEW = FluidTags.create(ResourceLocation.fromNamespaceAndPath("c", "mushroom_stew"));
-    public static final TagKey<Fluid> RABBIT_STEW = FluidTags.create(ResourceLocation.fromNamespaceAndPath("c", "rabbit_stew"));
+    public static final TagKey<Item> SPLASH_BOTTLE = ItemTags.create(Identifier.fromNamespaceAndPath("c", "bottles/splash"));
+    public static final TagKey<Item> LINGERING_BOTTLE = ItemTags.create(Identifier.fromNamespaceAndPath("c", "bottles/lingering"));
+    public static final TagKey<Fluid> HONEY = FluidTags.create(Identifier.fromNamespaceAndPath("c", "honey"));
+    public static final TagKey<Fluid> BEETROOT_SOUP = FluidTags.create(Identifier.fromNamespaceAndPath("c", "beetroot_soup"));
+    public static final TagKey<Fluid> MUSHROOM_STEW = FluidTags.create(Identifier.fromNamespaceAndPath("c", "mushroom_stew"));
+    public static final TagKey<Fluid> RABBIT_STEW = FluidTags.create(Identifier.fromNamespaceAndPath("c", "rabbit_stew"));
     /** Mantle's tag of all soups, other mods of SlimeKnights read it */
-    public static final TagKey<Fluid> SOUP = FluidTags.create(ResourceLocation.fromNamespaceAndPath("mantle", "soup"));
+    public static final TagKey<Fluid> SOUP = FluidTags.create(Identifier.fromNamespaceAndPath("mantle", "soup"));
   }
 }

@@ -15,7 +15,7 @@ import mezz.jei.api.recipe.RecipeIngredientRole;
 import mezz.jei.api.IModPlugin;
 import mezz.jei.api.JeiPlugin;
 import mezz.jei.api.runtime.IJeiRuntime;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 
 import javax.annotation.Nullable;
 
@@ -26,7 +26,7 @@ public class SceneJeiPlugin implements IModPlugin {
   static IJeiRuntime runtime;
 
   @Override
-  public ResourceLocation getPluginUid() {
+  public Identifier getPluginUid() {
     return Inspirations.getResource("scene");
   }
 
