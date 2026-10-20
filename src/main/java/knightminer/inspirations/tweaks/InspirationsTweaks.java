@@ -1,5 +1,6 @@
 package knightminer.inspirations.tweaks;
 
+import net.minecraft.world.level.block.entity.BlockEntityTypes;
 import net.minecraft.world.item.consume_effects.ApplyStatusEffectsConsumeEffect;
 import net.minecraft.world.item.component.Consumables;
 import com.google.common.collect.ImmutableSet;
@@ -109,9 +110,9 @@ public class InspirationsTweaks extends ModuleBase {
     });
     event.register(Registries.BLOCK_ENTITY_TYPE, helper -> {
       // The wet hopper keeps the hopper block entity. It's an immutable set, so we need to replace it entirely.
-      synchronized (BlockEntityType.HOPPER) {
-        BlockEntityType.HOPPER.validBlocks = new ImmutableSet.Builder<Block>()
-            .addAll(BlockEntityType.HOPPER.validBlocks)
+      synchronized (BlockEntityTypes.HOPPER) {
+        BlockEntityTypes.HOPPER.validBlocks = new ImmutableSet.Builder<Block>()
+            .addAll(BlockEntityTypes.HOPPER.validBlocks)
             .add(wetHopper)
             .build();
       }

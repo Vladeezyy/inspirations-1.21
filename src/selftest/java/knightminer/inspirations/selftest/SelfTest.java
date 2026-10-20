@@ -1,5 +1,7 @@
 package knightminer.inspirations.selftest;
 
+import net.minecraft.world.entity.EntityTypes;
+import net.minecraft.world.level.block.entity.BlockEntityTypes;
 import knightminer.inspirations.tools.enchantment.InspirationsEnchanting;
 import net.minecraft.world.entity.EntitySpawnReason;
 import dev.vladeezyy.kilnwork.KilnworkRegistries;
@@ -226,14 +228,14 @@ public class SelfTest {
       return true;
     });
     check("colored book recipe dyes the book", () -> {
-      CraftingInput input = CraftingInput.of(2, 1, List.of(new ItemStack(Items.BOOK), new ItemStack(Items.RED_DYE)));
+      CraftingInput input = CraftingInput.of(2, 1, List.of(new ItemStack(Items.BOOK), new ItemStack(Items.DYE.pick(DyeColor.RED))));
       return server.getRecipeManager().getRecipeFor(RecipeType.CRAFTING, input, level)
         .map(r -> r.value().assemble(input))
         .map(result -> result.is(InspirationsBuilding.coloredBook) && MiscUtil.getColor(result) == MiscUtil.getColor(DyeColor.RED)).orElse(false);
     });
     // 26.1 dropped the dyeable tag: one crafting_dye recipe per item, washing through cauldron_can_remove_dye
     check("colored book takes another dye in the crafting grid (crafting_dye)", () -> {
-      CraftingInput input = CraftingInput.of(2, 1, List.of(MiscUtil.setColor(new ItemStack(InspirationsBuilding.coloredBook), MiscUtil.getColor(DyeColor.RED)), new ItemStack(Items.BLUE_DYE)));
+      CraftingInput input = CraftingInput.of(2, 1, List.of(MiscUtil.setColor(new ItemStack(InspirationsBuilding.coloredBook), MiscUtil.getColor(DyeColor.RED)), new ItemStack(Items.DYE.pick(DyeColor.BLUE))));
       return server.getRecipeManager().getRecipeFor(RecipeType.CRAFTING, input, level)
         .map(r -> r.value().assemble(input))
         .map(result -> result.is(InspirationsBuilding.coloredBook) && MiscUtil.getColor(result) != MiscUtil.getColor(DyeColor.RED)).orElse(false);
@@ -283,11 +285,11 @@ public class SelfTest {
 
     // loot tables injected on load: in 1.20 the listener was never registered
     check("skeleton loot has the skull pool", () -> {
-      LootTable table = server.reloadableRegistries().getLootTable(EntityType.SKELETON.getDefaultLootTable().orElseThrow());
+      LootTable table = server.reloadableRegistries().getLootTable(EntityTypes.SKELETON.getDefaultLootTable().orElseThrow());
       return table.getPool(Inspirations.getResource("entities/skeleton").toString()) != null;
     });
     check("cave spider loot has the cobweb pool", () -> {
-      LootTable table = server.reloadableRegistries().getLootTable(EntityType.CAVE_SPIDER.getDefaultLootTable().orElseThrow());
+      LootTable table = server.reloadableRegistries().getLootTable(EntityTypes.CAVE_SPIDER.getDefaultLootTable().orElseThrow());
       return table.getPool(Inspirations.getResource("entities/cave_spider").toString()) != null;
     });
     check("rose bush loot drops a rose with shears", () -> {
@@ -318,7 +320,7 @@ public class SelfTest {
 
     // misc registration
     check("compostables", () -> ComposterBlock.COMPOSTABLES.getFloat(InspirationsTweaks.heartbeet) == 0.8F && ComposterBlock.COMPOSTABLES.getFloat(InspirationsBuilding.vine.asItem()) == 0.5F);
-    check("wet hopper keeps the hopper block entity", () -> net.minecraft.world.level.block.entity.BlockEntityType.HOPPER.isValid(InspirationsTweaks.wetHopper.defaultBlockState()));
+    check("wet hopper keeps the hopper block entity", () -> net.minecraft.world.level.block.entity.BlockEntityTypes.HOPPER.isValid(InspirationsTweaks.wetHopper.defaultBlockState()));
 
     // data of 1.20 worlds
     check("1.20 texture in custom data is read", () -> {
@@ -416,7 +418,7 @@ public class SelfTest {
 
     // boiling water cauldron, a mixin on the vanilla block
     check("water cauldron over fire boils entities", () -> {
-      Pig pig = EntityType.PIG.create(level, EntitySpawnReason.COMMAND);
+      Pig pig = EntityTypes.PIG.create(level, EntitySpawnReason.COMMAND);
       pig.snapTo(Vec3.atBottomCenterOf(at(12, 0, 0)).add(0, 0.3, 0));
       level.addFreshEntity(pig);
       float health = pig.getHealth();
@@ -431,7 +433,7 @@ public class SelfTest {
     check("red dye in a water cauldron makes a dye cauldron of that color", () -> {
       BlockPos pos = at(14, 0, 0);
       level.setBlockAndUpdate(pos, Blocks.WATER_CAULDRON.defaultBlockState().setValue(LayeredCauldronBlock.LEVEL, 3));
-      use(level, pos, new ItemStack(Items.RED_DYE));
+      use(level, pos, new ItemStack(Items.DYE.pick(DyeColor.RED)));
       return level.getBlockState(pos).is(InspirationsCaudrons.dyeCauldron) && level.getBlockEntity(pos) instanceof DyeCauldronBlockEntity be && be.getDye() == DyeColor.RED;
     });
     check("glass bottle takes a red dyed bottle from the dye cauldron", () -> {
@@ -577,13 +579,13 @@ public class SelfTest {
     check("carpet placed on stairs becomes a fitted carpet", () -> {
       BlockPos stairs = at(26, 0, 0);
       level.setBlockAndUpdate(stairs, Blocks.OAK_STAIRS.defaultBlockState().setValue(StairBlock.FACING, Direction.NORTH));
-      use(level, stairs, new ItemStack(Items.RED_CARPET));
+      use(level, stairs, new ItemStack(Items.CARPET.pick(DyeColor.RED)));
       return level.getBlockState(stairs.above()).getBlock() instanceof FittedCarpetBlock;
     });
     check("fitted carpet becomes flat when the stairs go", () -> {
       BlockPos stairs = at(26, 0, 0);
       level.setBlockAndUpdate(stairs, Blocks.STONE.defaultBlockState());
-      return level.getBlockState(stairs.above()).is(Blocks.RED_CARPET);
+      return level.getBlockState(stairs.above()).is(Blocks.CARPET.pick(DyeColor.RED));
     });
 
     // hoppers take water, a mixin on the vanilla hopper
@@ -614,7 +616,7 @@ public class SelfTest {
       BlockPos pos = at(4, 0, 6);
       level.setBlockAndUpdate(pos.below(), Blocks.STONE.defaultBlockState());
       level.setBlockAndUpdate(pos, Blocks.STONE_PRESSURE_PLATE.defaultBlockState());
-      use(level, pos, new ItemStack(Items.BLUE_CARPET));
+      use(level, pos, new ItemStack(Items.CARPET.pick(DyeColor.BLUE)));
       return level.getBlockState(pos).is(InspirationsUtility.carpetedPressurePlates.get(DyeColor.BLUE));
     });
     // redstone charger
@@ -643,7 +645,7 @@ public class SelfTest {
     });
     // pigs
     check("sneaking with an empty hand takes the saddle off a pig", () -> {
-      Pig pig = EntityType.PIG.create(level, EntitySpawnReason.COMMAND);
+      Pig pig = EntityTypes.PIG.create(level, EntitySpawnReason.COMMAND);
       pig.snapTo(Vec3.atCenterOf(at(10, 0, 6)));
       level.addFreshEntity(pig);
       pig.setItemSlot(net.minecraft.world.entity.EquipmentSlot.SADDLE, new ItemStack(Items.SADDLE));

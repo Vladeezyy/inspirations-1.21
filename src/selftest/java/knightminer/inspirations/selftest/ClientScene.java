@@ -140,7 +140,7 @@ public final class ClientScene {
   }
 
   static void shot(Minecraft mc, String name) {
-    Screenshot.grab(mc.gameDirectory, "scene_" + name + ".png", mc.getMainRenderTarget(), 1, c -> Inspirations.log.info("[scene] " + c.getString()));
+    Screenshot.grab(mc.gameDirectory, "scene_" + name + ".png", mc.gameRenderer.mainRenderTarget(), 1, c -> Inspirations.log.info("[scene] " + c.getString()));
   }
 
   static BlockPos at(int x, int y, int z) {
@@ -190,7 +190,7 @@ public final class ClientScene {
       p.openMenu((MenuProvider) p.level().getBlockEntity(at(0, 1, 2)), at(0, 1, 2));
     }));
     at(t += 20, mc -> {
-      check("shelf screen opens with 16 shelf slots", mc.screen instanceof ShelfContainerScreen screen && screen.getMenu().slots.size() == 16 + 36, mc.screen);
+      check("shelf screen opens with 16 shelf slots", mc.gui.screen() instanceof ShelfContainerScreen screen && screen.getMenu().slots.size() == 16 + 36, mc.gui.screen());
       shot(mc, "gui_shelf");
       checkNoMissingTexture(mc, "shelf screen");
       mc.player.closeContainer();
@@ -201,7 +201,7 @@ public final class ClientScene {
       p.openMenu((MenuProvider) p.level().getBlockEntity(at(12, 1, 6)), at(12, 1, 6));
     }));
     at(t += 20, mc -> {
-      check("collector screen opens with 9 slots", mc.screen instanceof AbstractContainerScreen<?> screen && screen.getMenu().slots.size() == 9 + 36, mc.screen);
+      check("collector screen opens with 9 slots", mc.gui.screen() instanceof AbstractContainerScreen<?> screen && screen.getMenu().slots.size() == 9 + 36, mc.gui.screen());
       shot(mc, "gui_collector");
       mc.player.closeContainer();
     });
@@ -210,7 +210,7 @@ public final class ClientScene {
       p.openMenu((MenuProvider) p.level().getBlockEntity(at(14, 1, 6)), at(14, 1, 6));
     }));
     at(t += 20, mc -> {
-      check("pipe screen opens with 1 slot", mc.screen instanceof AbstractContainerScreen<?> screen && screen.getMenu().slots.size() == 1 + 36, mc.screen);
+      check("pipe screen opens with 1 slot", mc.gui.screen() instanceof AbstractContainerScreen<?> screen && screen.getMenu().slots.size() == 1 + 36, mc.gui.screen());
       shot(mc, "gui_pipe");
       mc.player.closeContainer();
     });
@@ -252,16 +252,16 @@ public final class ClientScene {
       return;
     }
     Minecraft mc = Minecraft.getInstance();
-    if (!opened && mc.screen instanceof net.minecraft.client.gui.screens.AccessibilityOnboardingScreen) {
+    if (!opened && mc.gui.screen() instanceof net.minecraft.client.gui.screens.AccessibilityOnboardingScreen) {
       mc.options.onboardAccessibility = false;
       mc.options.save();
-      mc.setScreen(new TitleScreen());
+      mc.gui.setScreen(new TitleScreen());
       return;
     }
-    if (!opened && mc.getOverlay() != null) {
+    if (!opened && mc.gui.overlay() != null) {
       return;
     }
-    if (!opened && mc.screen instanceof TitleScreen) {
+    if (!opened && mc.gui.screen() instanceof TitleScreen) {
       if (!mc.options.languageCode.equals(LANG)) {
         mc.options.languageCode = LANG;
         mc.getLanguageManager().setSelected(LANG);
@@ -283,11 +283,13 @@ public final class ClientScene {
       return;
     }
     mc.options.pauseOnLostFocus = false;
-    mc.options.hideGui = false;
+    if (mc.gui.hud.isHidden()) {
+      mc.gui.hud.toggle();
+    }
     mc.getTutorial().setStep(net.minecraft.client.tutorial.TutorialSteps.NONE);
-    mc.getToastManager().clear();
-    if (mc.screen instanceof PauseScreen) {
-      mc.setScreen(null);
+    mc.gui.toastManager().clear();
+    if (mc.gui.screen() instanceof PauseScreen) {
+      mc.gui.setScreen(null);
     }
     tick++;
     for (Pair<Integer, Consumer<Minecraft>> step : STEPS) {
@@ -411,9 +413,12 @@ public final class ClientScene {
     set(level, at(20, 1, 6), InspirationsUtility.carpetedPressurePlates.get(DyeColor.ORANGE).defaultBlockState());
     set(level, at(21, 1, 6), InspirationsTools.redstoneCharge.defaultBlockState());
     set(level, at(16, 1, 8), InspirationsTweaks.cactus.defaultBlockState().setValue(knightminer.inspirations.tweaks.block.BlockCropBlock.LARGE_AGE, 8));
-    set(level, at(17, 1, 8), Blocks.SAND.defaultBlockState());
-    set(level, at(18, 1, 8), Blocks.WATER.defaultBlockState());
-    set(level, at(17, 2, 8), InspirationsTweaks.sugarCane.defaultBlockState().setValue(knightminer.inspirations.tweaks.block.BlockCropBlock.LARGE_AGE, 10));
+    // a cactus breaks next to a solid block: the sugar cane sand one block away
+    set(level, at(18, 1, 8), Blocks.SAND.defaultBlockState());
+    set(level, at(19, 1, 8), Blocks.WATER.defaultBlockState());
+    set(level, at(18, 2, 8), InspirationsTweaks.sugarCane.defaultBlockState().setValue(knightminer.inspirations.tweaks.block.BlockCropBlock.LARGE_AGE, 10));
+    // the floor is one block thick: the sand of the cactus would fall
+    set(level, at(16, -1, 8), Blocks.STONE.defaultBlockState());
     set(level, at(16, 0, 8), Blocks.SAND.defaultBlockState());
 
     // row 3, z=12: fitted carpets on every stair shape
@@ -421,8 +426,8 @@ public final class ClientScene {
     for (int i = 0; i < shapes.length; i++) {
       BlockPos pos = at(i * 2, 1, 12);
       set(level, pos, Blocks.OAK_STAIRS.defaultBlockState().setValue(StairBlock.FACING, Direction.SOUTH).setValue(StairBlock.SHAPE, shapes[i]));
-      set(level, pos.above(), Blocks.RED_CARPET.defaultBlockState());
-      level.getBlockState(pos.above()).getBlock().setPlacedBy(level, pos.above(), level.getBlockState(pos.above()), player, new ItemStack(Items.RED_CARPET));
+      set(level, pos.above(), Blocks.CARPET.pick(DyeColor.RED).defaultBlockState());
+      level.getBlockState(pos.above()).getBlock().setPlacedBy(level, pos.above(), level.getBlockState(pos.above()), player, new ItemStack(Items.CARPET.pick(DyeColor.RED)));
     }
 
     // tinted portal over blue glass, lectern with a colored book
@@ -431,7 +436,7 @@ public final class ClientScene {
         boolean frame = i == 0 || i == 3 || j == 0 || j == 4;
         set(level, at(15 + i, 1 + j, 13), frame ? Blocks.OBSIDIAN.defaultBlockState() : Blocks.AIR.defaultBlockState());
       }
-      set(level, at(15 + i, 0, 13), Blocks.BLUE_STAINED_GLASS.defaultBlockState());
+      set(level, at(15 + i, 0, 13), Blocks.STAINED_GLASS.pick(DyeColor.BLUE).defaultBlockState());
     }
     for (int i = 1; i <= 2; i++) {
       for (int j = 1; j <= 3; j++) {
@@ -676,6 +681,9 @@ public final class ClientScene {
       check("sprite " + sprite + " is in the block atlas", !atlas.getSprite(id).contents().name().equals(MissingTextureAtlasSprite.getLocation()), id);
     }
     // the client asked the server for the lectern book, the tinted renderer needs it
+    // the showcase blocks stay where they were placed (a broken crop drops an item the player picks up)
+    check("cactus and sugar cane crops stay on their sand", mc.level.getBlockState(at(16, 1, 8)).is(InspirationsTweaks.cactus) && mc.level.getBlockState(at(18, 2, 8)).is(InspirationsTweaks.sugarCane),
+      mc.level.getBlockState(at(16, 1, 8)) + " " + mc.level.getBlockState(at(18, 2, 8)) + " on " + mc.level.getBlockState(at(16, 0, 8)));
     check("lectern book reached the client", mc.level.getBlockEntity(at(13, 1, 12)) instanceof LecternBlockEntity lectern && lectern.getBook().is(InspirationsBuilding.coloredBook),
       mc.level.getBlockEntity(at(13, 1, 12)) instanceof LecternBlockEntity lectern ? lectern.getBook() : null);
     // client copies of block entity data
@@ -753,7 +761,7 @@ public final class ClientScene {
    */
   private static void checkNoMissingTexture(Minecraft mc, String name) {
     // the frame is read back from the GPU later since 1.21.5, the check runs in the callback
-    Screenshot.takeScreenshot(mc.getMainRenderTarget(), image -> {
+    Screenshot.takeScreenshot(mc.gameRenderer.mainRenderTarget(), image -> {
       int magenta = 0;
       try (image) {
         for (int pixel : image.getPixelsABGR()) {

@@ -1,7 +1,7 @@
 package knightminer.inspirations.tools;
 
-import net.minecraft.advancements.criterion.ItemPredicate;
-import net.minecraft.advancements.criterion.DataComponentMatchers;
+import net.minecraft.advancements.predicates.ItemPredicate;
+import net.minecraft.advancements.predicates.DataComponentMatchers;
 import net.minecraft.core.component.DataComponentExactPredicate;
 import knightminer.inspirations.Inspirations;
 import knightminer.inspirations.common.Config;
@@ -239,7 +239,7 @@ public class ToolsEvents {
       }
       if (knockback > 0) {
         if (attacker instanceof LivingEntity) {
-          ((LivingEntity)attacker).knockback(knockback * 0.5F, Mth.sin(target.getYRot() * 0.017453292F), -Mth.cos(target.getYRot() * 0.017453292F));
+          ((LivingEntity)attacker).knockback(knockback * 0.5F, Mth.sin(target.getYRot() * 0.017453292F), -Mth.cos(target.getYRot() * 0.017453292F), source, 0);
           if (attacker instanceof ServerPlayer) {
             InspirationsNetwork.sendPacket(attacker, new ClientboundSetEntityMotionPacket(attacker));
           }

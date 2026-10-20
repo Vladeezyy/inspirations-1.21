@@ -1,5 +1,6 @@
 package knightminer.inspirations.tweaks;
 
+import net.minecraft.world.level.block.entity.BlockEntityTypes;
 import knightminer.inspirations.Inspirations;
 import knightminer.inspirations.common.AbstractClientEvents;
 import knightminer.inspirations.common.Config;
@@ -47,7 +48,7 @@ public class TweaksClientEvents extends AbstractClientEvents {
   static void registerRenderers(EntityRenderersEvent.RegisterRenderers event) {
     if (Config.tintLecternBook.getAsBoolean()) {
       // replaces the vanilla lectern renderer
-      event.registerBlockEntityRenderer(BlockEntityType.LECTERN, TintedLecternRenderer::new);
+      event.registerBlockEntityRenderer(BlockEntityTypes.LECTERN, TintedLecternRenderer::new);
     }
   }
 

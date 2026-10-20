@@ -2,7 +2,7 @@ package knightminer.inspirations.tools.item;
 
 import knightminer.inspirations.tools.InspirationsTools;
 import knightminer.inspirations.tools.block.RedstoneChargeBlock;
-import net.minecraft.advancements.CriteriaTriggers;
+import net.minecraft.advancements.triggers.CriteriaTriggers;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.server.level.ServerPlayer;

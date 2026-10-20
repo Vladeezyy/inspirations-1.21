@@ -59,6 +59,7 @@ import net.minecraft.core.particles.SimpleParticleType;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.sounds.SoundEvents;
+import net.minecraft.tags.BlockItemTags;
 import net.minecraft.tags.ItemTags;
 import net.minecraft.world.damagesource.DamageType;
 import net.minecraft.world.entity.ai.village.poi.PoiType;
@@ -393,20 +394,20 @@ public class InspirationsCaudrons extends ModuleBase {
 
       // wash the wool
       if (Config.cauldronWashWool.getAsBoolean()) {
-        addToList(CauldronInteractions.WATER, new DecreaseLayerCauldronInteraction(Blocks.WHITE_WOOL, LayeredCauldronBlock.LEVEL),
-                  Items.ORANGE_WOOL, Items.MAGENTA_WOOL, Items.LIGHT_BLUE_WOOL, Items.YELLOW_WOOL, Items.LIME_WOOL,
-                  Items.PINK_WOOL, Items.GRAY_WOOL, Items.LIGHT_GRAY_WOOL, Items.CYAN_WOOL, Items.PURPLE_WOOL,
-                  Items.BLUE_WOOL, Items.BROWN_WOOL, Items.GREEN_WOOL, Items.RED_WOOL, Items.BLACK_WOOL);
+        addToList(CauldronInteractions.WATER, new DecreaseLayerCauldronInteraction(Blocks.WOOL.pick(DyeColor.WHITE), LayeredCauldronBlock.LEVEL),
+                  Items.WOOL.pick(DyeColor.ORANGE), Items.WOOL.pick(DyeColor.MAGENTA), Items.WOOL.pick(DyeColor.LIGHT_BLUE), Items.WOOL.pick(DyeColor.YELLOW), Items.WOOL.pick(DyeColor.LIME),
+                  Items.WOOL.pick(DyeColor.PINK), Items.WOOL.pick(DyeColor.GRAY), Items.WOOL.pick(DyeColor.LIGHT_GRAY), Items.WOOL.pick(DyeColor.CYAN), Items.WOOL.pick(DyeColor.PURPLE),
+                  Items.WOOL.pick(DyeColor.BLUE), Items.WOOL.pick(DyeColor.BROWN), Items.WOOL.pick(DyeColor.GREEN), Items.WOOL.pick(DyeColor.RED), Items.WOOL.pick(DyeColor.BLACK));
         // wash the bed
-        addToList(CauldronInteractions.WATER, new DecreaseLayerCauldronInteraction(Blocks.WHITE_BED, LayeredCauldronBlock.LEVEL),
-                  Items.ORANGE_BED, Items.MAGENTA_BED, Items.LIGHT_BLUE_BED, Items.YELLOW_BED, Items.LIME_BED,
-                  Items.PINK_BED, Items.GRAY_BED, Items.LIGHT_GRAY_BED, Items.CYAN_BED, Items.PURPLE_BED,
-                  Items.BLUE_BED, Items.BROWN_BED, Items.GREEN_BED, Items.RED_BED, Items.BLACK_BED);
+        addToList(CauldronInteractions.WATER, new DecreaseLayerCauldronInteraction(Blocks.BED.pick(DyeColor.WHITE), LayeredCauldronBlock.LEVEL),
+                  Items.BED.pick(DyeColor.ORANGE), Items.BED.pick(DyeColor.MAGENTA), Items.BED.pick(DyeColor.LIGHT_BLUE), Items.BED.pick(DyeColor.YELLOW), Items.BED.pick(DyeColor.LIME),
+                  Items.BED.pick(DyeColor.PINK), Items.BED.pick(DyeColor.GRAY), Items.BED.pick(DyeColor.LIGHT_GRAY), Items.BED.pick(DyeColor.CYAN), Items.BED.pick(DyeColor.PURPLE),
+                  Items.BED.pick(DyeColor.BLUE), Items.BED.pick(DyeColor.BROWN), Items.BED.pick(DyeColor.GREEN), Items.BED.pick(DyeColor.RED), Items.BED.pick(DyeColor.BLACK));
         // wash the carpet
-        addToList(CauldronInteractions.WATER, new DecreaseLayerCauldronInteraction(Blocks.WHITE_CARPET, LayeredCauldronBlock.LEVEL),
-                  Items.ORANGE_CARPET, Items.MAGENTA_CARPET, Items.LIGHT_BLUE_CARPET, Items.YELLOW_CARPET, Items.LIME_CARPET,
-                  Items.PINK_CARPET, Items.GRAY_CARPET, Items.LIGHT_GRAY_CARPET, Items.CYAN_CARPET, Items.PURPLE_CARPET,
-                  Items.BLUE_CARPET, Items.BROWN_CARPET, Items.GREEN_CARPET, Items.RED_CARPET, Items.BLACK_CARPET);
+        addToList(CauldronInteractions.WATER, new DecreaseLayerCauldronInteraction(Blocks.CARPET.pick(DyeColor.WHITE), LayeredCauldronBlock.LEVEL),
+                  Items.CARPET.pick(DyeColor.ORANGE), Items.CARPET.pick(DyeColor.MAGENTA), Items.CARPET.pick(DyeColor.LIGHT_BLUE), Items.CARPET.pick(DyeColor.YELLOW), Items.CARPET.pick(DyeColor.LIME),
+                  Items.CARPET.pick(DyeColor.PINK), Items.CARPET.pick(DyeColor.GRAY), Items.CARPET.pick(DyeColor.LIGHT_GRAY), Items.CARPET.pick(DyeColor.CYAN), Items.CARPET.pick(DyeColor.PURPLE),
+                  Items.CARPET.pick(DyeColor.BLUE), Items.CARPET.pick(DyeColor.BROWN), Items.CARPET.pick(DyeColor.GREEN), Items.CARPET.pick(DyeColor.RED), Items.CARPET.pick(DyeColor.BLACK));
         // wash the carpeted trapdoor
         addToList(CauldronInteractions.WATER, new DecreaseLayerCauldronInteraction(InspirationsUtility.carpetedTrapdoors.get(DyeColor.WHITE), LayeredCauldronBlock.LEVEL),
                   Arrays.stream(DyeColor.values()).filter(dye -> dye != DyeColor.WHITE).map(color -> InspirationsUtility.carpetedTrapdoors.get(color).asItem()).toArray(Item[]::new));
@@ -514,29 +515,29 @@ public class InspirationsCaudrons extends ModuleBase {
         CauldronInteractions.EMPTY.put(Items.SUSPICIOUS_STEW, SuspiciousStewIntoEmptyCauldronInteraction.INSTANCE);
         SUSPICIOUS_STEW_CAULDRON_INTERACTIONS.put(Items.BOWL, DecreaseSuspiciousStewCauldronInteraction.INSTANCE);
         SUSPICIOUS_STEW_CAULDRON_INTERACTIONS.put(Items.SUSPICIOUS_STEW, MixSuspiciousStewCauldronInteraction.INSTANCE);
-        CauldronRegistry.register(exactBlock(mushroomStewCauldron), itemTag(ItemTags.SMALL_FLOWERS), SuspiciousStewingCauldronInteraction.INSTANCE);
+        CauldronRegistry.register(exactBlock(mushroomStewCauldron), itemTag(BlockItemTags.SMALL_FLOWERS.item()), SuspiciousStewingCauldronInteraction.INSTANCE);
       }
 
       // dye cauldrons
       if (Config.enableCauldronDyeing.getAsBoolean()) {
         for (DyeColor dye : DyeColor.values()) {
           Item dyeItem = switch (dye) {
-            case WHITE -> Items.WHITE_DYE;
-            case ORANGE -> Items.ORANGE_DYE;
-            case MAGENTA -> Items.MAGENTA_DYE;
-            case LIGHT_BLUE -> Items.LIGHT_BLUE_DYE;
-            case YELLOW -> Items.YELLOW_DYE;
-            case LIME -> Items.LIME_DYE;
-            case PINK -> Items.PINK_DYE;
-            case GRAY -> Items.GRAY_DYE;
-            case LIGHT_GRAY -> Items.LIGHT_GRAY_DYE;
-            case CYAN -> Items.CYAN_DYE;
-            case PURPLE -> Items.PURPLE_DYE;
-            case BLUE -> Items.BLUE_DYE;
-            case BROWN -> Items.BROWN_DYE;
-            case GREEN -> Items.GREEN_DYE;
-            case RED -> Items.RED_DYE;
-            case BLACK -> Items.BLACK_DYE;
+            case WHITE -> Items.DYE.pick(DyeColor.WHITE);
+            case ORANGE -> Items.DYE.pick(DyeColor.ORANGE);
+            case MAGENTA -> Items.DYE.pick(DyeColor.MAGENTA);
+            case LIGHT_BLUE -> Items.DYE.pick(DyeColor.LIGHT_BLUE);
+            case YELLOW -> Items.DYE.pick(DyeColor.YELLOW);
+            case LIME -> Items.DYE.pick(DyeColor.LIME);
+            case PINK -> Items.DYE.pick(DyeColor.PINK);
+            case GRAY -> Items.DYE.pick(DyeColor.GRAY);
+            case LIGHT_GRAY -> Items.DYE.pick(DyeColor.LIGHT_GRAY);
+            case CYAN -> Items.DYE.pick(DyeColor.CYAN);
+            case PURPLE -> Items.DYE.pick(DyeColor.PURPLE);
+            case BLUE -> Items.DYE.pick(DyeColor.BLUE);
+            case BROWN -> Items.DYE.pick(DyeColor.BROWN);
+            case GREEN -> Items.DYE.pick(DyeColor.GREEN);
+            case RED -> Items.DYE.pick(DyeColor.RED);
+            case BLACK -> Items.DYE.pick(DyeColor.BLACK);
           };
 
           // dyes into cauldrons
@@ -565,86 +566,86 @@ public class InspirationsCaudrons extends ModuleBase {
 
         // dye the wool
         addToList(DYE_CAULDRON_INTERACTIONS, new DyeItemCauldronInteraction(color -> switch (color) {
-                    case WHITE      -> Items.WHITE_WOOL;
-                    case ORANGE     -> Items.ORANGE_WOOL;
-                    case MAGENTA    -> Items.MAGENTA_WOOL;
-                    case LIGHT_BLUE -> Items.LIGHT_BLUE_WOOL;
-                    case YELLOW     -> Items.YELLOW_WOOL;
-                    case LIME       -> Items.LIME_WOOL;
-                    case PINK       -> Items.PINK_WOOL;
-                    case GRAY       -> Items.GRAY_WOOL;
-                    case LIGHT_GRAY -> Items.LIGHT_GRAY_WOOL;
-                    case CYAN       -> Items.CYAN_WOOL;
-                    case PURPLE     -> Items.PURPLE_WOOL;
-                    case BLUE       -> Items.BLUE_WOOL;
-                    case BROWN      -> Items.BROWN_WOOL;
-                    case GREEN      -> Items.GREEN_WOOL;
-                    case RED        -> Items.RED_WOOL;
-                    case BLACK      -> Items.BLACK_WOOL;
-                  }), Items.WHITE_WOOL, Items.ORANGE_WOOL, Items.MAGENTA_WOOL, Items.LIGHT_BLUE_WOOL, Items.YELLOW_WOOL, Items.LIME_WOOL, Items.PINK_WOOL, Items.GRAY_WOOL,
-                  Items.LIGHT_GRAY_WOOL, Items.CYAN_WOOL, Items.PURPLE_WOOL, Items.BLUE_WOOL, Items.BROWN_WOOL, Items.GREEN_WOOL, Items.RED_WOOL, Items.BLACK_WOOL);
+                    case WHITE      -> Items.WOOL.pick(DyeColor.WHITE);
+                    case ORANGE     -> Items.WOOL.pick(DyeColor.ORANGE);
+                    case MAGENTA    -> Items.WOOL.pick(DyeColor.MAGENTA);
+                    case LIGHT_BLUE -> Items.WOOL.pick(DyeColor.LIGHT_BLUE);
+                    case YELLOW     -> Items.WOOL.pick(DyeColor.YELLOW);
+                    case LIME       -> Items.WOOL.pick(DyeColor.LIME);
+                    case PINK       -> Items.WOOL.pick(DyeColor.PINK);
+                    case GRAY       -> Items.WOOL.pick(DyeColor.GRAY);
+                    case LIGHT_GRAY -> Items.WOOL.pick(DyeColor.LIGHT_GRAY);
+                    case CYAN       -> Items.WOOL.pick(DyeColor.CYAN);
+                    case PURPLE     -> Items.WOOL.pick(DyeColor.PURPLE);
+                    case BLUE       -> Items.WOOL.pick(DyeColor.BLUE);
+                    case BROWN      -> Items.WOOL.pick(DyeColor.BROWN);
+                    case GREEN      -> Items.WOOL.pick(DyeColor.GREEN);
+                    case RED        -> Items.WOOL.pick(DyeColor.RED);
+                    case BLACK      -> Items.WOOL.pick(DyeColor.BLACK);
+                  }), Items.WOOL.pick(DyeColor.WHITE), Items.WOOL.pick(DyeColor.ORANGE), Items.WOOL.pick(DyeColor.MAGENTA), Items.WOOL.pick(DyeColor.LIGHT_BLUE), Items.WOOL.pick(DyeColor.YELLOW), Items.WOOL.pick(DyeColor.LIME), Items.WOOL.pick(DyeColor.PINK), Items.WOOL.pick(DyeColor.GRAY),
+                  Items.WOOL.pick(DyeColor.LIGHT_GRAY), Items.WOOL.pick(DyeColor.CYAN), Items.WOOL.pick(DyeColor.PURPLE), Items.WOOL.pick(DyeColor.BLUE), Items.WOOL.pick(DyeColor.BROWN), Items.WOOL.pick(DyeColor.GREEN), Items.WOOL.pick(DyeColor.RED), Items.WOOL.pick(DyeColor.BLACK));
         // dye the bed
         addToList(DYE_CAULDRON_INTERACTIONS, new DyeItemCauldronInteraction(color -> switch (color) {
-                    case WHITE      -> Items.WHITE_BED;
-                    case ORANGE     -> Items.ORANGE_BED;
-                    case MAGENTA    -> Items.MAGENTA_BED;
-                    case LIGHT_BLUE -> Items.LIGHT_BLUE_BED;
-                    case YELLOW     -> Items.YELLOW_BED;
-                    case LIME       -> Items.LIME_BED;
-                    case PINK       -> Items.PINK_BED;
-                    case GRAY       -> Items.GRAY_BED;
-                    case LIGHT_GRAY -> Items.LIGHT_GRAY_BED;
-                    case CYAN       -> Items.CYAN_BED;
-                    case PURPLE     -> Items.PURPLE_BED;
-                    case BLUE       -> Items.BLUE_BED;
-                    case BROWN      -> Items.BROWN_BED;
-                    case GREEN      -> Items.GREEN_BED;
-                    case RED        -> Items.RED_BED;
-                    case BLACK      -> Items.BLACK_BED;
-                  }), Items.WHITE_BED, Items.ORANGE_BED, Items.MAGENTA_BED, Items.LIGHT_BLUE_BED, Items.YELLOW_BED, Items.LIME_BED, Items.PINK_BED, Items.GRAY_BED,
-                  Items.LIGHT_GRAY_BED, Items.CYAN_BED, Items.PURPLE_BED, Items.BLUE_BED, Items.BROWN_BED, Items.GREEN_BED, Items.RED_BED, Items.BLACK_BED);
+                    case WHITE      -> Items.BED.pick(DyeColor.WHITE);
+                    case ORANGE     -> Items.BED.pick(DyeColor.ORANGE);
+                    case MAGENTA    -> Items.BED.pick(DyeColor.MAGENTA);
+                    case LIGHT_BLUE -> Items.BED.pick(DyeColor.LIGHT_BLUE);
+                    case YELLOW     -> Items.BED.pick(DyeColor.YELLOW);
+                    case LIME       -> Items.BED.pick(DyeColor.LIME);
+                    case PINK       -> Items.BED.pick(DyeColor.PINK);
+                    case GRAY       -> Items.BED.pick(DyeColor.GRAY);
+                    case LIGHT_GRAY -> Items.BED.pick(DyeColor.LIGHT_GRAY);
+                    case CYAN       -> Items.BED.pick(DyeColor.CYAN);
+                    case PURPLE     -> Items.BED.pick(DyeColor.PURPLE);
+                    case BLUE       -> Items.BED.pick(DyeColor.BLUE);
+                    case BROWN      -> Items.BED.pick(DyeColor.BROWN);
+                    case GREEN      -> Items.BED.pick(DyeColor.GREEN);
+                    case RED        -> Items.BED.pick(DyeColor.RED);
+                    case BLACK      -> Items.BED.pick(DyeColor.BLACK);
+                  }), Items.BED.pick(DyeColor.WHITE), Items.BED.pick(DyeColor.ORANGE), Items.BED.pick(DyeColor.MAGENTA), Items.BED.pick(DyeColor.LIGHT_BLUE), Items.BED.pick(DyeColor.YELLOW), Items.BED.pick(DyeColor.LIME), Items.BED.pick(DyeColor.PINK), Items.BED.pick(DyeColor.GRAY),
+                  Items.BED.pick(DyeColor.LIGHT_GRAY), Items.BED.pick(DyeColor.CYAN), Items.BED.pick(DyeColor.PURPLE), Items.BED.pick(DyeColor.BLUE), Items.BED.pick(DyeColor.BROWN), Items.BED.pick(DyeColor.GREEN), Items.BED.pick(DyeColor.RED), Items.BED.pick(DyeColor.BLACK));
         // dye the carpet
         addToList(DYE_CAULDRON_INTERACTIONS, new DyeItemCauldronInteraction(color -> switch (color) {
-                    case WHITE      -> Items.WHITE_CARPET;
-                    case ORANGE     -> Items.ORANGE_CARPET;
-                    case MAGENTA    -> Items.MAGENTA_CARPET;
-                    case LIGHT_BLUE -> Items.LIGHT_BLUE_CARPET;
-                    case YELLOW     -> Items.YELLOW_CARPET;
-                    case LIME       -> Items.LIME_CARPET;
-                    case PINK       -> Items.PINK_CARPET;
-                    case GRAY       -> Items.GRAY_CARPET;
-                    case LIGHT_GRAY -> Items.LIGHT_GRAY_CARPET;
-                    case CYAN       -> Items.CYAN_CARPET;
-                    case PURPLE     -> Items.PURPLE_CARPET;
-                    case BLUE       -> Items.BLUE_CARPET;
-                    case BROWN      -> Items.BROWN_CARPET;
-                    case GREEN      -> Items.GREEN_CARPET;
-                    case RED        -> Items.RED_CARPET;
-                    case BLACK      -> Items.BLACK_CARPET;
-                  }), Items.WHITE_CARPET, Items.ORANGE_CARPET, Items.MAGENTA_CARPET, Items.LIGHT_BLUE_CARPET, Items.YELLOW_CARPET, Items.LIME_CARPET, Items.PINK_CARPET, Items.GRAY_CARPET,
-                  Items.LIGHT_GRAY_CARPET, Items.CYAN_CARPET, Items.PURPLE_CARPET, Items.BLUE_CARPET, Items.BROWN_CARPET, Items.GREEN_CARPET, Items.RED_CARPET, Items.BLACK_CARPET);
+                    case WHITE      -> Items.CARPET.pick(DyeColor.WHITE);
+                    case ORANGE     -> Items.CARPET.pick(DyeColor.ORANGE);
+                    case MAGENTA    -> Items.CARPET.pick(DyeColor.MAGENTA);
+                    case LIGHT_BLUE -> Items.CARPET.pick(DyeColor.LIGHT_BLUE);
+                    case YELLOW     -> Items.CARPET.pick(DyeColor.YELLOW);
+                    case LIME       -> Items.CARPET.pick(DyeColor.LIME);
+                    case PINK       -> Items.CARPET.pick(DyeColor.PINK);
+                    case GRAY       -> Items.CARPET.pick(DyeColor.GRAY);
+                    case LIGHT_GRAY -> Items.CARPET.pick(DyeColor.LIGHT_GRAY);
+                    case CYAN       -> Items.CARPET.pick(DyeColor.CYAN);
+                    case PURPLE     -> Items.CARPET.pick(DyeColor.PURPLE);
+                    case BLUE       -> Items.CARPET.pick(DyeColor.BLUE);
+                    case BROWN      -> Items.CARPET.pick(DyeColor.BROWN);
+                    case GREEN      -> Items.CARPET.pick(DyeColor.GREEN);
+                    case RED        -> Items.CARPET.pick(DyeColor.RED);
+                    case BLACK      -> Items.CARPET.pick(DyeColor.BLACK);
+                  }), Items.CARPET.pick(DyeColor.WHITE), Items.CARPET.pick(DyeColor.ORANGE), Items.CARPET.pick(DyeColor.MAGENTA), Items.CARPET.pick(DyeColor.LIGHT_BLUE), Items.CARPET.pick(DyeColor.YELLOW), Items.CARPET.pick(DyeColor.LIME), Items.CARPET.pick(DyeColor.PINK), Items.CARPET.pick(DyeColor.GRAY),
+                  Items.CARPET.pick(DyeColor.LIGHT_GRAY), Items.CARPET.pick(DyeColor.CYAN), Items.CARPET.pick(DyeColor.PURPLE), Items.CARPET.pick(DyeColor.BLUE), Items.CARPET.pick(DyeColor.BROWN), Items.CARPET.pick(DyeColor.GREEN), Items.CARPET.pick(DyeColor.RED), Items.CARPET.pick(DyeColor.BLACK));
         // dye the carpeted trapdoor
         addToList(DYE_CAULDRON_INTERACTIONS, new DyeItemCauldronInteraction(dye -> InspirationsUtility.carpetedTrapdoors.get(dye)), InspirationsUtility.carpetedTrapdoors.values().stream().map(ItemLike::asItem).toArray(Item[]::new));
         // dye the shulker box
         addToList(DYE_CAULDRON_INTERACTIONS, new DyeItemCauldronInteraction(color -> switch (color) {
-                    case WHITE      -> Items.WHITE_SHULKER_BOX;
-                    case ORANGE     -> Items.ORANGE_SHULKER_BOX;
-                    case MAGENTA    -> Items.MAGENTA_SHULKER_BOX;
-                    case LIGHT_BLUE -> Items.LIGHT_BLUE_SHULKER_BOX;
-                    case YELLOW     -> Items.YELLOW_SHULKER_BOX;
-                    case LIME       -> Items.LIME_SHULKER_BOX;
-                    case PINK       -> Items.PINK_SHULKER_BOX;
-                    case GRAY       -> Items.GRAY_SHULKER_BOX;
-                    case LIGHT_GRAY -> Items.LIGHT_GRAY_SHULKER_BOX;
-                    case CYAN       -> Items.CYAN_SHULKER_BOX;
-                    case PURPLE     -> Items.PURPLE_SHULKER_BOX;
-                    case BLUE       -> Items.BLUE_SHULKER_BOX;
-                    case BROWN      -> Items.BROWN_SHULKER_BOX;
-                    case GREEN      -> Items.GREEN_SHULKER_BOX;
-                    case RED        -> Items.RED_SHULKER_BOX;
-                    case BLACK      -> Items.BLACK_SHULKER_BOX;
-                  }, true), Items.WHITE_SHULKER_BOX, Items.ORANGE_SHULKER_BOX, Items.MAGENTA_SHULKER_BOX, Items.LIGHT_BLUE_SHULKER_BOX, Items.YELLOW_SHULKER_BOX, Items.LIME_SHULKER_BOX, Items.PINK_SHULKER_BOX, Items.GRAY_SHULKER_BOX,
-                  Items.LIGHT_GRAY_SHULKER_BOX, Items.CYAN_SHULKER_BOX, Items.PURPLE_SHULKER_BOX, Items.BLUE_SHULKER_BOX, Items.BROWN_SHULKER_BOX, Items.GREEN_SHULKER_BOX, Items.RED_SHULKER_BOX, Items.BLACK_SHULKER_BOX);
+                    case WHITE      -> Items.DYED_SHULKER_BOX.pick(DyeColor.WHITE);
+                    case ORANGE     -> Items.DYED_SHULKER_BOX.pick(DyeColor.ORANGE);
+                    case MAGENTA    -> Items.DYED_SHULKER_BOX.pick(DyeColor.MAGENTA);
+                    case LIGHT_BLUE -> Items.DYED_SHULKER_BOX.pick(DyeColor.LIGHT_BLUE);
+                    case YELLOW     -> Items.DYED_SHULKER_BOX.pick(DyeColor.YELLOW);
+                    case LIME       -> Items.DYED_SHULKER_BOX.pick(DyeColor.LIME);
+                    case PINK       -> Items.DYED_SHULKER_BOX.pick(DyeColor.PINK);
+                    case GRAY       -> Items.DYED_SHULKER_BOX.pick(DyeColor.GRAY);
+                    case LIGHT_GRAY -> Items.DYED_SHULKER_BOX.pick(DyeColor.LIGHT_GRAY);
+                    case CYAN       -> Items.DYED_SHULKER_BOX.pick(DyeColor.CYAN);
+                    case PURPLE     -> Items.DYED_SHULKER_BOX.pick(DyeColor.PURPLE);
+                    case BLUE       -> Items.DYED_SHULKER_BOX.pick(DyeColor.BLUE);
+                    case BROWN      -> Items.DYED_SHULKER_BOX.pick(DyeColor.BROWN);
+                    case GREEN      -> Items.DYED_SHULKER_BOX.pick(DyeColor.GREEN);
+                    case RED        -> Items.DYED_SHULKER_BOX.pick(DyeColor.RED);
+                    case BLACK      -> Items.DYED_SHULKER_BOX.pick(DyeColor.BLACK);
+                  }, true), Items.DYED_SHULKER_BOX.pick(DyeColor.WHITE), Items.DYED_SHULKER_BOX.pick(DyeColor.ORANGE), Items.DYED_SHULKER_BOX.pick(DyeColor.MAGENTA), Items.DYED_SHULKER_BOX.pick(DyeColor.LIGHT_BLUE), Items.DYED_SHULKER_BOX.pick(DyeColor.YELLOW), Items.DYED_SHULKER_BOX.pick(DyeColor.LIME), Items.DYED_SHULKER_BOX.pick(DyeColor.PINK), Items.DYED_SHULKER_BOX.pick(DyeColor.GRAY),
+                  Items.DYED_SHULKER_BOX.pick(DyeColor.LIGHT_GRAY), Items.DYED_SHULKER_BOX.pick(DyeColor.CYAN), Items.DYED_SHULKER_BOX.pick(DyeColor.PURPLE), Items.DYED_SHULKER_BOX.pick(DyeColor.BLUE), Items.DYED_SHULKER_BOX.pick(DyeColor.BROWN), Items.DYED_SHULKER_BOX.pick(DyeColor.GREEN), Items.DYED_SHULKER_BOX.pick(DyeColor.RED), Items.DYED_SHULKER_BOX.pick(DyeColor.BLACK));
         // dye the leather, any item whose dye a cauldron removes (the dyeable tag before 26.1; 1.20 had a dyeable item
         // interface; tags are not loaded yet here)
         CauldronRegistry.register(exactBlock(dyeCauldron), itemTag(ItemTags.CAULDRON_CAN_REMOVE_DYE), DyeLeatherItemCauldronInteraction.INSTANCE);
@@ -728,44 +729,44 @@ public class InspirationsCaudrons extends ModuleBase {
   /** Gets concrete powder for the given color */
   public static Block getConcretePowder(DyeColor color) {
     return switch(color) {
-      case WHITE      -> Blocks.WHITE_CONCRETE_POWDER;
-      case ORANGE     -> Blocks.ORANGE_CONCRETE_POWDER;
-      case MAGENTA    -> Blocks.MAGENTA_CONCRETE_POWDER;
-      case LIGHT_BLUE -> Blocks.LIGHT_BLUE_CONCRETE_POWDER;
-      case YELLOW     -> Blocks.YELLOW_CONCRETE_POWDER;
-      case LIME       -> Blocks.LIME_CONCRETE_POWDER;
-      case PINK       -> Blocks.PINK_CONCRETE_POWDER;
-      case GRAY       -> Blocks.GRAY_CONCRETE_POWDER;
-      case LIGHT_GRAY -> Blocks.LIGHT_GRAY_CONCRETE_POWDER;
-      case CYAN       -> Blocks.CYAN_CONCRETE_POWDER;
-      case PURPLE     -> Blocks.PURPLE_CONCRETE_POWDER;
-      case BLUE       -> Blocks.BLUE_CONCRETE_POWDER;
-      case BROWN      -> Blocks.BROWN_CONCRETE_POWDER;
-      case GREEN      -> Blocks.GREEN_CONCRETE_POWDER;
-      case RED        -> Blocks.RED_CONCRETE_POWDER;
-      case BLACK      -> Blocks.BLACK_CONCRETE_POWDER;
+      case WHITE      -> Blocks.CONCRETE_POWDER.pick(DyeColor.WHITE);
+      case ORANGE     -> Blocks.CONCRETE_POWDER.pick(DyeColor.ORANGE);
+      case MAGENTA    -> Blocks.CONCRETE_POWDER.pick(DyeColor.MAGENTA);
+      case LIGHT_BLUE -> Blocks.CONCRETE_POWDER.pick(DyeColor.LIGHT_BLUE);
+      case YELLOW     -> Blocks.CONCRETE_POWDER.pick(DyeColor.YELLOW);
+      case LIME       -> Blocks.CONCRETE_POWDER.pick(DyeColor.LIME);
+      case PINK       -> Blocks.CONCRETE_POWDER.pick(DyeColor.PINK);
+      case GRAY       -> Blocks.CONCRETE_POWDER.pick(DyeColor.GRAY);
+      case LIGHT_GRAY -> Blocks.CONCRETE_POWDER.pick(DyeColor.LIGHT_GRAY);
+      case CYAN       -> Blocks.CONCRETE_POWDER.pick(DyeColor.CYAN);
+      case PURPLE     -> Blocks.CONCRETE_POWDER.pick(DyeColor.PURPLE);
+      case BLUE       -> Blocks.CONCRETE_POWDER.pick(DyeColor.BLUE);
+      case BROWN      -> Blocks.CONCRETE_POWDER.pick(DyeColor.BROWN);
+      case GREEN      -> Blocks.CONCRETE_POWDER.pick(DyeColor.GREEN);
+      case RED        -> Blocks.CONCRETE_POWDER.pick(DyeColor.RED);
+      case BLACK      -> Blocks.CONCRETE_POWDER.pick(DyeColor.BLACK);
     };
   }
 
   /** Gets concrete for the given color */
   public static Block getConcrete(DyeColor color) {
     return switch(color) {
-      case WHITE      -> Blocks.WHITE_CONCRETE;
-      case ORANGE     -> Blocks.ORANGE_CONCRETE;
-      case MAGENTA    -> Blocks.MAGENTA_CONCRETE;
-      case LIGHT_BLUE -> Blocks.LIGHT_BLUE_CONCRETE;
-      case YELLOW     -> Blocks.YELLOW_CONCRETE;
-      case LIME       -> Blocks.LIME_CONCRETE;
-      case PINK       -> Blocks.PINK_CONCRETE;
-      case GRAY       -> Blocks.GRAY_CONCRETE;
-      case LIGHT_GRAY -> Blocks.LIGHT_GRAY_CONCRETE;
-      case CYAN       -> Blocks.CYAN_CONCRETE;
-      case PURPLE     -> Blocks.PURPLE_CONCRETE;
-      case BLUE       -> Blocks.BLUE_CONCRETE;
-      case BROWN      -> Blocks.BROWN_CONCRETE;
-      case GREEN      -> Blocks.GREEN_CONCRETE;
-      case RED        -> Blocks.RED_CONCRETE;
-      case BLACK      -> Blocks.BLACK_CONCRETE;
+      case WHITE      -> Blocks.CONCRETE.pick(DyeColor.WHITE);
+      case ORANGE     -> Blocks.CONCRETE.pick(DyeColor.ORANGE);
+      case MAGENTA    -> Blocks.CONCRETE.pick(DyeColor.MAGENTA);
+      case LIGHT_BLUE -> Blocks.CONCRETE.pick(DyeColor.LIGHT_BLUE);
+      case YELLOW     -> Blocks.CONCRETE.pick(DyeColor.YELLOW);
+      case LIME       -> Blocks.CONCRETE.pick(DyeColor.LIME);
+      case PINK       -> Blocks.CONCRETE.pick(DyeColor.PINK);
+      case GRAY       -> Blocks.CONCRETE.pick(DyeColor.GRAY);
+      case LIGHT_GRAY -> Blocks.CONCRETE.pick(DyeColor.LIGHT_GRAY);
+      case CYAN       -> Blocks.CONCRETE.pick(DyeColor.CYAN);
+      case PURPLE     -> Blocks.CONCRETE.pick(DyeColor.PURPLE);
+      case BLUE       -> Blocks.CONCRETE.pick(DyeColor.BLUE);
+      case BROWN      -> Blocks.CONCRETE.pick(DyeColor.BROWN);
+      case GREEN      -> Blocks.CONCRETE.pick(DyeColor.GREEN);
+      case RED        -> Blocks.CONCRETE.pick(DyeColor.RED);
+      case BLACK      -> Blocks.CONCRETE.pick(DyeColor.BLACK);
     };
   }
 

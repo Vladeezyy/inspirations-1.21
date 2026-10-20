@@ -118,10 +118,10 @@ public class TintedLecternRenderer implements BlockEntityRenderer<LecternBlockEn
       RenderType type = BOOK_LOCATION.renderType(RenderTypes::entitySolid);
       var sprite = sprites.get(BOOK_LOCATION);
       for (ModelPart part : cover) {
-        collector.submitModelPart(part, pose, type, state.lightCoords, OverlayTexture.NO_OVERLAY, sprite, false, false, state.tint, state.breakProgress, 0);
+        collector.submitModelPart(part, pose, type, state.lightCoords, OverlayTexture.NO_OVERLAY, sprite, state.tint, state.breakProgress, 0);
       }
       for (ModelPart part : pages) {
-        collector.submitModelPart(part, pose, type, state.lightCoords, OverlayTexture.NO_OVERLAY, sprite, false, false, -1, state.breakProgress, 0);
+        collector.submitModelPart(part, pose, type, state.lightCoords, OverlayTexture.NO_OVERLAY, sprite, -1, state.breakProgress, 0);
       }
     }
     pose.popPose();

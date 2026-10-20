@@ -43,8 +43,8 @@ public class PotionCauldronBlock extends BoilingThreeLayerCauldronBlock implemen
 					be.getPotionContents().forEachEffect(potionEffects::add, 1.0F);
 					if (potionEffects.stream().anyMatch(effect -> !living.hasEffect(effect.getEffect()))) {
 						for (MobEffectInstance effect : potionEffects) {
-							if (effect.getEffect().value().isInstantenous()) {
-								effect.getEffect().value().applyInstantenousEffect((net.minecraft.server.level.ServerLevel) world, null, null, living, effect.getAmplifier(), 1.0D);
+							if (effect.getEffect().value().isInstantaneous()) {
+								effect.getEffect().value().applyInstantaneousEffect((net.minecraft.server.level.ServerLevel) world, null, null, living, effect.getAmplifier(), 1.0D);
 							} else {
 								living.addEffect(new MobEffectInstance(effect));
 							}

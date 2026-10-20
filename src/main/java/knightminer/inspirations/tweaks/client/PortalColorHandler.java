@@ -50,7 +50,7 @@ public class PortalColorHandler implements BlockColor {
       if (world.getBlockState(above).getBlock() == Blocks.NETHER_PORTAL) {
         Minecraft mc = Minecraft.getInstance();
         BlockGetter blockGetter = world;
-        mc.submitAsync(() -> mc.levelRenderer.blockChanged(blockGetter, above, state, state, 8));
+        mc.submitAsync(() -> { if (mc.level != null) mc.level.setBlocksDirty(above, state, state); });
       }
     }
 

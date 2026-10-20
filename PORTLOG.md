@@ -164,6 +164,27 @@ Verification on 26.1.2: selftest 57/57 (two new checks for the dye changes), cli
 1.21.11), net test 11/11. Stress: empty floor 244 FPS, vanilla baseline 250 FPS, 1024 shelves 236 FPS at 3.2 MSPT,
 plus 96 cauldrons 226 FPS at 3.1 MSPT, 200 ticks of changes 183 FPS at 4.3 MSPT — 10/10.
 
+## Minecraft 26.2 (NeoForge 26.2.0.93), branch `mc/26.2`
+
+From `mc/26.1.2`, Kilnwork `26.2-1.1.0`, the data of 26.1 unchanged.
+- Colored vanilla blocks and items are `ColorCollection`s: `Items.WOOL.pick(DyeColor.RED)` instead of
+  `Items.RED_WOOL` (wool, carpets, beds, dyes, shulker boxes, concrete, concrete powder).
+- Vanilla block entity types in `BlockEntityTypes`, entity types in `EntityTypes`, advancement triggers in
+  `net.minecraft.advancements.triggers`, item predicates in `net.minecraft.advancements.predicates`; block-and-item
+  tags such as small flowers in `BlockItemTags`.
+- `knockback` takes the damage source, instant effects are `isInstantaneous`/`applyInstantaneousEffect`, the chunk
+  of a portal is marked dirty with `ClientLevel.setBlocksDirty`.
+- Tests: screens, toasts, the overlay and the HUD are in `Minecraft.gui`; the main render target is the game
+  renderer's.
+
+Verification on 26.2: selftest 57/57, client scene 42/42, net test 11/11. Stress (machine under other load; one run):
+empty floor 112 FPS, vanilla baseline 171 FPS, 1024 shelves 150 FPS at 3.2 MSPT, plus 32 vanilla campfires 106 FPS,
+plus 96 cauldrons 101 FPS at 3.2 MSPT, 200 ticks of changes 61 FPS at 3.2 MSPT — 10/10. The campfire smoke costs 30%
+here (particles take a light lookup each in 26.2), the boiling cauldrons 5%.
+
+The client scene now checks that the cactus and sugar cane crops stay: the cactus sand sat in the one block thick floor
+and fell (in every version), the sugar cane sand was next to the cactus.
+
 ## License
 
 Code: LGPL-3.0-only (`LICENSE`, GPL text in `licenses/COPYING`); the original is MIT (`licenses/LICENSE-MIT`).
