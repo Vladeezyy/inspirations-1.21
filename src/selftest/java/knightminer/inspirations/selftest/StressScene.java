@@ -160,6 +160,12 @@ public final class StressScene {
     at(t += 100, mc -> {
       double fps = fps("1024 shelves full of books");
       check("frame rate with 1024 shelves stays over 30 FPS", fps > 30, fps);
+      server(mc, StressScene::campfires);
+    });
+    // the campfires alone are vanilla (smoke particles), the cauldrons above them are the mod's
+    at(t += 60, mc -> startMeasure());
+    at(t += 100, mc -> {
+      fps("plus 32 campfires (vanilla)");
       server(mc, StressScene::cauldrons);
     });
     at(t += 60, mc -> startMeasure());
@@ -341,11 +347,18 @@ public final class StressScene {
     }
   }
 
-  /** 32 boiling cauldrons, 32 dye and 32 potion cauldrons, a lectern with a book */
-  private static void cauldrons(ServerPlayer player) {
+  /** 32 campfires, the fire for the boiling cauldrons */
+  private static void campfires(ServerPlayer player) {
     ServerLevel level = player.level();
     for (int x = 0; x < SIDE; x++) {
       level.setBlock(at(x, 1, -4), Blocks.CAMPFIRE.defaultBlockState(), Block.UPDATE_ALL);
+    }
+  }
+
+  /** 32 boiling cauldrons over the campfires, 32 dye and 32 potion cauldrons, a lectern with a book */
+  private static void cauldrons(ServerPlayer player) {
+    ServerLevel level = player.level();
+    for (int x = 0; x < SIDE; x++) {
       level.setBlock(at(x, 2, -4), Blocks.WATER_CAULDRON.defaultBlockState().setValue(LayeredCauldronBlock.LEVEL, 3), Block.UPDATE_ALL);
       level.setBlock(at(x, 1, -2), InspirationsCaudrons.dyeCauldron.defaultBlockState().setValue(LayeredCauldronBlock.LEVEL, 3), Block.UPDATE_ALL);
       if (level.getBlockEntity(at(x, 1, -2)) instanceof DyeCauldronBlockEntity dye) {

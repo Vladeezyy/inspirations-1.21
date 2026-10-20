@@ -135,6 +135,9 @@ world is in another biome now, so the vine rope has the savanna tint), net test 
 numbers of one run): empty floor 151 FPS, vanilla baseline of 1024 full chiseled bookshelves 140 FPS, 1024 shelves full
 of books 158 FPS at 7.6 MSPT, plus 96 cauldrons 154 FPS at 4.6 MSPT, 200 ticks of changes 126 FPS at 5.8 MSPT — 10/10.
 
+The client scene checks that its cactus and sugar cane crops stay (the cactus sand sat in the one block thick floor and
+fell, in every version; now 42 checks), the stress scene measures the vanilla campfires apart from the cauldrons.
+
 ## License
 
 Code: LGPL-3.0-only (`LICENSE`, GPL text in `licenses/COPYING`); the original is MIT (`licenses/LICENSE-MIT`).
