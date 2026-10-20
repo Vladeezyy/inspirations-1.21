@@ -26,19 +26,9 @@ public class FourLayerCauldronBlock extends AbstractCauldronBlock {
 	public static final int MAX_FILL_LEVEL = 4;
 	public static final IntegerProperty LEVEL = IntegerProperty.create("level", 1, MAX_FILL_LEVEL);
 
-	public static final MapCodec<FourLayerCauldronBlock> CODEC = RecordCodecBuilder.mapCodec(inst -> inst.group(
-		propertiesCodec(),
-		CauldronInteractions.CODEC.fieldOf("interactions").forGetter(block -> block.interactions)
-	).apply(inst, FourLayerCauldronBlock::new));
-
 	public FourLayerCauldronBlock(Properties pProperties, CauldronInteraction.Dispatcher pInteractions) {
 		super(pProperties, pInteractions);
 		this.registerDefaultState(this.stateDefinition.any().setValue(LEVEL, 1));
-	}
-
-	@Override
-	protected MapCodec<? extends AbstractCauldronBlock> codec() {
-		return CODEC;
 	}
 
 	@Override

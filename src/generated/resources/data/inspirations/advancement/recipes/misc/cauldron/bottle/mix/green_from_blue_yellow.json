@@ -23,7 +23,7 @@
     },
     "has_the_recipe": {
       "conditions": {
-        "recipe": "inspirations:cauldron/bottle/mix/green_from_blue_yellow"
+        "recipes": "inspirations:cauldron/bottle/mix/green_from_blue_yellow"
       },
       "trigger": "minecraft:recipe_unlocked"
     },

@@ -19,7 +19,7 @@
     },
     "has_the_recipe": {
       "conditions": {
-        "recipe": "inspirations:cauldron/bottle/mix/orange_from_red_yellow"
+        "recipes": "inspirations:cauldron/bottle/mix/orange_from_red_yellow"
       },
       "trigger": "minecraft:recipe_unlocked"
     },

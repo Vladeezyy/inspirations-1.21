@@ -19,7 +19,7 @@
     },
     "has_the_recipe": {
       "conditions": {
-        "recipe": "inspirations:building/glass_trapdoor"
+        "recipes": "inspirations:building/glass_trapdoor"
       },
       "trigger": "minecraft:recipe_unlocked"
     }

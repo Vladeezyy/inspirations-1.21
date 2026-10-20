@@ -19,7 +19,7 @@
     },
     "has_the_recipe": {
       "conditions": {
-        "recipe": "inspirations:tools/lock"
+        "recipes": "inspirations:tools/lock"
       },
       "trigger": "minecraft:recipe_unlocked"
     }

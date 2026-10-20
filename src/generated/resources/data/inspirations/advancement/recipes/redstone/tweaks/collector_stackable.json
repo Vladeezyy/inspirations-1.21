@@ -13,7 +13,7 @@
   "criteria": {
     "has_the_recipe": {
       "conditions": {
-        "recipe": "inspirations:tweaks/collector_stackable"
+        "recipes": "inspirations:tweaks/collector_stackable"
       },
       "trigger": "minecraft:recipe_unlocked"
     },

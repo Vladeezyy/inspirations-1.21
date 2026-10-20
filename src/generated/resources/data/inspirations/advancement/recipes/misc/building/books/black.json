@@ -19,7 +19,7 @@
     },
     "has_the_recipe": {
       "conditions": {
-        "recipe": "inspirations:building/books/black"
+        "recipes": "inspirations:building/books/black"
       },
       "trigger": "minecraft:recipe_unlocked"
     }

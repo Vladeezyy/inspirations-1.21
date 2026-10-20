@@ -4,12 +4,12 @@
   "package": "knightminer.inspirations.mixin",
   "compatibilityLevel": "JAVA_21",
   "mixins": [
-    "AxeItemMixin",
     "BlockPropertiesMixin",
     "EnchantmentHelperMixin",
     "EnchantmentMixin",
     "HopperBlockMixin",
     "IronBarsBlockMixin",
+    "ItemMixin",
     "ItemPropertiesMixin",
     "ItemStackMixin",
     "LayeredCauldronBlockMixin",

@@ -199,6 +199,12 @@ public class SelfTest {
 
   /* Checks not needing ticks */
 
+  /** Result of the brewing recipe for the input and reagent, empty if none */
+  private static ItemStack brew(MinecraftServer server, ServerLevel level, ItemStack input, ItemStack reagent) {
+    var brewing = new net.minecraft.world.item.crafting.BrewingInput(input, reagent);
+    return server.getRecipeManager().getRecipeFor(RecipeType.BREWING, brewing, level).map(r -> r.value().assemble(brewing)).orElse(ItemStack.EMPTY);
+  }
+
   private static void instantChecks(MinecraftServer server, ServerLevel level) {
     long blocks = BuiltInRegistries.BLOCK.keySet().stream().filter(id -> id.getNamespace().equals(Inspirations.modID)).count();
     long items = BuiltInRegistries.ITEM.keySet().stream().filter(id -> id.getNamespace().equals(Inspirations.modID)).count();
@@ -310,16 +316,18 @@ public class SelfTest {
       return heartbeets > 0;
     });
 
-    // brewing
-    check("heartbeet brews awkward into regeneration", () -> {
-      ItemStack result = level.potionBrewing().mix(new ItemStack(InspirationsTweaks.heartbeet), PotionContents.createItemStack(Items.POTION, Potions.AWKWARD));
-      return result.getOrDefault(DataComponents.POTION_CONTENTS, PotionContents.EMPTY).is(Potions.REGENERATION);
-    });
+    // brewing (data recipes since 26.3)
+    check("heartbeet brews awkward into regeneration", () ->
+      brew(server, level, PotionContents.createItemStack(Items.POTION, Potions.AWKWARD), new ItemStack(InspirationsTweaks.heartbeet))
+        .getOrDefault(DataComponents.POTION_CONTENTS, PotionContents.EMPTY).is(Potions.REGENERATION));
     check("glass bottles brew into splash bottles with gunpowder", () ->
-      level.potionBrewing().mix(new ItemStack(Items.GUNPOWDER), new ItemStack(Items.GLASS_BOTTLE)).is(InspirationsCaudrons.splashBottle));
+      brew(server, level, new ItemStack(Items.GLASS_BOTTLE), new ItemStack(Items.GUNPOWDER)).is(InspirationsCaudrons.splashBottle));
+    check("splash bottles brew into lingering bottles with dragon's breath", () ->
+      brew(server, level, new ItemStack(InspirationsCaudrons.splashBottle), new ItemStack(Items.DRAGON_BREATH)).is(InspirationsCaudrons.lingeringBottle));
 
-    // misc registration
-    check("compostables", () -> ComposterBlock.COMPOSTABLES.getFloat(InspirationsTweaks.heartbeet) == 0.8F && ComposterBlock.COMPOSTABLES.getFloat(InspirationsBuilding.vine.asItem()) == 0.5F);
+    // misc registration (compost chances are components since 26.3)
+    check("compostables", () -> new ItemStack(InspirationsTweaks.heartbeet).has(DataComponents.COMPOSTABLE) && new ItemStack(InspirationsBuilding.vine).has(DataComponents.COMPOSTABLE)
+      && new ItemStack(InspirationsBuilding.shelf.get(ShelfType.NORMAL)).has(DataComponents.COOKING_FUEL));
     check("wet hopper keeps the hopper block entity", () -> net.minecraft.world.level.block.entity.BlockEntityTypes.HOPPER.isValid(InspirationsTweaks.wetHopper.defaultBlockState()));
 
     // data of 1.20 worlds

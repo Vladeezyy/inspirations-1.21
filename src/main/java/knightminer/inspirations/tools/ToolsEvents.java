@@ -1,5 +1,6 @@
 package knightminer.inspirations.tools;
 
+import net.minecraft.util.Prediction;
 import net.minecraft.advancements.predicates.ItemPredicate;
 import net.minecraft.advancements.predicates.DataComponentMatchers;
 import net.minecraft.core.component.DataComponentExactPredicate;
@@ -37,7 +38,6 @@ import net.neoforged.neoforge.event.entity.player.PlayerInteractEvent.RightClick
 import net.neoforged.neoforge.event.level.block.BreakBlockEvent;
 import net.neoforged.bus.api.EventPriority;
 import net.neoforged.bus.api.SubscribeEvent;
-import net.neoforged.neoforge.items.ItemHandlerHelper;
 
 public class ToolsEvents {
   @SubscribeEvent
@@ -93,7 +93,7 @@ public class ToolsEvents {
             ItemStack lock = new ItemStack(InspirationsTools.lock);
             // the key opened it, so the lock had its name
             lock.set(DataComponents.CUSTOM_NAME, stack.get(DataComponents.CUSTOM_NAME));
-            player.getInventory().placeItemBackInInventory(lock);
+            player.getInventory().placeItemBackInInventory(lock, Prediction.SERVER_ONLY);
             player.sendOverlayMessage(Component.translatable(Inspirations.prefix("unlock.success")));
           } else {
             player.sendOverlayMessage(Component.translatable(Inspirations.prefix("unlock.fail.no_match")));

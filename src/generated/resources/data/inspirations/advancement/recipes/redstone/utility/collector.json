@@ -19,7 +19,7 @@
     },
     "has_the_recipe": {
       "conditions": {
-        "recipe": "inspirations:utility/collector"
+        "recipes": "inspirations:utility/collector"
       },
       "trigger": "minecraft:recipe_unlocked"
     }

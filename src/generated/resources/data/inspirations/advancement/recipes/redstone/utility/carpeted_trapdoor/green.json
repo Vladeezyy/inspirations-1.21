@@ -19,7 +19,7 @@
     },
     "has_the_recipe": {
       "conditions": {
-        "recipe": "inspirations:utility/carpeted_trapdoor/green"
+        "recipes": "inspirations:utility/carpeted_trapdoor/green"
       },
       "trigger": "minecraft:recipe_unlocked"
     }

@@ -19,7 +19,7 @@
     },
     "has_the_recipe": {
       "conditions": {
-        "recipe": "inspirations:cauldron/bottle/carpet/white"
+        "recipes": "inspirations:cauldron/bottle/carpet/white"
       },
       "trigger": "minecraft:recipe_unlocked"
     }

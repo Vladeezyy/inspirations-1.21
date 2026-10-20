@@ -19,7 +19,7 @@
     },
     "has_the_recipe": {
       "conditions": {
-        "recipe": "inspirations:building/books/green"
+        "recipes": "inspirations:building/books/green"
       },
       "trigger": "minecraft:recipe_unlocked"
     }

@@ -19,7 +19,7 @@
     },
     "has_the_recipe": {
       "conditions": {
-        "recipe": "inspirations:building/path/brick_crafting"
+        "recipes": "inspirations:building/path/brick_crafting"
       },
       "trigger": "minecraft:recipe_unlocked"
     }

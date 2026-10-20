@@ -41,7 +41,6 @@ import knightminer.inspirations.cauldrons.item.EmptyBottleItem;
 import knightminer.inspirations.cauldrons.item.MilkBottleItem;
 import knightminer.inspirations.cauldrons.item.MixedDyedBottleItem;
 import knightminer.inspirations.cauldrons.item.SimpleDyedBottleItem;
-import knightminer.inspirations.cauldrons.recipe.BottleBrewingRecipe;
 import knightminer.inspirations.common.Config;
 import knightminer.inspirations.common.ModuleBase;
 import knightminer.inspirations.library.MiscUtil;
@@ -72,9 +71,7 @@ import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.item.alchemy.PotionContents;
-import net.minecraft.world.item.alchemy.PotionBrewing;
 import net.minecraft.core.Holder;
-import net.neoforged.neoforge.event.brewing.RegisterBrewingRecipesEvent;
 import net.neoforged.neoforge.registries.NeoForgeRegistries;
 import net.neoforged.neoforge.capabilities.Capabilities;
 import net.neoforged.neoforge.capabilities.RegisterCapabilitiesEvent;
@@ -96,7 +93,6 @@ import net.minecraft.world.level.material.MapColor;
 import net.neoforged.neoforge.common.NeoForgeMod;
 import net.neoforged.neoforge.common.SoundActions;
 import net.neoforged.neoforge.common.Tags;
-import net.neoforged.neoforge.common.brewing.BrewingRecipeRegistry;
 import net.neoforged.bus.api.SubscribeEvent;
 import net.neoforged.neoforge.fluids.FluidStack;
 import net.neoforged.neoforge.fluids.FluidType;
@@ -309,35 +305,8 @@ public class InspirationsCaudrons extends ModuleBase {
   }
 
 
-  /** Brewing glass bottles into splash and lingering bottles, with the ingredients of the potion container mixes */
-  private static void registerBrewing(RegisterBrewingRecipesEvent event) {
-    if (!Config.enableCauldronPotions.getAsBoolean() || !Config.brewPotionBottles.getAsBoolean()) {
-      return;
-    }
-    Ingredient toSplash = containerMix(event.getBuilder(), Items.POTION, Items.SPLASH_POTION);
-    Ingredient toLingering = containerMix(event.getBuilder(), Items.SPLASH_POTION, Items.LINGERING_POTION);
-    if (toSplash != null) {
-      event.getBuilder().addRecipe(new BottleBrewingRecipe(Ingredient.of(Items.GLASS_BOTTLE), toSplash, new ItemStack(splashBottle)));
-    }
-    if (toLingering != null) {
-      event.getBuilder().addRecipe(new BottleBrewingRecipe(Ingredient.of(BuiltInRegistries.ITEM.getOrThrow(InspirationsTags.Common.SPLASH_BOTTLE)), toLingering, new ItemStack(lingeringBottle)));
-    }
-  }
-
-  /** Ingredient turning one potion container into another, as registered so far (vanilla: gunpowder, dragon's breath) */
-  @Nullable
-  private static Ingredient containerMix(PotionBrewing.Builder builder, Item from, Item to) {
-    for (PotionBrewing.Mix<Item> mix : builder.containerMixes) {
-      if (mix.from().value() == from && mix.to().value() == to) {
-        return mix.ingredient();
-      }
-    }
-    return null;
-  }
-
   @SubscribeEvent
   void commonSetup(FMLCommonSetupEvent event) {
-    NeoForge.EVENT_BUS.addListener(InspirationsCaudrons::registerBrewing);
     // get a list of all cauldrons
     List<AbstractCauldronBlock> allCauldrons = new ArrayList<>();
     for (Block block : BuiltInRegistries.BLOCK) {

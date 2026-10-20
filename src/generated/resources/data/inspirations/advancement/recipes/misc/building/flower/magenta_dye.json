@@ -19,7 +19,7 @@
     },
     "has_the_recipe": {
       "conditions": {
-        "recipe": "inspirations:building/flower/magenta_dye"
+        "recipes": "inspirations:building/flower/magenta_dye"
       },
       "trigger": "minecraft:recipe_unlocked"
     }

@@ -87,7 +87,6 @@ import net.neoforged.bus.api.SubscribeEvent;
 import net.neoforged.fml.common.EventBusSubscriber;
 import net.neoforged.neoforge.client.event.ClientTickEvent;
 import net.neoforged.neoforge.model.data.ModelData;
-import org.lwjgl.glfw.GLFW;
 
 import java.util.ArrayList;
 import java.util.HashSet;
@@ -270,7 +269,7 @@ public final class ClientScene {
         return;
       }
       opened = true;
-      GLFW.glfwSetWindowSize(mc.getWindow().handle(), 1600, 900);
+      mc.getWindow().setWindowed(1600, 900);
       mc.options.guiScale().set(3);
       mc.options.cloudStatus().set(CloudStatus.OFF);
       mc.options.pauseOnLostFocus = false;
@@ -569,9 +568,11 @@ public final class ClientScene {
       }
       Object[] array = (Object[]) layers.get(state);
       for (int i = 0; i < count.getInt(state); i++) {
-        @SuppressWarnings("unchecked")
-        List<BakedQuad> list = (List<BakedQuad>) layerQuads.get(array[i]);
-        quads.addAll(list);
+        // ItemQuads since 26.3 (all, solid, translucent)
+        var layer = (net.minecraft.client.resources.model.geometry.ItemQuads) layerQuads.get(array[i]);
+        if (layer != null) {
+          quads.addAll(layer.all());
+        }
         // an IntList since 26.1
         var layerTint = (it.unimi.dsi.fastutil.ints.IntList) layerTints.get(array[i]);
         tints.add(layerTint == null ? new int[0] : layerTint.toIntArray());

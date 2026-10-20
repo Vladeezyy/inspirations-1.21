@@ -131,4 +131,7 @@ public class ConfigEnabledCondition implements ICondition, LootItemCondition {
   // potions
   public static final ConfigEnabledCondition CAULDRON_POTIONS = add("cauldron_potions", Config.enableCauldronPotions);
   public static final ConfigEnabledCondition CAULDRON_BREWING = add("cauldron_brewing", Config.cauldronBrewing);
+  // brewing recipes are data since 26.3
+  public static final ConfigEnabledCondition BREW_BOTTLES = add("brew_bottles", Config.brewPotionBottles);
+  public static final ConfigEnabledCondition BREW_HEARTBEET = add("brew_heartbeet", Config.brewHeartbeet);
 }

@@ -19,7 +19,7 @@
     },
     "has_the_recipe": {
       "conditions": {
-        "recipe": "inspirations:cauldron/bottle/concrete_powder/magenta"
+        "recipes": "inspirations:cauldron/bottle/concrete_powder/magenta"
       },
       "trigger": "minecraft:recipe_unlocked"
     }

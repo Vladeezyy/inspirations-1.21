@@ -19,7 +19,7 @@
     },
     "has_the_recipe": {
       "conditions": {
-        "recipe": "inspirations:cauldron/bottle/beds/lime"
+        "recipes": "inspirations:cauldron/bottle/beds/lime"
       },
       "trigger": "minecraft:recipe_unlocked"
     }

@@ -19,7 +19,7 @@
     },
     "has_the_recipe": {
       "conditions": {
-        "recipe": "inspirations:cauldron/bottle/concrete_powder/lime"
+        "recipes": "inspirations:cauldron/bottle/concrete_powder/lime"
       },
       "trigger": "minecraft:recipe_unlocked"
     }

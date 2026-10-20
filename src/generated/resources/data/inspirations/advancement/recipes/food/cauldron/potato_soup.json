@@ -19,7 +19,7 @@
     },
     "has_the_recipe": {
       "conditions": {
-        "recipe": "inspirations:cauldron/potato_soup"
+        "recipes": "inspirations:cauldron/potato_soup"
       },
       "trigger": "minecraft:recipe_unlocked"
     }

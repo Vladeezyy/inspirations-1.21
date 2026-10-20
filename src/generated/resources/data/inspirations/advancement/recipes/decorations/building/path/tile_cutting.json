@@ -19,7 +19,7 @@
     },
     "has_the_recipe": {
       "conditions": {
-        "recipe": "inspirations:building/path/tile_cutting"
+        "recipes": "inspirations:building/path/tile_cutting"
       },
       "trigger": "minecraft:recipe_unlocked"
     }

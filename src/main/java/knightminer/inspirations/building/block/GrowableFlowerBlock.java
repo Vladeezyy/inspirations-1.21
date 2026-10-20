@@ -1,5 +1,6 @@
 package knightminer.inspirations.building.block;
 
+import net.minecraft.world.level.block.BonemealSource;
 import knightminer.inspirations.Inspirations;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.registries.BuiltInRegistries;
@@ -19,7 +20,7 @@ import net.minecraft.world.level.storage.loot.entries.NestedLootTable;
 import net.minecraft.core.Holder;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.resources.ResourceKey;
-import net.minecraft.world.level.storage.loot.providers.number.ConstantValue;
+import net.minecraft.world.level.storage.loot.providers.number.ints.ContextIntProviders;
 import net.neoforged.neoforge.event.LootTableLoadEvent;
 
 import javax.annotation.Nullable;
@@ -36,17 +37,17 @@ public class GrowableFlowerBlock extends FlowerBlock implements BonemealableBloc
   /* Doubling up */
 
   @Override
-  public boolean isValidBonemealTarget(LevelReader pLevel, BlockPos pPos, BlockState pState) {
+  public boolean isValidBonemealTarget(LevelReader pLevel, BlockPos pPos, BlockState pState, BonemealSource source) {
     return largePlant != null;
   }
 
   @Override
-  public boolean isBonemealSuccess(Level pLevel, RandomSource pRandom, BlockPos pPos, BlockState pState) {
+  public boolean isBonemealSuccess(Level pLevel, RandomSource pRandom, BlockPos pPos, BlockState pState, BonemealSource source) {
     return true;
   }
 
   @Override
-  public void performBonemeal(ServerLevel level, RandomSource pRandom, BlockPos pos, BlockState state) {
+  public void performBonemeal(ServerLevel level, RandomSource pRandom, BlockPos pos, BlockState state, BonemealSource source) {
     // should not happen, but catch anyways
     if (largePlant == null) {
       return;
@@ -76,8 +77,8 @@ public class GrowableFlowerBlock extends FlowerBlock implements BonemealableBloc
     Identifier location = Inspirations.getResource("blocks/inject/" + BuiltInRegistries.BLOCK.getKey(this).getPath());
     table.addPool(new LootPool.Builder()
                       .name(location.toString())
-                      .setRolls(ConstantValue.exactly(1))
-                      .add(NestedLootTable.lootTableReference(ResourceKey.create(Registries.LOOT_TABLE, location)))
+                      .setRolls(ContextIntProviders.exactly(1))
+                      .add(NestedLootTable.lootTableReference(event.getRegistries().lookupOrThrow(Registries.LOOT_TABLE).getOrThrow(ResourceKey.create(Registries.LOOT_TABLE, location))))
                       .build()
                  );
   }

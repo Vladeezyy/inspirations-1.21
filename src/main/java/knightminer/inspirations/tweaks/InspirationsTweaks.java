@@ -1,5 +1,9 @@
 package knightminer.inspirations.tweaks;
 
+import knightminer.inspirations.Inspirations;
+import knightminer.inspirations.building.InspirationsBuilding;
+import net.neoforged.neoforge.event.ModifyDefaultComponentsEvent;
+import net.minecraft.world.level.storage.loot.providers.number.ints.ContextIntProviders;
 import net.minecraft.world.level.block.entity.BlockEntityTypes;
 import net.minecraft.world.item.consume_effects.ApplyStatusEffectsConsumeEffect;
 import net.minecraft.world.item.component.Consumables;
@@ -13,7 +17,6 @@ import knightminer.inspirations.tweaks.block.FittedCarpetBlock;
 import knightminer.inspirations.tweaks.block.FlatCarpetBlock;
 import knightminer.inspirations.tweaks.block.SugarCaneCropBlock;
 import knightminer.inspirations.tweaks.block.WetHopperBlock;
-import knightminer.inspirations.tweaks.recipe.NormalBrewingRecipe;
 import knightminer.inspirations.tweaks.util.SmoothGrowthListener;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
@@ -47,7 +50,6 @@ import net.neoforged.bus.api.SubscribeEvent;
 import net.neoforged.fml.event.lifecycle.FMLCommonSetupEvent;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.neoforged.neoforge.registries.RegisterEvent;
-import net.neoforged.neoforge.event.brewing.RegisterBrewingRecipesEvent;
 import knightminer.inspirations.common.registration.BlockRegistryAdapter;
 import knightminer.inspirations.common.registration.ItemRegistryAdapter;
 import knightminer.inspirations.common.registration.EnumObject;
@@ -121,22 +123,14 @@ public class InspirationsTweaks extends ModuleBase {
 
   @SubscribeEvent
   public void setup(FMLCommonSetupEvent event) {
-    event.enqueueWork(this::registerCompostables);
     event.enqueueWork(this::registerDispenserBehavior);
 
     NeoForge.EVENT_BUS.addListener(new SmoothGrowthListener(Blocks.CACTUS, cactus));
     NeoForge.EVENT_BUS.addListener(new SmoothGrowthListener(Blocks.SUGAR_CANE, sugarCane));
     // 1.20 had this listener static on the module, which is registered as an instance on the mod bus, so it never ran
     NeoForge.EVENT_BUS.addListener(InspirationsTweaks::loadLoot);
-    NeoForge.EVENT_BUS.addListener(InspirationsTweaks::registerBrewing);
   }
 
-  /** Brew heartbeets into regen potions */
-  private static void registerBrewing(RegisterBrewingRecipesEvent event) {
-    Ingredient heartbeet = Ingredient.of(InspirationsTweaks.heartbeet);
-    event.getBuilder().addRecipe(new NormalBrewingRecipe(Potions.WATER, heartbeet, Potions.MUNDANE, Config.brewHeartbeet));
-    event.getBuilder().addRecipe(new NormalBrewingRecipe(Potions.AWKWARD, heartbeet, Potions.REGENERATION, Config.brewHeartbeet));
-  }
 
 
 
@@ -147,10 +141,12 @@ public class InspirationsTweaks extends ModuleBase {
 
   private static final DispenseItemBehavior DEFAULT = new DefaultDispenseItemBehavior();
 
-  private void registerCompostables() {
-    ComposterBlock.COMPOSTABLES.put(cactusSeeds.asItem(), 0.3F);
-    ComposterBlock.COMPOSTABLES.put(sugarCaneSeeds.asItem(), 0.3F);
-    ComposterBlock.COMPOSTABLES.put(heartbeet.asItem(), 0.8F);
+  /** Compost chances are item components since 26.3; 80 % for heartbeets is the mod's own chance provider */
+  @SubscribeEvent
+  void defaultComponents(ModifyDefaultComponentsEvent event) {
+    InspirationsBuilding.compostable(event, cactusSeeds, ContextIntProviders.COMPOSTABLE_LOW);
+    InspirationsBuilding.compostable(event, sugarCaneSeeds, ContextIntProviders.COMPOSTABLE_LOW);
+    InspirationsBuilding.compostable(event, heartbeet, ResourceKey.create(Registries.CONTEXT_INT_PROVIDER, Inspirations.getResource("compostable/heartbeet")));
   }
 
   private void registerDispenserBehavior() {

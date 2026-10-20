@@ -1,5 +1,6 @@
 package knightminer.inspirations.building.block.entity;
 
+import net.minecraft.util.Prediction;
 import knightminer.inspirations.building.InspirationsBuilding;
 import knightminer.inspirations.building.block.ShelfBlock;
 import knightminer.inspirations.building.block.menu.ShelfContainerMenu;
@@ -139,7 +140,7 @@ public class ShelfBlockEntity extends NameableBlockEntity implements IRetextured
     ItemStack current = inventory.getStackInSlot(index);
     if (!current.isEmpty()) {
       if (level != null && !level.isClientSide()) {
-        player.getInventory().placeItemBackInInventory(current);
+        player.getInventory().placeItemBackInInventory(current, Prediction.SERVER_ONLY);
         inventory.setStackInSlot(index, ItemStack.EMPTY);
       }
       return true;

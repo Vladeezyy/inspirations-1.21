@@ -19,7 +19,7 @@
     },
     "has_the_recipe": {
       "conditions": {
-        "recipe": "inspirations:building/books/lime"
+        "recipes": "inspirations:building/books/lime"
       },
       "trigger": "minecraft:recipe_unlocked"
     }

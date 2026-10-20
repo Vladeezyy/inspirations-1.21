@@ -13,7 +13,9 @@
           {
             "items": "minecraft:potion",
             "predicates": {
-              "minecraft:potion_contents": "minecraft:water"
+              "minecraft:potion_contents": {
+                "potions": "minecraft:water"
+              }
             }
           }
         ]
@@ -22,7 +24,7 @@
     },
     "has_the_recipe": {
       "conditions": {
-        "recipe": "inspirations:tools/barometer"
+        "recipes": "inspirations:tools/barometer"
       },
       "trigger": "minecraft:recipe_unlocked"
     }

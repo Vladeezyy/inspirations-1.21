@@ -19,7 +19,7 @@
     },
     "has_the_recipe": {
       "conditions": {
-        "recipe": "inspirations:cauldron/bottle/beds/magenta"
+        "recipes": "inspirations:cauldron/bottle/beds/magenta"
       },
       "trigger": "minecraft:recipe_unlocked"
     }

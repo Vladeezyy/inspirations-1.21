@@ -19,7 +19,7 @@
     },
     "has_the_recipe": {
       "conditions": {
-        "recipe": "inspirations:tools/dimension_compass"
+        "recipes": "inspirations:tools/dimension_compass"
       },
       "trigger": "minecraft:recipe_unlocked"
     }

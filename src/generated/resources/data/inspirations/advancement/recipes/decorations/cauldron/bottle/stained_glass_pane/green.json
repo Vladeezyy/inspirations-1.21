@@ -19,7 +19,7 @@
     },
     "has_the_recipe": {
       "conditions": {
-        "recipe": "inspirations:cauldron/bottle/stained_glass_pane/green"
+        "recipes": "inspirations:cauldron/bottle/stained_glass_pane/green"
       },
       "trigger": "minecraft:recipe_unlocked"
     }

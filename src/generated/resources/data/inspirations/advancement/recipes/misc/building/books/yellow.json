@@ -19,7 +19,7 @@
     },
     "has_the_recipe": {
       "conditions": {
-        "recipe": "inspirations:building/books/yellow"
+        "recipes": "inspirations:building/books/yellow"
       },
       "trigger": "minecraft:recipe_unlocked"
     }

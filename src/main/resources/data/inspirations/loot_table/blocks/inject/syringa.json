@@ -1,39 +1,49 @@
 {
   "_comment": "This overwrites minecraft:block/syringa",
   "type": "minecraft:block",
-  "pools": [{
-    "rolls": 1,
-    "entries": [{
-      "type": "minecraft:alternatives",
-      "children": [
+  "pools": [
+    {
+      "rolls": 1,
+      "entries": [
         {
-          "type": "minecraft:item",
-          "name": "inspirations:syringa",
-          "_comment": "Each block will drop a flower...",
-          "conditions": [
-            { "condition": "inspirations:config", "prop": "building_module" },
-            { "condition": "inspirations:config", "prop": "flowers" },
-            { 
-              "condition": "minecraft:match_tool",
-              "predicate": { "items": "minecraft:shears" }
-            }
-          ]
-        },
-        {
-          "type": "minecraft:item",
-          "name": "minecraft:lilac",
-          "conditions": [
+          "type": "minecraft:alternatives",
+          "children": [
             {
-              "condition": "minecraft:block_state_property",
-              "block": "minecraft:lilac",
-              "properties": { "half": "lower" }
+              "type": "minecraft:item",
+              "name": "inspirations:syringa",
+              "_comment": "Each block will drop a flower...",
+              "condition": {
+                "type": "minecraft:all_of",
+                "terms": [
+                  {
+                    "type": "inspirations:config",
+                    "prop": "building_module"
+                  },
+                  {
+                    "type": "inspirations:config",
+                    "prop": "flowers"
+                  },
+                  "minecraft:tool/can_shear"
+                ]
+              }
+            },
+            {
+              "type": "minecraft:item",
+              "name": "minecraft:lilac",
+              "condition": {
+                "type": "minecraft:match_block",
+                "blocks": "minecraft:lilac",
+                "state": {
+                  "half": "lower"
+                }
+              }
             }
           ]
         }
-      ]
-    }],
-    "conditions": [
-      { "condition": "minecraft:survives_explosion" }
-    ]
-  }]
+      ],
+      "condition": {
+        "type": "minecraft:survives_explosion"
+      }
+    }
+  ]
 }

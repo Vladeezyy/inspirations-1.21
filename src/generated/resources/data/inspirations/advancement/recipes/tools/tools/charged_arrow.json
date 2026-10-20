@@ -19,7 +19,7 @@
     },
     "has_the_recipe": {
       "conditions": {
-        "recipe": "inspirations:tools/charged_arrow"
+        "recipes": "inspirations:tools/charged_arrow"
       },
       "trigger": "minecraft:recipe_unlocked"
     }

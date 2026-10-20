@@ -19,7 +19,7 @@
     },
     "has_the_recipe": {
       "conditions": {
-        "recipe": "inspirations:building/mulch/plain"
+        "recipes": "inspirations:building/mulch/plain"
       },
       "trigger": "minecraft:recipe_unlocked"
     }

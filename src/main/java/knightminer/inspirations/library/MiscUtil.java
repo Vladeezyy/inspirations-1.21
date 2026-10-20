@@ -1,5 +1,6 @@
 package knightminer.inspirations.library;
 
+import net.minecraft.util.Prediction;
 import javax.annotation.Nullable;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
@@ -182,7 +183,7 @@ public class MiscUtil {
   /** Gives the given item to the player */
   public static void givePlayerItem(Player player, ItemStack stack) {
     if (!player.getInventory().add(stack)) {
-      player.drop(stack, false);
+      player.drop(stack, false, Prediction.SERVER_ONLY);
     }
   }
 

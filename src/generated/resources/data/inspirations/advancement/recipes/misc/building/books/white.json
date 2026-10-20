@@ -19,7 +19,7 @@
     },
     "has_the_recipe": {
       "conditions": {
-        "recipe": "inspirations:building/books/white"
+        "recipes": "inspirations:building/books/white"
       },
       "trigger": "minecraft:recipe_unlocked"
     }

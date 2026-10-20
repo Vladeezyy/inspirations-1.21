@@ -1,5 +1,6 @@
 package knightminer.inspirations.building;
 
+import net.minecraft.util.Prediction;
 import knightminer.inspirations.Inspirations;
 import knightminer.inspirations.building.block.RopeBlock;
 import knightminer.inspirations.common.Config;
@@ -15,7 +16,6 @@ import net.minecraft.world.level.block.state.BlockState;
 import net.neoforged.neoforge.event.entity.player.PlayerInteractEvent;
 import net.neoforged.bus.api.SubscribeEvent;
 import net.neoforged.fml.common.EventBusSubscriber;
-import net.neoforged.neoforge.items.ItemHandlerHelper;
 
 import javax.annotation.Nullable;
 
@@ -67,7 +67,7 @@ public class BuildingEvents {
     RopeBlock rope = (RopeBlock)state.getBlock();
     SoundType soundtype = rope.getSoundType(state, world, pos, player);
     world.playSound(player, pos, soundtype.getBreakSound(), SoundSource.BLOCKS, (soundtype.getVolume() + 1.0F) / 2.0F, soundtype.getPitch() * 0.8F);
-    player.getInventory().placeItemBackInInventory(new ItemStack(rope.getRungsItem(), RopeBlock.RUNG_ITEM_COUNT));
+    player.getInventory().placeItemBackInInventory(new ItemStack(rope.getRungsItem(), RopeBlock.RUNG_ITEM_COUNT), Prediction.SERVER_ONLY);
     player.stopUsingItem();
 
     return true;

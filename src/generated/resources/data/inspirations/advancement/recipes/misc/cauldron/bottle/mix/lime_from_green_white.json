@@ -19,7 +19,7 @@
     },
     "has_the_recipe": {
       "conditions": {
-        "recipe": "inspirations:cauldron/bottle/mix/lime_from_green_white"
+        "recipes": "inspirations:cauldron/bottle/mix/lime_from_green_white"
       },
       "trigger": "minecraft:recipe_unlocked"
     },

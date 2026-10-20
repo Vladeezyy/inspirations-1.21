@@ -19,7 +19,7 @@
     },
     "has_the_recipe": {
       "conditions": {
-        "recipe": "inspirations:building/books/cyan"
+        "recipes": "inspirations:building/books/cyan"
       },
       "trigger": "minecraft:recipe_unlocked"
     }

@@ -56,7 +56,7 @@ public class RedstoneChargeBlock extends Block {
   @Deprecated
   @Override
   public PushReaction getPistonPushReaction(BlockState p_149656_1_) {
-    return PushReaction.DESTROY;
+    return PushReaction.POPPED;
   }
 
   /* Blockstate */
@@ -115,8 +115,9 @@ public class RedstoneChargeBlock extends Block {
     return true;
   }
 
+  /** Redstone wire does not reach for the charge (NeoForge's canConnectRedstone before 26.3) */
   @Override
-  public boolean canConnectRedstone(BlockState state, BlockGetter world, BlockPos pos, @Nullable Direction side) {
+  protected boolean shouldRedstoneWireConnectTo(BlockState state, BlockGetter world, BlockPos pos, @Nullable Direction side) {
     return false;
   }
 

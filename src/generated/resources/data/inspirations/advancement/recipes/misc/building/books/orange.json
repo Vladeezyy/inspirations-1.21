@@ -19,7 +19,7 @@
     },
     "has_the_recipe": {
       "conditions": {
-        "recipe": "inspirations:building/books/orange"
+        "recipes": "inspirations:building/books/orange"
       },
       "trigger": "minecraft:recipe_unlocked"
     }

@@ -14,20 +14,12 @@ import net.minecraft.world.level.block.CropBlock;
 import net.minecraft.world.level.block.MushroomBlock;
 import net.minecraft.world.level.block.StemBlock;
 import net.minecraft.util.TriState;
-import com.mojang.serialization.MapCodec;
 
 public class MulchBlock extends FallingBlock {
   private static final VoxelShape SHAPE = Block.box(0.0D, 0.0D, 0.0D, 16.0D, 15.0D, 16.0D);
 
-  public static final MapCodec<MulchBlock> CODEC = simpleCodec(MulchBlock::new);
-
   public MulchBlock(Properties properties) {
     super(properties);
-  }
-
-  @Override
-  protected MapCodec<? extends FallingBlock> codec() {
-    return CODEC;
   }
 
   @Override

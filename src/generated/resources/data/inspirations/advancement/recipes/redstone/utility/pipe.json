@@ -19,7 +19,7 @@
     },
     "has_the_recipe": {
       "conditions": {
-        "recipe": "inspirations:utility/pipe"
+        "recipes": "inspirations:utility/pipe"
       },
       "trigger": "minecraft:recipe_unlocked"
     }

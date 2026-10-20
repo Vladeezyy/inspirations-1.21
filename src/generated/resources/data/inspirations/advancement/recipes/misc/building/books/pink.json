@@ -19,7 +19,7 @@
     },
     "has_the_recipe": {
       "conditions": {
-        "recipe": "inspirations:building/books/pink"
+        "recipes": "inspirations:building/books/pink"
       },
       "trigger": "minecraft:recipe_unlocked"
     }

@@ -29,7 +29,7 @@
     },
     "has_the_recipe": {
       "conditions": {
-        "recipe": "inspirations:utility/soul_torch_lever"
+        "recipes": "inspirations:utility/soul_torch_lever"
       },
       "trigger": "minecraft:recipe_unlocked"
     }

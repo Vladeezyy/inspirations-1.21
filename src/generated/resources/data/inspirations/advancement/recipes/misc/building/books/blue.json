@@ -19,7 +19,7 @@
     },
     "has_the_recipe": {
       "conditions": {
-        "recipe": "inspirations:building/books/blue"
+        "recipes": "inspirations:building/books/blue"
       },
       "trigger": "minecraft:recipe_unlocked"
     }

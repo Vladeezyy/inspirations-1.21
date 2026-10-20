@@ -1,5 +1,6 @@
 package knightminer.inspirations.tools.item;
 
+import net.minecraft.util.Prediction;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.GlobalPos;
 import net.minecraft.core.component.DataComponents;
@@ -52,7 +53,7 @@ public class DimensionCompassItem extends CompassItem {
 			}
 			copy.set(DataComponents.LODESTONE_TRACKER, tracker);
 			if (!player.getInventory().add(copy)) {
-				player.drop(copy, false);
+				player.drop(copy, false, Prediction.SERVER_ONLY);
 			}
 		}
 		return InteractionResult.SUCCESS;

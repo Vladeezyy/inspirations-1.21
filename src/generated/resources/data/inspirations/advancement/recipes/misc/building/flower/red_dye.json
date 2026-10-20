@@ -19,7 +19,7 @@
     },
     "has_the_recipe": {
       "conditions": {
-        "recipe": "inspirations:building/flower/red_dye"
+        "recipes": "inspirations:building/flower/red_dye"
       },
       "trigger": "minecraft:recipe_unlocked"
     }

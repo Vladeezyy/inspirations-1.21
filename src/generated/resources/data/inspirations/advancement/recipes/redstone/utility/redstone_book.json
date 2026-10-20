@@ -23,7 +23,7 @@
     },
     "has_the_recipe": {
       "conditions": {
-        "recipe": "inspirations:utility/redstone_book"
+        "recipes": "inspirations:utility/redstone_book"
       },
       "trigger": "minecraft:recipe_unlocked"
     }

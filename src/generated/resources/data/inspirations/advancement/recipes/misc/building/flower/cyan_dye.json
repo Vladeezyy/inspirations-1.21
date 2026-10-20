@@ -19,7 +19,7 @@
     },
     "has_the_recipe": {
       "conditions": {
-        "recipe": "inspirations:building/flower/cyan_dye"
+        "recipes": "inspirations:building/flower/cyan_dye"
       },
       "trigger": "minecraft:recipe_unlocked"
     }

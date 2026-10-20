@@ -1,5 +1,6 @@
 package knightminer.inspirations.tweaks.block;
 
+import net.minecraft.world.level.block.BonemealSource;
 import knightminer.inspirations.common.Config;
 import net.minecraft.core.BlockPos;
 import net.minecraft.server.level.ServerLevel;
@@ -91,12 +92,12 @@ public abstract class BlockCropBlock extends CropBlock {
   /* Bonemeal */
 
   @Override
-  public boolean isValidBonemealTarget(LevelReader pLevel, BlockPos pPos, BlockState pState) {
+  public boolean isValidBonemealTarget(LevelReader pLevel, BlockPos pPos, BlockState pState, BonemealSource source) {
     return Config.get(Config.bonemealBlockCrop);
   }
 
   @Override
-  public boolean isBonemealSuccess(Level worldIn, RandomSource rand, BlockPos pos, BlockState state) {
+  public boolean isBonemealSuccess(Level worldIn, RandomSource rand, BlockPos pos, BlockState state, BonemealSource source) {
     return Config.get(Config.bonemealBlockCrop);
   }
 

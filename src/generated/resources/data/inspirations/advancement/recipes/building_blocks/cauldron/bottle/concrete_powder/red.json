@@ -19,7 +19,7 @@
     },
     "has_the_recipe": {
       "conditions": {
-        "recipe": "inspirations:cauldron/bottle/concrete_powder/red"
+        "recipes": "inspirations:cauldron/bottle/concrete_powder/red"
       },
       "trigger": "minecraft:recipe_unlocked"
     }

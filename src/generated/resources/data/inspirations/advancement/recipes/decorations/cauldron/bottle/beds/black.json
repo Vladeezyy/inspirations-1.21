@@ -19,7 +19,7 @@
     },
     "has_the_recipe": {
       "conditions": {
-        "recipe": "inspirations:cauldron/bottle/beds/black"
+        "recipes": "inspirations:cauldron/bottle/beds/black"
       },
       "trigger": "minecraft:recipe_unlocked"
     }

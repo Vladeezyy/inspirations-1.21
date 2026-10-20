@@ -19,7 +19,7 @@
     },
     "has_the_recipe": {
       "conditions": {
-        "recipe": "inspirations:building/books/light_gray"
+        "recipes": "inspirations:building/books/light_gray"
       },
       "trigger": "minecraft:recipe_unlocked"
     }

@@ -19,7 +19,7 @@
     },
     "has_the_recipe": {
       "conditions": {
-        "recipe": "inspirations:building/mulch/black"
+        "recipes": "inspirations:building/mulch/black"
       },
       "trigger": "minecraft:recipe_unlocked"
     }

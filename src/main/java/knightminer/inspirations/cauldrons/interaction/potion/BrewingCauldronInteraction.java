@@ -1,5 +1,9 @@
 package knightminer.inspirations.cauldrons.interaction.potion;
 
+import net.minecraft.world.item.crafting.RecipePropertySet;
+import net.minecraft.world.item.crafting.RecipeType;
+import net.minecraft.world.item.crafting.BrewingInput;
+import net.minecraft.server.level.ServerLevel;
 import knightminer.inspirations.cauldrons.InspirationsCaudrons;
 import knightminer.inspirations.cauldrons.block.entity.PotionCauldronBlockEntity;
 import knightminer.inspirations.library.MiscUtil;
@@ -16,7 +20,6 @@ import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.item.alchemy.Potion;
-import net.minecraft.world.item.alchemy.PotionBrewing;
 import net.minecraft.world.item.alchemy.PotionContents;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.state.BlockState;
@@ -51,8 +54,13 @@ public class BrewingCauldronInteraction implements CauldronInteraction {
 				oldPotion = cauldron.getPotion();
 			}
 
-			// the level's brewing recipes, vanilla mixes and NeoForge recipes alike
-			Holder<Potion> newPotion = getResult(level.potionBrewing(), oldPotion, stack);
+			// the brewing recipes (data since 26.3): the server knows them, the client only the reagents
+			Holder<Potion> newPotion;
+			if (level instanceof ServerLevel server) {
+				newPotion = getResult(server, oldPotion, stack);
+			} else {
+				newPotion = !stack.isEmpty() && level.recipeAccess().propertySet(RecipePropertySet.BREWING_REAGENTS).test(stack) ? oldPotion : null;
+			}
 			// found either?
 			if (newPotion != null) {
 				if (!level.isClientSide()) {
@@ -90,14 +98,15 @@ public class BrewingCauldronInteraction implements CauldronInteraction {
 	 * @return  New potion, or null if the reagent does not brew this potion into another one
 	 */
 	@Nullable
-	private static Holder<Potion> getResult(PotionBrewing brewing, Holder<Potion> potion, ItemStack reagent) {
-		if (reagent.isEmpty() || !brewing.isIngredient(reagent)) {
+	private static Holder<Potion> getResult(ServerLevel level, Holder<Potion> potion, ItemStack reagent) {
+		if (reagent.isEmpty()) {
 			return null;
 		}
 		ItemStack input = PotionContents.createItemStack(Items.POTION, potion);
-		ItemStack output = brewing.mix(reagent, input);
-		// container mixes (gunpowder, dragon's breath) change the item, not the potion
-		if (output.isEmpty() || output == input || !output.is(Items.POTION)) {
+		BrewingInput brewing = new BrewingInput(input, reagent);
+		ItemStack output = level.recipeAccess().getRecipeFor(RecipeType.BREWING, brewing, level).map(recipe -> recipe.value().assemble(brewing)).orElse(ItemStack.EMPTY);
+		// container recipes (gunpowder, dragon's breath) change the item, not the potion
+		if (output.isEmpty() || !output.is(Items.POTION)) {
 			return null;
 		}
 		Holder<Potion> result = output.getOrDefault(DataComponents.POTION_CONTENTS, PotionContents.EMPTY).potion().orElse(null);

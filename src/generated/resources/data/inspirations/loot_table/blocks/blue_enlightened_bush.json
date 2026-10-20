@@ -2,49 +2,30 @@
   "type": "minecraft:block",
   "pools": [
     {
-      "bonus_rolls": 0.0,
-      "conditions": [
-        {
-          "condition": "minecraft:any_of",
-          "terms": [
-            {
-              "ability": "shears_dig",
-              "condition": "neoforge:can_item_perform_ability"
-            },
-            {
-              "condition": "minecraft:match_tool",
-              "predicate": {
-                "predicates": {
-                  "minecraft:enchantments": [
-                    {
-                      "enchantments": "minecraft:silk_touch",
-                      "levels": {
-                        "min": 1
-                      }
-                    }
-                  ]
-                }
-              }
-            }
-          ]
-        }
-      ],
       "entries": [
         {
           "type": "minecraft:item",
-          "functions": [
-            {
-              "function": "minecraft:copy_components",
-              "include": [
-                "kilnwork:texture"
-              ],
-              "source": "block_entity"
-            }
-          ],
-          "name": "inspirations:blue_enlightened_bush"
+          "name": "inspirations:blue_enlightened_bush",
+          "modifier": {
+            "type": "minecraft:copy_components",
+            "include": [
+              "kilnwork:texture"
+            ],
+            "source": "block_entity"
+          }
         }
       ],
-      "rolls": 1.0
+      "rolls": 1,
+      "condition": {
+        "type": "minecraft:any_of",
+        "terms": [
+          {
+            "type": "neoforge:can_item_perform_ability",
+            "ability": "shears_dig"
+          },
+          "minecraft:tool/can_silk_touch"
+        ]
+      }
     }
   ],
   "random_sequence": "inspirations:blocks/blue_enlightened_bush"

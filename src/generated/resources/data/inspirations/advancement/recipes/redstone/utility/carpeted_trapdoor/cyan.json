@@ -19,7 +19,7 @@
     },
     "has_the_recipe": {
       "conditions": {
-        "recipe": "inspirations:utility/carpeted_trapdoor/cyan"
+        "recipes": "inspirations:utility/carpeted_trapdoor/cyan"
       },
       "trigger": "minecraft:recipe_unlocked"
     }

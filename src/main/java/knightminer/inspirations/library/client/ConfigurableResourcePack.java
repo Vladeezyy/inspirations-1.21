@@ -3,7 +3,8 @@ package knightminer.inspirations.library.client;
 import knightminer.inspirations.Inspirations;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.Identifier;
-import net.minecraft.server.packs.AbstractPackResources;
+import net.minecraft.server.packs.AbstractPackMetadataResources;
+import net.minecraft.server.packs.PackMetadataResources;
 import net.minecraft.server.packs.PackType;
 import net.minecraft.server.packs.repository.Pack;
 import net.minecraft.server.packs.repository.PackSource;
@@ -37,7 +38,7 @@ import java.util.function.Consumer;
 /**
  * Resource pack that overrides resources based on config
  */
-public class ConfigurableResourcePack extends AbstractPackResources implements RepositorySource {
+public class ConfigurableResourcePack extends AbstractPackMetadataResources implements PackResources, RepositorySource {
   /** Class within the mod jar to serve as a root for getting resources */
   private final Class<?> resourceLoader;
   /** Namespaced pack name, used to pass to resource pack loaders and for the translation key */
@@ -166,13 +167,13 @@ public class ConfigurableResourcePack extends AbstractPackResources implements R
     // add a new always enabled pack. Config is how you disable the replacements
     consumer.accept(new Pack(location(), new Pack.ResourcesSupplier() {
       @Override
-      public PackResources openPrimary(PackLocationInfo location) {
+      public PackMetadataResources openMetadata(PackLocationInfo location) {
         return ConfigurableResourcePack.this;
       }
 
       @Override
-      public PackResources openFull(PackLocationInfo location, Pack.Metadata metadata) {
-        return ConfigurableResourcePack.this;
+      public java.util.stream.Stream<PackResources> openResources(PackLocationInfo location, Pack.Metadata metadata) {
+        return java.util.stream.Stream.of(ConfigurableResourcePack.this);
       }
     }, new Pack.Metadata(description, PackCompatibility.COMPATIBLE, FeatureFlags.REGISTRY.allFlags(), List.of(), false),
       new PackSelectionConfig(true, Pack.Position.TOP, false)));

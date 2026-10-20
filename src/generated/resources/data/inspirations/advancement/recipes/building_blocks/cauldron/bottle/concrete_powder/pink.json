@@ -19,7 +19,7 @@
     },
     "has_the_recipe": {
       "conditions": {
-        "recipe": "inspirations:cauldron/bottle/concrete_powder/pink"
+        "recipes": "inspirations:cauldron/bottle/concrete_powder/pink"
       },
       "trigger": "minecraft:recipe_unlocked"
     }

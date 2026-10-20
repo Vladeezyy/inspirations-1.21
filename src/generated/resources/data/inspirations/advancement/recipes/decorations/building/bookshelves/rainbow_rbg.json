@@ -29,7 +29,7 @@
     },
     "has_the_recipe": {
       "conditions": {
-        "recipe": "inspirations:building/bookshelves/rainbow_rbg"
+        "recipes": "inspirations:building/bookshelves/rainbow_rbg"
       },
       "trigger": "minecraft:recipe_unlocked"
     }

@@ -7,7 +7,7 @@ import net.minecraft.resources.Identifier;
 import net.minecraft.world.level.storage.loot.LootPool;
 import net.minecraft.world.level.storage.loot.LootTable;
 import net.minecraft.world.level.storage.loot.entries.NestedLootTable;
-import net.minecraft.world.level.storage.loot.providers.number.ConstantValue;
+import net.minecraft.world.level.storage.loot.providers.number.ints.ContextIntProviders;
 import net.neoforged.neoforge.event.LootTableLoadEvent;
 
 public class ModuleBase {
@@ -25,8 +25,8 @@ public class ModuleBase {
       Identifier location = Inspirations.getResource(name);
       table.addPool(new LootPool.Builder()
                         .name(location.toString())
-                        .setRolls(ConstantValue.exactly(1))
-                        .add(NestedLootTable.lootTableReference(ResourceKey.create(Registries.LOOT_TABLE, location)))
+                        .setRolls(ContextIntProviders.exactly(1))
+                        .add(NestedLootTable.lootTableReference(event.getRegistries().lookupOrThrow(Registries.LOOT_TABLE).getOrThrow(ResourceKey.create(Registries.LOOT_TABLE, location))))
                         .build()
                    );
     }

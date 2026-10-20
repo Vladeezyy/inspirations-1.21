@@ -185,6 +185,31 @@ here (particles take a light lookup each in 26.2), the boiling cauldrons 5%.
 The client scene now checks that the cactus and sugar cane crops stay: the cactus sand sat in the one block thick floor
 and fell (in every version), the sugar cane sand was next to the cactus.
 
+## Minecraft 26.3 (NeoForge 26.3.0.83), branch `mc/26.3`
+
+From `mc/26.2`, Kilnwork `26.3-1.1.0`. Data converted with `tools/port/convert_263.py` (the converter of the Matter
+Overdrive port, checked against vanilla; here it also wraps the `potion_contents` item predicate in `{"potions"}`).
+- Loot tables, recipes and advancements in the 26.3 formats: typed conditions and functions, one `condition`,
+  `minecraft:tool/can_silk_touch` and `can_shear`, whole `rolls`; the heartbeet loot modifier takes one condition.
+- Brewing is data: the heartbeet recipes (water to mundane, awkward to regeneration, for potions, splash and lingering
+  potions) and the bottle recipes (glass bottle and gunpowder, splash bottle and dragon's breath) are
+  `minecraft:brewing` recipes behind the config conditions `brew_heartbeet` and `brew_bottles`. Cauldron brewing asks
+  the server's brewing recipes; the client predicts it from the brewing reagents.
+- Compost chances and the shelf fuel are item components (`compostable`, `cooking_fuel`) set in
+  `ModifyDefaultComponentsEvent`; heartbeets keep their 80 % with the mod's provider `inspirations:compostable/heartbeet`.
+- Axes have no class: `ItemMixin` gives the axe enchantments to the `#minecraft:axes` items.
+- Blocks have no codecs, `PushReaction.DESTROY` is `POPPED`, bonemeal takes a `BonemealSource`, the redstone charge
+  keeps wire away with `shouldRedstoneWireConnectTo`, full flower pots are found by NeoForge (no `addPlant`), the
+  server config is `SYNCED` (file still `inspirations-server.toml`), `placeItemBackInInventory`/`drop` take a
+  `Prediction`, the configurable resource pack is built on `AbstractPackMetadataResources`, the lectern book draws
+  its break overlay apart, poses rotate with `rotateDegrees`.
+- Tests: the window size is `Window.setWindowed` (no GLFW), item layer quads are `ItemQuads`.
+
+Verification on 26.3: selftest 58/58 (brewing checked through the recipes), client scene 42/42, net test 11/11. Stress
+(one run, machine under load): empty floor 122 FPS, vanilla baseline 138 FPS, 1024 shelves 143 FPS at 2.9 MSPT,
+plus 32 vanilla campfires 115 FPS, plus 96 cauldrons 115 FPS at 3.1 MSPT, 200 ticks of changes 62 FPS at 3.0 MSPT —
+10/10.
+
 ## License
 
 Code: LGPL-3.0-only (`LICENSE`, GPL text in `licenses/COPYING`); the original is MIT (`licenses/LICENSE-MIT`).

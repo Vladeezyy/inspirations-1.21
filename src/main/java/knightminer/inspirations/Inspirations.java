@@ -34,7 +34,8 @@ public class Inspirations {
   public static final Logger log = LogManager.getLogger(modID);
 
   public Inspirations(IEventBus modBus, ModContainer container) {
-    container.registerConfig(Type.SERVER, Config.SERVER_SPEC);
+    // SERVER is SYNCED since 26.3, the file keeps its name
+    container.registerConfig(Type.SYNCED, Config.SERVER_SPEC, modID + "-server.toml");
     container.registerConfig(Type.CLIENT, Config.CLIENT_SPEC);
     // 1.20 loaded this file by hand before registration; a startup config is loaded right here, under the same name
     container.registerConfig(Type.STARTUP, Config.COMMON_SPEC, modID + "-common.toml");

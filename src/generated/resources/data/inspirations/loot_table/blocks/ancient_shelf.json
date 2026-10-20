@@ -2,32 +2,29 @@
   "type": "minecraft:block",
   "pools": [
     {
-      "bonus_rolls": 0.0,
-      "conditions": [
-        {
-          "condition": "minecraft:survives_explosion"
-        }
-      ],
       "entries": [
         {
           "type": "minecraft:item",
-          "functions": [
+          "name": "inspirations:ancient_shelf",
+          "modifier": [
             {
-              "function": "minecraft:copy_name",
+              "type": "minecraft:copy_name",
               "source": "block_entity"
             },
             {
-              "function": "minecraft:copy_components",
+              "type": "minecraft:copy_components",
               "include": [
                 "kilnwork:texture"
               ],
               "source": "block_entity"
             }
-          ],
-          "name": "inspirations:ancient_shelf"
+          ]
         }
       ],
-      "rolls": 1.0
+      "rolls": 1,
+      "condition": {
+        "type": "minecraft:survives_explosion"
+      }
     }
   ],
   "random_sequence": "inspirations:blocks/ancient_shelf"

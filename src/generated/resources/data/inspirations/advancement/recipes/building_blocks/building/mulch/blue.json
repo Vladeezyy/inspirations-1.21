@@ -19,7 +19,7 @@
     },
     "has_the_recipe": {
       "conditions": {
-        "recipe": "inspirations:building/mulch/blue"
+        "recipes": "inspirations:building/mulch/blue"
       },
       "trigger": "minecraft:recipe_unlocked"
     }

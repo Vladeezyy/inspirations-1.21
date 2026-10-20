@@ -29,7 +29,7 @@
     },
     "has_the_recipe": {
       "conditions": {
-        "recipe": "inspirations:building/bookshelves/tomes"
+        "recipes": "inspirations:building/bookshelves/tomes"
       },
       "trigger": "minecraft:recipe_unlocked"
     }

@@ -1,5 +1,6 @@
 package knightminer.inspirations.cauldrons.item;
 
+import net.minecraft.util.Prediction;
 import net.minecraft.core.component.DataComponents;
 import knightminer.inspirations.library.MiscUtil;
 import net.minecraft.sounds.SoundEvents;
@@ -11,7 +12,6 @@ import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.DyeColor;
 import net.minecraft.world.item.DyeItem;
 import net.minecraft.world.item.ItemStack;
-import net.neoforged.neoforge.items.ItemHandlerHelper;
 
 /**
  * Item for a dye item that is also a bottle.
@@ -68,7 +68,7 @@ public class SimpleDyedBottleItem extends DyeItem {
         player.setItemInHand(hand, bottle);
       } else {
         stack.shrink(1);
-        player.getInventory().placeItemBackInInventory(bottle);
+        player.getInventory().placeItemBackInInventory(bottle, Prediction.SERVER_ONLY);
       }
     }
   }

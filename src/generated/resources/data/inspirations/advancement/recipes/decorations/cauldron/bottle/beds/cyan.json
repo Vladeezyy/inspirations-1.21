@@ -19,7 +19,7 @@
     },
     "has_the_recipe": {
       "conditions": {
-        "recipe": "inspirations:cauldron/bottle/beds/cyan"
+        "recipes": "inspirations:cauldron/bottle/beds/cyan"
       },
       "trigger": "minecraft:recipe_unlocked"
     }

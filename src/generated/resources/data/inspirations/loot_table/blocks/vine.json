@@ -2,53 +2,42 @@
   "type": "minecraft:block",
   "pools": [
     {
-      "bonus_rolls": 0.0,
-      "conditions": [
-        {
-          "condition": "minecraft:survives_explosion"
-        }
-      ],
       "entries": [
         {
           "type": "minecraft:item",
           "name": "inspirations:vine"
         }
       ],
-      "rolls": 1.0
+      "rolls": 1,
+      "condition": {
+        "type": "minecraft:survives_explosion"
+      }
     },
     {
-      "bonus_rolls": 0.0,
-      "conditions": [
-        {
-          "condition": "minecraft:inverted",
-          "term": {
-            "block": "inspirations:vine",
-            "condition": "minecraft:block_state_property",
-            "properties": {
-              "rungs": "none"
-            }
-          }
-        }
-      ],
       "entries": [
         {
           "type": "minecraft:item",
-          "functions": [
-            {
-              "add": false,
-              "count": 4.0,
-              "function": "minecraft:set_count"
-            }
-          ],
-          "name": "minecraft:bamboo"
+          "name": "minecraft:bamboo",
+          "modifier": {
+            "type": "minecraft:set_count",
+            "count": 4
+          }
         }
       ],
-      "functions": [
-        {
-          "function": "minecraft:explosion_decay"
+      "rolls": 1,
+      "condition": {
+        "type": "minecraft:inverted",
+        "term": {
+          "type": "minecraft:match_block",
+          "blocks": "inspirations:vine",
+          "state": {
+            "rungs": "none"
+          }
         }
-      ],
-      "rolls": 1.0
+      },
+      "modifier": {
+        "type": "minecraft:explosion_decay"
+      }
     }
   ],
   "random_sequence": "inspirations:blocks/vine"

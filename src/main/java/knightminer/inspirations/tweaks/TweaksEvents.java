@@ -1,5 +1,6 @@
 package knightminer.inspirations.tweaks;
 
+import net.minecraft.util.Prediction;
 import knightminer.inspirations.Inspirations;
 import knightminer.inspirations.cauldrons.InspirationsCaudrons;
 import knightminer.inspirations.common.Config;
@@ -35,7 +36,6 @@ import net.neoforged.neoforge.event.entity.player.PlayerInteractEvent.EntityInte
 import net.neoforged.bus.api.EventPriority;
 import net.neoforged.bus.api.SubscribeEvent;
 import net.neoforged.fml.common.EventBusSubscriber;
-import net.neoforged.neoforge.items.ItemHandlerHelper;
 
 @SuppressWarnings({"unused"})
 @EventBusSubscriber(modid = Inspirations.modID)
@@ -58,7 +58,7 @@ public class TweaksEvents {
           // the saddle is equipment since 1.21.5
           pig.setItemSlot(net.minecraft.world.entity.EquipmentSlot.SADDLE, ItemStack.EMPTY);
           pig.level().playSound(player, pig.getX(), pig.getY(), pig.getZ(), SoundEvents.PIG_SADDLE, SoundSource.NEUTRAL, 0.5F, 1.0F);
-          player.getInventory().placeItemBackInInventory(new ItemStack(Items.SADDLE));
+          player.getInventory().placeItemBackInInventory(new ItemStack(Items.SADDLE), Prediction.SERVER_ONLY);
           event.setCanceled(true);
         }
       }

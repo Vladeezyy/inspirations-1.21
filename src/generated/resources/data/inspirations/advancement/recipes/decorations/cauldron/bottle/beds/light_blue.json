@@ -19,7 +19,7 @@
     },
     "has_the_recipe": {
       "conditions": {
-        "recipe": "inspirations:cauldron/bottle/beds/light_blue"
+        "recipes": "inspirations:cauldron/bottle/beds/light_blue"
       },
       "trigger": "minecraft:recipe_unlocked"
     }

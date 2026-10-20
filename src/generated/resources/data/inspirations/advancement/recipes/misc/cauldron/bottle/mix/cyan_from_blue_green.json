@@ -29,7 +29,7 @@
     },
     "has_the_recipe": {
       "conditions": {
-        "recipe": "inspirations:cauldron/bottle/mix/cyan_from_blue_green"
+        "recipes": "inspirations:cauldron/bottle/mix/cyan_from_blue_green"
       },
       "trigger": "minecraft:recipe_unlocked"
     }

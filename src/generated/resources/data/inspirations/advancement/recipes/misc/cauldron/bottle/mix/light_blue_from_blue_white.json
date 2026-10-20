@@ -19,7 +19,7 @@
     },
     "has_the_recipe": {
       "conditions": {
-        "recipe": "inspirations:cauldron/bottle/mix/light_blue_from_blue_white"
+        "recipes": "inspirations:cauldron/bottle/mix/light_blue_from_blue_white"
       },
       "trigger": "minecraft:recipe_unlocked"
     },

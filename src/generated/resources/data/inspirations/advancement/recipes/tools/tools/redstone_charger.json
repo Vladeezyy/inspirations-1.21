@@ -29,7 +29,7 @@
     },
     "has_the_recipe": {
       "conditions": {
-        "recipe": "inspirations:tools/redstone_charger"
+        "recipes": "inspirations:tools/redstone_charger"
       },
       "trigger": "minecraft:recipe_unlocked"
     }

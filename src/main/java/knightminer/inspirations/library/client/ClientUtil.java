@@ -70,7 +70,7 @@ public final class ClientUtil {
       for (int x = 0; x < contents.width(); x++) {
         for (int y = 0; y < contents.height(); y++) {
           // ARGB since 1.21.2 (it was 0xAABBGGRR)
-          int argb = sprite.getPixelRGBA(0, x, y);
+          int argb = sprite.getPixelARGB(0, x, y);
           int cr = argb >> 16 & 0xFF;
           int cg = argb >> 8 & 0xFF;
           int cb = argb & 0xFF;

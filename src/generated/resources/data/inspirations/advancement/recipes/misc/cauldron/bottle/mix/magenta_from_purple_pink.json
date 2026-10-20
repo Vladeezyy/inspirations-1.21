@@ -29,7 +29,7 @@
     },
     "has_the_recipe": {
       "conditions": {
-        "recipe": "inspirations:cauldron/bottle/mix/magenta_from_purple_pink"
+        "recipes": "inspirations:cauldron/bottle/mix/magenta_from_purple_pink"
       },
       "trigger": "minecraft:recipe_unlocked"
     }

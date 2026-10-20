@@ -49,7 +49,6 @@ import net.neoforged.fml.common.EventBusSubscriber;
 import net.neoforged.neoforge.client.event.ClientTickEvent;
 import net.neoforged.neoforge.client.event.RenderFrameEvent;
 import net.neoforged.neoforge.network.PacketDistributor;
-import org.lwjgl.glfw.GLFW;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -245,7 +244,7 @@ public final class StressScene {
     }
     if (!opened && mc.gui.screen() instanceof TitleScreen) {
       opened = true;
-      GLFW.glfwSetWindowSize(mc.getWindow().handle(), 1600, 900);
+      mc.getWindow().setWindowed(1600, 900);
       mc.options.guiScale().set(3);
       mc.options.cloudStatus().set(CloudStatus.OFF);
       mc.options.framerateLimit().set(260);

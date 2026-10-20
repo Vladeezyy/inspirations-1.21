@@ -72,7 +72,7 @@ public class InspirationsTools extends ModuleBase {
     event.register(Registries.BLOCK, helper -> {
       BlockRegistryAdapter registry = new BlockRegistryAdapter(helper);
       redstoneCharge = registry.make(() -> new RedstoneChargeBlock(
-        Block.Properties.of().mapColor(MapColor.NONE).pushReaction(PushReaction.DESTROY).strength(0).lightLevel((state) -> 2)
+        Block.Properties.of().mapColor(MapColor.NONE).pushReaction(PushReaction.POPPED).strength(0).lightLevel((state) -> 2)
       ), "redstone_charge");
     });
     event.register(Registries.ITEM, helper -> {

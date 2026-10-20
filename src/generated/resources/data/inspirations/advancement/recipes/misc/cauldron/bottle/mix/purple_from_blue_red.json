@@ -29,7 +29,7 @@
     },
     "has_the_recipe": {
       "conditions": {
-        "recipe": "inspirations:cauldron/bottle/mix/purple_from_blue_red"
+        "recipes": "inspirations:cauldron/bottle/mix/purple_from_blue_red"
       },
       "trigger": "minecraft:recipe_unlocked"
     }

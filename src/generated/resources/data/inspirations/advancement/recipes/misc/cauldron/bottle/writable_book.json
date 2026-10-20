@@ -19,7 +19,7 @@
     },
     "has_the_recipe": {
       "conditions": {
-        "recipe": "inspirations:cauldron/bottle/writable_book"
+        "recipes": "inspirations:cauldron/bottle/writable_book"
       },
       "trigger": "minecraft:recipe_unlocked"
     }

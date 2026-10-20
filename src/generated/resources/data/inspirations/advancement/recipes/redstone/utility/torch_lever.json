@@ -19,7 +19,7 @@
     },
     "has_the_recipe": {
       "conditions": {
-        "recipe": "inspirations:utility/torch_lever"
+        "recipes": "inspirations:utility/torch_lever"
       },
       "trigger": "minecraft:recipe_unlocked"
     },

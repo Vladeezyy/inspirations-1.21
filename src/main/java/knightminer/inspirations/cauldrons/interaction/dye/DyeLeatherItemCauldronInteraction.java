@@ -11,7 +11,6 @@ import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.LayeredCauldronBlock;
 import net.minecraft.world.level.block.state.BlockState;
-import net.neoforged.neoforge.items.ItemHandlerHelper;
 
 /** Logic to dye a leather item using the dye color */
 public class DyeLeatherItemCauldronInteraction extends AbstractDecreaseLayerCauldronInteraction {

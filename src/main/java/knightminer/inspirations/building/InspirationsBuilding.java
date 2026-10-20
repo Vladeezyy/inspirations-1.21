@@ -1,5 +1,13 @@
 package knightminer.inspirations.building;
 
+import net.minecraft.world.level.ItemLike;
+import net.neoforged.neoforge.event.ModifyDefaultComponentsEvent;
+import net.minecraft.core.component.DataComponents;
+import net.minecraft.world.item.component.CookingFuel;
+import net.minecraft.world.item.component.Compostable;
+import net.minecraft.world.level.storage.loot.providers.number.floats.ContextFloatProviders;
+import net.minecraft.world.level.storage.loot.providers.number.ints.ContextIntProvider;
+import net.minecraft.world.level.storage.loot.providers.number.ints.ContextIntProviders;
 import knightminer.inspirations.library.InspirationsRegistry;
 import knightminer.inspirations.building.block.EnlightenedBushBlock;
 import knightminer.inspirations.building.block.GlassDoorBlock;
@@ -124,7 +132,7 @@ public class InspirationsBuilding extends ModuleBase {
       ), BushType.values(), "enlightened_bush");
 
       // flowers, have no base name
-      BlockBehaviour.Properties flowerProps = Block.Properties.of().mapColor(MapColor.PLANT).pushReaction(PushReaction.DESTROY).strength(0F).sound(SoundType.GRASS).noCollision();
+      BlockBehaviour.Properties flowerProps = Block.Properties.of().mapColor(MapColor.PLANT).pushReaction(PushReaction.POPPED).strength(0F).sound(SoundType.GRASS).noCollision();
       flower = new EnumObject.Builder<FlowerType,GrowableFlowerBlock>(FlowerType.class)
           .put(FlowerType.CYAN, registry.make(() -> new GrowableFlowerBlock(MobEffects.SLOW_FALLING, 4, null, flowerProps), "cyan_flower"))
           .put(FlowerType.SYRINGA, registry.make(() -> new GrowableFlowerBlock(MobEffects.HUNGER, 8, (DoublePlantBlock)Blocks.LILAC, flowerProps), "syringa"))
@@ -134,14 +142,12 @@ public class InspirationsBuilding extends ModuleBase {
 
       // flower pots
       Supplier<FlowerPotBlock> emptyPot = () -> (FlowerPotBlock)Blocks.FLOWER_POT;
-      FlowerPotBlock vanillaPot = (FlowerPotBlock)Blocks.FLOWER_POT;
       Block.Properties props = Block.Properties.ofFullCopy(Blocks.FLOWER_POT);
       flowerPot = registry.registerEnum(type -> {
         // create pot and register it with the vanilla pot.
         Block plant = flower.get(type);
-        FlowerPotBlock pot = new FlowerPotBlock(emptyPot, () -> plant, props);
-        vanillaPot.addPlant(BuiltInRegistries.BLOCK.getKey(plant), () -> pot);
-        return pot;
+        // NeoForge 26.3 finds the full pots of the empty pot by itself
+        return new FlowerPotBlock(emptyPot, () -> plant, props);
       }, "potted", FlowerType.values());
     });
     event.register(Registries.BLOCK_ENTITY_TYPE, helper -> {
@@ -185,7 +191,6 @@ public class InspirationsBuilding extends ModuleBase {
 
   @SubscribeEvent
   void init(FMLCommonSetupEvent event) {
-    event.enqueueWork(InspirationsBuilding::registerCompostables);
     // 1.20 had this listener static on the module, which is registered as an instance on the mod bus, so it never ran
     NeoForge.EVENT_BUS.addListener(InspirationsBuilding::loadLoot);
     // books on shelves come from a tag, cached per item
@@ -201,13 +206,24 @@ public class InspirationsBuilding extends ModuleBase {
     });
   }
 
-  private static void registerCompostables() {
+  /** Compost chances (30, 50, 65 %) and the shelf fuel (300 ticks, as wood blocks) are item components since 26.3 */
+  @SubscribeEvent
+  void defaultComponents(ModifyDefaultComponentsEvent event) {
     for (Block bush : enlightenedBush.values()) {
-      ComposterBlock.COMPOSTABLES.put(bush.asItem(), 0.3F);
+      compostable(event, bush, ContextIntProviders.COMPOSTABLE_LOW);
     }
-    ComposterBlock.COMPOSTABLES.put(vine.asItem(), 0.5F);
+    compostable(event, vine, ContextIntProviders.COMPOSTABLE_LOW_MEDIUM);
     for (Block plant : flower.values()) {
-      ComposterBlock.COMPOSTABLES.put(plant.asItem(), 0.65F);
+      compostable(event, plant, ContextIntProviders.COMPOSTABLE_MEDIUM);
     }
+    for (Block block : shelf.values()) {
+      event.modify(block, (components, context, item) -> components.set(DataComponents.COOKING_FUEL,
+        new CookingFuel(ContextIntProviders.COOKING_TIME_WOOD_BLOCKS, ContextFloatProviders.COOKING_DEFAULT_SPEED_MULTIPLIER)));
+    }
+  }
+
+  /** Makes the item of the block compostable with the given layer chance */
+  public static void compostable(ModifyDefaultComponentsEvent event, ItemLike item, ResourceKey<ContextIntProvider> layers) {
+    event.modify(item, (components, context, it) -> components.set(DataComponents.COMPOSTABLE, new Compostable(layers)));
   }
 }

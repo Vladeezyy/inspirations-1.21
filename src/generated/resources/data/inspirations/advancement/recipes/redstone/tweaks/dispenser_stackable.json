@@ -9,7 +9,7 @@
   "criteria": {
     "has_the_recipe": {
       "conditions": {
-        "recipe": "inspirations:tweaks/dispenser_stackable"
+        "recipes": "inspirations:tweaks/dispenser_stackable"
       },
       "trigger": "minecraft:recipe_unlocked"
     },

@@ -109,20 +109,25 @@ public class TintedLecternRenderer implements BlockEntityRenderer<LecternBlockEn
     }
     pose.pushPose();
     pose.translate(0.5F, 1.0625F, 0.5F);
-    pose.mulPose(Axis.YP.rotationDegrees(-state.yRot));
-    pose.mulPose(Axis.ZP.rotationDegrees(67.5F));
+    pose.rotateDegrees(Axis.YP, -state.yRot);
+    pose.rotateDegrees(Axis.ZP, 67.5F);
     pose.translate(0.0F, -0.125F, 0.0F);
     if (state.tint == -1) {
-      collector.submitModel(bookModel, BOOK_STATE, pose, state.lightCoords, OverlayTexture.NO_OVERLAY, -1, EnchantTableRenderer.BOOK_TEXTURE, sprites, 0, state.breakProgress);
+      collector.submitModel(bookModel, BOOK_STATE, pose, state.lightCoords, OverlayTexture.NO_OVERLAY, -1, EnchantTableRenderer.BOOK_TEXTURE, sprites, 0);
     } else {
       RenderType type = BOOK_LOCATION.renderType(RenderTypes::entitySolid);
       var sprite = sprites.get(BOOK_LOCATION);
       for (ModelPart part : cover) {
-        collector.submitModelPart(part, pose, type, state.lightCoords, OverlayTexture.NO_OVERLAY, sprite, state.tint, state.breakProgress, 0);
+        collector.submitModelPart(part, pose, type, state.lightCoords, OverlayTexture.NO_OVERLAY, sprite, state.tint, 0);
       }
       for (ModelPart part : pages) {
-        collector.submitModelPart(part, pose, type, state.lightCoords, OverlayTexture.NO_OVERLAY, sprite, -1, state.breakProgress, 0);
+        collector.submitModelPart(part, pose, type, state.lightCoords, OverlayTexture.NO_OVERLAY, sprite, -1, 0);
       }
+    }
+    // the break overlay is its own submit since 26.3, over the whole book
+    if (state.breakProgress != null) {
+      collector.order(1).submitCrumblingOverlay(bookModel, BOOK_STATE, pose, EnchantTableRenderer.BOOK_TEXTURE.renderType(bookModel.renderType()),
+        state.lightCoords, OverlayTexture.NO_OVERLAY, -1, state.breakProgress);
     }
     pose.popPose();
   }

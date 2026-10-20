@@ -29,7 +29,7 @@
     },
     "has_the_recipe": {
       "conditions": {
-        "recipe": "inspirations:building/bookshelves/normal"
+        "recipes": "inspirations:building/bookshelves/normal"
       },
       "trigger": "minecraft:recipe_unlocked"
     }

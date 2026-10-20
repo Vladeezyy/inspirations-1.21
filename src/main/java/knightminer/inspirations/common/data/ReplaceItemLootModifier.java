@@ -1,5 +1,7 @@
 package knightminer.inspirations.common.data;
 
+import net.minecraft.core.Holder;
+import java.util.Optional;
 import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import it.unimi.dsi.fastutil.objects.ObjectArrayList;
@@ -25,8 +27,8 @@ public class ReplaceItemLootModifier extends LootModifier {
   private final Ingredient original;
   private final Item replacement;
 
-  public ReplaceItemLootModifier(LootItemCondition[] conditions, int priority, Ingredient original, Item replacement) {
-    super(conditions, priority);
+  public ReplaceItemLootModifier(Optional<Holder<LootItemCondition>> condition, int priority, Ingredient original, Item replacement) {
+    super(condition, priority);
     this.original = original;
     this.replacement = replacement;
   }

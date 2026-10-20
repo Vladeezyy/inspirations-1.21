@@ -19,7 +19,7 @@
     },
     "has_the_recipe": {
       "conditions": {
-        "recipe": "inspirations:cauldron/bottle/terracotta/white"
+        "recipes": "inspirations:cauldron/bottle/terracotta/white"
       },
       "trigger": "minecraft:recipe_unlocked"
     }

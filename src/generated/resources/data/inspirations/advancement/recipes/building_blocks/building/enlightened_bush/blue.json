@@ -29,7 +29,7 @@
     },
     "has_the_recipe": {
       "conditions": {
-        "recipe": "inspirations:building/enlightened_bush/blue"
+        "recipes": "inspirations:building/enlightened_bush/blue"
       },
       "trigger": "minecraft:recipe_unlocked"
     }
