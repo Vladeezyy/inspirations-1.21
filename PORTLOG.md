@@ -135,6 +135,35 @@ world is in another biome now, so the vine rope has the savanna tint), net test 
 numbers of one run): empty floor 151 FPS, vanilla baseline of 1024 full chiseled bookshelves 140 FPS, 1024 shelves full
 of books 158 FPS at 7.6 MSPT, plus 96 cauldrons 154 FPS at 4.6 MSPT, 200 ticks of changes 126 FPS at 5.8 MSPT — 10/10.
 
+## Minecraft 26.1.2 (NeoForge 26.1.2.121), branch `mc/26.1.2`
+
+From `mc/1.21.11`, Java 25, Kilnwork `26.1.2-1.1.0`. Data converted once more with `tools/port/data_26_1.py`.
+
+- Cauldron interactions are dispatchers (`CauldronInteractions.EMPTY/WATER`, `put(item, interaction)`); the
+  Inspirations cauldrons register theirs as `inspirations:<name>` (`RegisterCauldronInteractionEvent.Dispatcher`), the
+  default bucket interactions are added by the mod (package-private in vanilla). Interactions made in common setup do
+  not make item stacks any more (components are bound later): results are suppliers.
+- Dyes: the color is the `dye` component; the `dyeable` tag is gone — washing in a cauldron uses
+  `#minecraft:cauldron_can_remove_dye`, crafting dyes one `crafting_dye` recipe per item (colored book, dimension
+  compass).
+- Block colors are lists of `BlockTintSource` per block (one per tint index); `AbstractClientEvents.tintSources`
+  adapts the 1.21 color functions and makes their RGB opaque (the alpha counts since 26.1).
+- Fluids: `RegisterFluidModelsEvent` with still/flowing materials and a constant tint (the client fluid extensions lost
+  the textures); the translucent layer of honey comes from its texture.
+- Models: the retextured parts and the shelf books on `BlockStateModelPart` and quad material infos; the layer of a
+  retextured quad is taken from the new sprite.
+- Item properties get the `ItemOwner` (item frames included) instead of `stack.getFrame()`.
+- Recipes: `Recipe.CommonInfo`, book info and `ItemStackTemplate` results; the loot condition type is the codec;
+  loot modifiers take a priority; `global_loot_modifiers.json` is gone (NeoForge loads the folder).
+- GUI on `GuiGraphicsExtractor` (`extractBackground`, `extractLabels`), overlay messages with `sendOverlayMessage`,
+  `level.getRandom()`, `ChunkPos.containing`, `BreakBlockEvent`.
+- Tests: the net client joins the server from code (26.x ignores quick play), the time and weather are set with
+  commands (clocks), the item tint layers are an `IntList`.
+
+Verification on 26.1.2: selftest 57/57 (two new checks for the dye changes), client scene 41/41 (screenshots equal to
+1.21.11), net test 11/11. Stress: empty floor 244 FPS, vanilla baseline 250 FPS, 1024 shelves 236 FPS at 3.2 MSPT,
+plus 96 cauldrons 226 FPS at 3.1 MSPT, 200 ticks of changes 183 FPS at 4.3 MSPT — 10/10.
+
 ## License
 
 Code: LGPL-3.0-only (`LICENSE`, GPL text in `licenses/COPYING`); the original is MIT (`licenses/LICENSE-MIT`).

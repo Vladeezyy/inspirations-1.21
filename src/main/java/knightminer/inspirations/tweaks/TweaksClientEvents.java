@@ -5,7 +5,6 @@ import knightminer.inspirations.common.AbstractClientEvents;
 import knightminer.inspirations.common.Config;
 import knightminer.inspirations.tweaks.client.PortalColorHandler;
 import knightminer.inspirations.tweaks.client.TintedLecternRenderer;
-import net.minecraft.client.color.block.BlockColors;
 import net.minecraft.client.renderer.BiomeColors;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.ListTag;
@@ -54,11 +53,10 @@ public class TweaksClientEvents extends AbstractClientEvents {
 
 
   @SubscribeEvent
-  static void registerBlockColors(RegisterColorHandlersEvent.Block event) {
-    BlockColors colors = event.getBlockColors();
+  static void registerBlockColors(RegisterColorHandlersEvent.BlockTintSources event) {
 
     // coloring on sugar cane crop to match reeds
-    registerBlockColors(colors, (state, world, pos, index) -> {
+    registerBlockColors(event, (state, world, pos, index) -> {
       if (world == null || pos == null) {
         return -1;
       }
@@ -66,7 +64,7 @@ public class TweaksClientEvents extends AbstractClientEvents {
     }, InspirationsTweaks.sugarCane);
 
     // portal tinting
-    registerBlockColors(colors, PortalColorHandler.INSTANCE, Blocks.NETHER_PORTAL);
+    registerBlockColors(event, PortalColorHandler.INSTANCE, Blocks.NETHER_PORTAL);
   }
 
   @SubscribeEvent

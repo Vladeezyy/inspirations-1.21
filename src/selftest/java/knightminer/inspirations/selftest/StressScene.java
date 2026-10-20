@@ -246,8 +246,8 @@ public final class StressScene {
       mc.options.enableVsync().set(false);
       mc.options.renderDistance().set(8);
       mc.options.pauseOnLostFocus = false;
-      mc.resizeDisplay();
-      LevelSettings settings = new LevelSettings(WORLD, GameType.CREATIVE, false, Difficulty.PEACEFUL, true, new GameRules(WorldDataConfiguration.DEFAULT.enabledFeatures()), WorldDataConfiguration.DEFAULT);
+      mc.resizeGui();
+      LevelSettings settings = new LevelSettings(WORLD, GameType.CREATIVE, new LevelSettings.DifficultySettings(Difficulty.PEACEFUL, false, false), true, WorldDataConfiguration.DEFAULT);
       mc.createWorldOpenFlows().createFreshLevel(WORLD, settings, new WorldOptions(20261016L, false, false), WorldPresets::createNormalWorldDimensions, new TitleScreen());
       return;
     }
@@ -286,7 +286,7 @@ public final class StressScene {
     ServerLevel level = player.level();
     BlockPos spawn = level.getRespawnData().pos();
     stage = new BlockPos(spawn.getX() - SIDE / 2, 150, spawn.getZ() - SIDE / 2);
-    level.setDayTime(6000);
+    ClientScene.command(level, "time set 6000");
     level.getGameRules().set(GameRules.ADVANCE_TIME, false, level.getServer());
     level.getGameRules().set(GameRules.ADVANCE_WEATHER, false, level.getServer());
     for (BlockPos pos : BlockPos.betweenClosed(at(-6, 0, -6), at(SIDE + 2, 0, SIDE + 2))) {

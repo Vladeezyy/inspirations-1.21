@@ -1,5 +1,6 @@
 package knightminer.inspirations.tools.client;
 
+import net.minecraft.world.entity.ItemOwner;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.multiplayer.ClientLevel;
 import knightminer.inspirations.common.client.ItemColorSources;
@@ -17,8 +18,9 @@ import javax.annotation.Nullable;
 
 public class PhotometerPropertyGetter implements ItemColorSources.ItemProperty {
   @Override
-  public float get(ItemStack stack, @Nullable ClientLevel clientWorld, @Nullable LivingEntity entityIn, int seed) {
-    Entity entity = entityIn != null ? entityIn : stack.getFrame();
+  public float get(ItemStack stack, @Nullable ClientLevel clientWorld, @Nullable ItemOwner owner, int seed) {
+    LivingEntity entityIn = owner == null ? null : owner.asLivingEntity();
+    Entity entity = ItemColorSources.entityOf(owner);
     Level world = clientWorld;
     if (entity == null) {
       return 0;

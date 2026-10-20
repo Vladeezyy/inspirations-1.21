@@ -19,11 +19,11 @@ import net.minecraft.client.renderer.blockentity.state.BlockEntityRenderState;
 import net.minecraft.client.renderer.feature.ModelFeatureRenderer;
 import net.minecraft.client.renderer.rendertype.RenderType;
 import net.minecraft.client.renderer.rendertype.RenderTypes;
-import net.minecraft.client.renderer.state.CameraRenderState;
+import net.minecraft.client.renderer.state.level.CameraRenderState;
 import net.minecraft.client.renderer.texture.OverlayTexture;
 import net.minecraft.client.renderer.texture.TextureAtlas;
-import net.minecraft.client.resources.model.Material;
-import net.minecraft.client.resources.model.MaterialSet;
+import net.minecraft.client.resources.model.sprite.SpriteGetter;
+import net.minecraft.client.resources.model.sprite.SpriteId;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.util.ARGB;
 import net.minecraft.world.item.ItemStack;
@@ -39,16 +39,16 @@ import java.util.List;
 /** Based on {@link net.minecraft.client.renderer.blockentity.LecternRenderer}, but tints the book cover */
 public class TintedLecternRenderer implements BlockEntityRenderer<LecternBlockEntity, TintedLecternRenderer.State> {
   private static final String TAG_REQUESTED = "inspirations_requested";
-  public static final Material BOOK_LOCATION = new Material(TextureAtlas.LOCATION_BLOCKS, Inspirations.getResource("entity/lectern_book"));
-  private static final BookModel.State BOOK_STATE = new BookModel.State(0.0F, 0.1F, 0.9F, 1.2F);
+  public static final SpriteId BOOK_LOCATION = new SpriteId(TextureAtlas.LOCATION_BLOCKS, Inspirations.getResource("entity/lectern_book"));
+  private static final BookModel.State BOOK_STATE = BookModel.State.forAnimation(0.0F, 0.1F, 0.9F, 1.2F);
 
-  private final MaterialSet materials;
+  private final SpriteGetter sprites;
   private final BookModel bookModel;
   /** Parts drawn with the tint, and the rest of the book */
   private final List<ModelPart> cover, pages;
 
   public TintedLecternRenderer(BlockEntityRendererProvider.Context context) {
-    this.materials = context.materials();
+    this.sprites = context.sprites();
     ModelPart book = context.bakeLayer(ModelLayers.BOOK);
     this.bookModel = new BookModel(book);
     // the pose never changes, the parts below are drawn alone with it
@@ -113,11 +113,10 @@ public class TintedLecternRenderer implements BlockEntityRenderer<LecternBlockEn
     pose.mulPose(Axis.ZP.rotationDegrees(67.5F));
     pose.translate(0.0F, -0.125F, 0.0F);
     if (state.tint == -1) {
-      collector.submitModel(bookModel, BOOK_STATE, pose, EnchantTableRenderer.BOOK_TEXTURE.renderType(RenderTypes::entitySolid),
-        state.lightCoords, OverlayTexture.NO_OVERLAY, -1, materials.get(EnchantTableRenderer.BOOK_TEXTURE), 0, state.breakProgress);
+      collector.submitModel(bookModel, BOOK_STATE, pose, state.lightCoords, OverlayTexture.NO_OVERLAY, -1, EnchantTableRenderer.BOOK_TEXTURE, sprites, 0, state.breakProgress);
     } else {
       RenderType type = BOOK_LOCATION.renderType(RenderTypes::entitySolid);
-      var sprite = materials.get(BOOK_LOCATION);
+      var sprite = sprites.get(BOOK_LOCATION);
       for (ModelPart part : cover) {
         collector.submitModelPart(part, pose, type, state.lightCoords, OverlayTexture.NO_OVERLAY, sprite, false, false, state.tint, state.breakProgress, 0);
       }

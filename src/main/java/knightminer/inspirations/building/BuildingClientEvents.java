@@ -12,9 +12,7 @@ import knightminer.inspirations.library.MiscUtil;
 import knightminer.inspirations.library.client.ClientUtil;
 import knightminer.inspirations.library.client.model.ShelfModel;
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.color.block.BlockColors;
 import net.minecraft.client.renderer.BiomeColors;
-import net.minecraft.client.renderer.ItemBlockRenderTypes;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.FoliageColor;
 import net.minecraft.world.level.block.Block;
@@ -67,11 +65,10 @@ public class BuildingClientEvents extends AbstractClientEvents {
   }
 
   @SubscribeEvent
-  static void registerBlockColors(RegisterColorHandlersEvent.Block event) {
-    BlockColors blockColors = event.getBlockColors();
+  static void registerBlockColors(RegisterColorHandlersEvent.BlockTintSources event) {
 
-    // coloring of books for normal bookshelf
-    registerBlockColors(blockColors, (state, world, pos, tintIndex) -> {
+    // coloring of books for normal bookshelf, tint index 1 to 16 for the slots
+    registerBlockColors(event, 17, (state, world, pos, tintIndex) -> {
       if (tintIndex > 0 && tintIndex <= 16 && world != null && pos != null) {
         BlockEntity te = world.getBlockEntity(pos);
         if (te instanceof ShelfBlockEntity) {
@@ -92,7 +89,7 @@ public class BuildingClientEvents extends AbstractClientEvents {
     }, InspirationsBuilding.shelf.getOrNull(ShelfType.NORMAL));
 
     // rope vine coloring
-    registerBlockColors(blockColors, (state, world, pos, tintIndex) -> {
+    registerBlockColors(event, (state, world, pos, tintIndex) -> {
       if (world != null && pos != null) {
         return BiomeColors.getAverageFoliageColor(world, pos);
       }
@@ -104,12 +101,12 @@ public class BuildingClientEvents extends AbstractClientEvents {
     InspirationsBuilding.enlightenedBush.forEach((type, bush) -> {
       if (type != BushType.WHITE) {
         int color = ARGB.opaque(type.getColor()); // Make closure capture just the int.
-        event.register((state, world, pos, tintIndex) -> tintIndex == 0 ? color : -1, bush);
+        registerBlockColors(event, (state, world, pos, tintIndex) -> color, bush);
       }
     });
 
     // white copies the default leaf colors
-    registerBlockColors(blockColors, (state, world, pos, tintIndex) -> {
+    registerBlockColors(event, (state, world, pos, tintIndex) -> {
       if (tintIndex != 0 || world == null || pos == null) {
         return -1;
       }

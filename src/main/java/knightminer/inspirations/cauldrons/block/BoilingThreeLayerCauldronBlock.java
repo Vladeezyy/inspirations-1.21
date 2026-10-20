@@ -20,7 +20,7 @@ import static knightminer.inspirations.cauldrons.block.BoilingFourLayerCauldronB
 
 /** Cauldron block that has four layers and emits boiling particles when over fire */
 public class BoilingThreeLayerCauldronBlock extends LayeredCauldronBlock {
-	public BoilingThreeLayerCauldronBlock(Properties props, Precipitation precipitation, CauldronInteraction.InteractionMap interactions) {
+	public BoilingThreeLayerCauldronBlock(Properties props, Precipitation precipitation, CauldronInteraction.Dispatcher interactions) {
 		super(precipitation, interactions, props);
 	}
 

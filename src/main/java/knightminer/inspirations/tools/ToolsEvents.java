@@ -34,7 +34,7 @@ import net.minecraft.core.registries.Registries;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.entity.EquipmentSlot;
 import net.neoforged.neoforge.event.entity.player.PlayerInteractEvent.RightClickBlock;
-import net.neoforged.neoforge.event.level.BlockEvent.BreakEvent;
+import net.neoforged.neoforge.event.level.block.BreakBlockEvent;
 import net.neoforged.bus.api.EventPriority;
 import net.neoforged.bus.api.SubscribeEvent;
 import net.neoforged.neoforge.items.ItemHandlerHelper;
@@ -68,9 +68,9 @@ public class ToolsEvents {
       if (isLock) {
         // already locked: display message
         if (lockable.lockKey != LockCode.NO_LOCK) {
-          player.displayClientMessage(Component.translatable(Inspirations.prefix("lock.fail.locked")), true);
+          player.sendOverlayMessage(Component.translatable(Inspirations.prefix("lock.fail.locked")));
         } else if (!stack.has(DataComponents.CUSTOM_NAME)) {
-          player.displayClientMessage(Component.translatable(Inspirations.prefix("lock.fail.blank")), true);
+          player.sendOverlayMessage(Component.translatable(Inspirations.prefix("lock.fail.blank")));
         } else {
           // lock the container
           lockable.lockKey = heldCode;
@@ -78,7 +78,7 @@ public class ToolsEvents {
           if (!player.isCreative()) {
             stack.shrink(1);
           }
-          player.displayClientMessage(Component.translatable(Inspirations.prefix("lock.success")), true);
+          player.sendOverlayMessage(Component.translatable(Inspirations.prefix("lock.success")));
         }
 
         event.setCanceled(true);
@@ -94,12 +94,12 @@ public class ToolsEvents {
             // the key opened it, so the lock had its name
             lock.set(DataComponents.CUSTOM_NAME, stack.get(DataComponents.CUSTOM_NAME));
             player.getInventory().placeItemBackInInventory(lock);
-            player.displayClientMessage(Component.translatable(Inspirations.prefix("unlock.success")), true);
+            player.sendOverlayMessage(Component.translatable(Inspirations.prefix("unlock.success")));
           } else {
-            player.displayClientMessage(Component.translatable(Inspirations.prefix("unlock.fail.no_match")), true);
+            player.sendOverlayMessage(Component.translatable(Inspirations.prefix("unlock.fail.no_match")));
           }
         } else {
-          player.displayClientMessage(Component.translatable(Inspirations.prefix("unlock.fail.unlocked")), true);
+          player.sendOverlayMessage(Component.translatable(Inspirations.prefix("unlock.fail.unlocked")));
         }
 
         event.setCanceled(true);
@@ -109,7 +109,7 @@ public class ToolsEvents {
   }
 
   @SubscribeEvent(priority = EventPriority.LOW)
-  public static void vineBreakEvent(BreakEvent event) {
+  public static void vineBreakEvent(BreakBlockEvent event) {
     if (!Config.harvestHangingVines.getAsBoolean()) {
       return;
     }
@@ -230,8 +230,8 @@ public class ToolsEvents {
     // and they are have blocked it.
     if (attacker != null && !target.isInvulnerableTo(level, source)) {
       // the chance and damage of 1.20 ThornsEnchantment, enchantments are data in 1.21
-      if (thorns > 0 && level.random.nextFloat() < 0.15F * thorns) {
-        attacker.hurt(level.damageSources().thorns(target), thorns > 10 ? thorns - 10 : 1 + level.random.nextInt(4));
+      if (thorns > 0 && level.getRandom().nextFloat() < 0.15F * thorns) {
+        attacker.hurt(level.damageSources().thorns(target), thorns > 10 ? thorns - 10 : 1 + level.getRandom().nextInt(4));
         stack.hurtAndBreak(1, target, target.getUsedItemHand() == InteractionHand.MAIN_HAND ? EquipmentSlot.MAINHAND : EquipmentSlot.OFFHAND);
       }
       if (fire > 0) {

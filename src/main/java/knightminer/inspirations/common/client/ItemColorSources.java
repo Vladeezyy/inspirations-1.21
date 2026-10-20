@@ -8,6 +8,7 @@ import net.minecraft.client.color.item.ItemTintSource;
 import net.minecraft.client.multiplayer.ClientLevel;
 import net.minecraft.client.renderer.item.properties.numeric.RangeSelectItemModelProperty;
 import net.minecraft.world.entity.ItemOwner;
+import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
@@ -34,10 +35,19 @@ public final class ItemColorSources {
     int getColor(ItemStack stack, int tintIndex);
   }
 
-  /** Numeric property of a stack */
+  /** Numeric property of a stack; the owner is the holder, an item frame or the item entity */
   @FunctionalInterface
   public interface ItemProperty {
-    float get(ItemStack stack, @Nullable ClientLevel level, @Nullable LivingEntity entity, int seed);
+    float get(ItemStack stack, @Nullable ClientLevel level, @Nullable ItemOwner owner, int seed);
+  }
+
+  /** The entity behind the owner (also through an offset, as for item frames), null for block entities */
+  @Nullable
+  public static Entity entityOf(@Nullable ItemOwner owner) {
+    while (owner instanceof ItemOwner.OffsetFromOwner offset) {
+      owner = offset.owner();
+    }
+    return owner instanceof Entity entity ? entity : null;
   }
 
   private static final Map<Item, ItemColor> COLORS = new IdentityHashMap<>();
@@ -90,7 +100,7 @@ public final class ItemColorSources {
     public float get(ItemStack stack, @Nullable ClientLevel level, @Nullable ItemOwner owner, int seed) {
       Map<String, ItemProperty> properties = PROPERTIES.get(stack.getItem());
       ItemProperty property = properties == null ? null : properties.get(name);
-      return property == null ? 0 : property.get(stack, level, owner == null ? null : owner.asLivingEntity(), seed);
+      return property == null ? 0 : property.get(stack, level, owner, seed);
     }
 
     @Override

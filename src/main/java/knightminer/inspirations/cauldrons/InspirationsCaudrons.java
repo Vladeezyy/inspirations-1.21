@@ -51,6 +51,9 @@ import knightminer.inspirations.utility.InspirationsUtility;
 import net.minecraft.util.Util;
 import net.minecraft.core.Registry;
 import net.minecraft.core.cauldron.CauldronInteraction;
+import java.util.Set;
+import net.neoforged.neoforge.event.RegisterCauldronInteractionEvent;
+import net.minecraft.core.cauldron.CauldronInteractions;
 import net.minecraft.core.particles.ParticleType;
 import net.minecraft.core.particles.SimpleParticleType;
 import net.minecraft.core.registries.Registries;
@@ -120,27 +123,48 @@ import static knightminer.inspirations.library.recipe.cauldron.CauldronRegistry.
 import static knightminer.inspirations.library.recipe.cauldron.CauldronRegistry.exactBlock;
 import static knightminer.inspirations.library.recipe.cauldron.CauldronRegistry.fluidTag;
 import static knightminer.inspirations.library.recipe.cauldron.CauldronRegistry.itemTag;
-import static net.minecraft.core.cauldron.CauldronInteraction.addDefaultInteractions;
 
 public class InspirationsCaudrons extends ModuleBase {
+  /** Dispatchers of the cauldrons by id, registered for the block codecs (RegisterCauldronInteractionEvent) */
+  private static final Map<String, CauldronInteraction.Dispatcher> DISPATCHERS = new java.util.LinkedHashMap<>();
+
+  /** A new dispatcher {@code inspirations:<name>}; 1.21.1 named the interaction maps {@code inspirations_<name>} */
+  private static CauldronInteraction.Dispatcher dispatcher(String name) {
+    CauldronInteraction.Dispatcher dispatcher = new CauldronInteraction.Dispatcher();
+    DISPATCHERS.put(name, dispatcher);
+    return dispatcher;
+  }
+
+  /** The bucket interactions every vanilla cauldron has, package-private in 26.1 */
+  private static void addDefaultInteractions(CauldronInteraction.Dispatcher dispatcher) {
+    dispatcher.put(Items.LAVA_BUCKET, CauldronInteractions::fillLavaInteraction);
+    dispatcher.put(Items.WATER_BUCKET, CauldronInteractions::fillWaterInteraction);
+    dispatcher.put(Items.POWDER_SNOW_BUCKET, CauldronInteractions::fillPowderSnowInteraction);
+  }
+
+  @SubscribeEvent
+  void registerDispatchers(RegisterCauldronInteractionEvent.Dispatcher event) {
+    DISPATCHERS.forEach((name, dispatcher) -> event.register(Inspirations.getResource(name), dispatcher));
+  }
+
   /** Interactions for the mushroom stew cauldron */
-  public static final CauldronInteraction.InteractionMap MUSHROOM_STEW_CAULDRON_INTERACTIONS = CauldronInteraction.newInteractionMap("inspirations_mushroom_stew");
+  public static final CauldronInteraction.Dispatcher MUSHROOM_STEW_CAULDRON_INTERACTIONS = dispatcher("mushroom_stew");
   /** Interactions for the beetroot soup cauldron */
-  public static final CauldronInteraction.InteractionMap BEETROOT_SOUP_CAULDRON_INTERACTIONS = CauldronInteraction.newInteractionMap("inspirations_beetroot_soup");
+  public static final CauldronInteraction.Dispatcher BEETROOT_SOUP_CAULDRON_INTERACTIONS = dispatcher("beetroot_soup");
   /** Interactions for the rabbit stew cauldron */
-  public static final CauldronInteraction.InteractionMap RABBIT_STEW_CAULDRON_INTERACTIONS = CauldronInteraction.newInteractionMap("inspirations_rabbit_stew");
+  public static final CauldronInteraction.Dispatcher RABBIT_STEW_CAULDRON_INTERACTIONS = dispatcher("rabbit_stew");
   /** Interactions for the potato soup cauldron */
-  public static final CauldronInteraction.InteractionMap POTATO_SOUP_CAULDRON_INTERACTIONS = CauldronInteraction.newInteractionMap("inspirations_potato_soup");
+  public static final CauldronInteraction.Dispatcher POTATO_SOUP_CAULDRON_INTERACTIONS = dispatcher("potato_soup");
   /** Interactions for the honey cauldron */
-  public static final CauldronInteraction.InteractionMap HONEY_CAULDRON_INTERACTIONS = CauldronInteraction.newInteractionMap("inspirations_honey");
+  public static final CauldronInteraction.Dispatcher HONEY_CAULDRON_INTERACTIONS = dispatcher("honey");
   /** Interactions for the milk cauldron */
-  public static final CauldronInteraction.InteractionMap MILK_CAULDRON_INTERACTIONS = CauldronInteraction.newInteractionMap("inspirations_milk");
+  public static final CauldronInteraction.Dispatcher MILK_CAULDRON_INTERACTIONS = dispatcher("milk");
   /** Interactions for the dye cauldron */
-  public static final CauldronInteraction.InteractionMap DYE_CAULDRON_INTERACTIONS = CauldronInteraction.newInteractionMap("inspirations_dye");
+  public static final CauldronInteraction.Dispatcher DYE_CAULDRON_INTERACTIONS = dispatcher("dye");
   /** Interactions for the dye cauldron */
-  public static final CauldronInteraction.InteractionMap POTION_CAULDRON_INTERACTIONS = CauldronInteraction.newInteractionMap("inspirations_potion");
+  public static final CauldronInteraction.Dispatcher POTION_CAULDRON_INTERACTIONS = dispatcher("potion");
   /** Interactions for the suspicious stew cauldron */
-  public static final CauldronInteraction.InteractionMap SUSPICIOUS_STEW_CAULDRON_INTERACTIONS = CauldronInteraction.newInteractionMap("inspirations_suspicious_stew");
+  public static final CauldronInteraction.Dispatcher SUSPICIOUS_STEW_CAULDRON_INTERACTIONS = dispatcher("suspicious_stew");
 
   // blocks
   public static FourLayerCauldronBlock mushroomStewCauldron, beetrootSoupCauldron, rabbitStewCauldron, potatoSoupCauldron;
@@ -267,7 +291,7 @@ public class InspirationsCaudrons extends ModuleBase {
       milkBottle = registry.make(() -> new MilkBottleItem(bottleProps), "milk_bottle");
 
       // dyed bottles
-      simpleDyedWaterBottle = registry.registerEnum(color -> new SimpleDyedBottleItem(bottleProps, DyeItem.byColor(color)), DyeColor.values(), "dyed_bottle");
+      simpleDyedWaterBottle = registry.registerEnum(color -> new SimpleDyedBottleItem(bottleProps, color), DyeColor.values(), "dyed_bottle");
       mixedDyedWaterBottle = registry.make(() -> new MixedDyedBottleItem(bottleProps), "mixed_dyed_bottle");
     });
     event.register(Registries.PARTICLE_TYPE, helper -> {
@@ -324,79 +348,83 @@ public class InspirationsCaudrons extends ModuleBase {
     // add cauldron interactions
     event.enqueueWork(() -> {
       // helper to add to all cauldrons
+      // cauldrons share dispatchers since 26.1 (every layered water cauldron uses WATER), each is filled once
+      Set<CauldronInteraction.Dispatcher> dispatchers = java.util.Collections.newSetFromMap(new java.util.IdentityHashMap<>());
+      for (AbstractCauldronBlock cauldron : allCauldrons) {
+        if (cauldron.interactions != null) {
+          dispatchers.add(cauldron.interactions);
+        }
+      }
       BiConsumer<Item,CauldronInteraction> addToAll = (item, interaction) -> {
-        for (AbstractCauldronBlock cauldron : allCauldrons) {
-          // skip empty to fix issues with fake cauldrons that don't have a modifiable map
-          if (!cauldron.interactions.map().isEmpty()) {
-            cauldron.interactions.map().put(item, interaction);
-          }
+        for (CauldronInteraction.Dispatcher dispatcher : dispatchers) {
+          dispatcher.put(item, interaction);
         }
       };
 
       // default interactions - lets you replace cauldron contents with water/milk
-      addDefaultInteractions(MUSHROOM_STEW_CAULDRON_INTERACTIONS.map());
-      addDefaultInteractions(BEETROOT_SOUP_CAULDRON_INTERACTIONS.map());
-      addDefaultInteractions(RABBIT_STEW_CAULDRON_INTERACTIONS.map());
-      addDefaultInteractions(POTATO_SOUP_CAULDRON_INTERACTIONS.map());
-      addDefaultInteractions(HONEY_CAULDRON_INTERACTIONS.map());
-      addDefaultInteractions(MILK_CAULDRON_INTERACTIONS.map());
-      addDefaultInteractions(DYE_CAULDRON_INTERACTIONS.map());
-      addDefaultInteractions(POTION_CAULDRON_INTERACTIONS.map());
-      addDefaultInteractions(SUSPICIOUS_STEW_CAULDRON_INTERACTIONS.map());
+      addDefaultInteractions(MUSHROOM_STEW_CAULDRON_INTERACTIONS);
+      addDefaultInteractions(BEETROOT_SOUP_CAULDRON_INTERACTIONS);
+      addDefaultInteractions(RABBIT_STEW_CAULDRON_INTERACTIONS);
+      addDefaultInteractions(POTATO_SOUP_CAULDRON_INTERACTIONS);
+      addDefaultInteractions(HONEY_CAULDRON_INTERACTIONS);
+      addDefaultInteractions(MILK_CAULDRON_INTERACTIONS);
+      addDefaultInteractions(DYE_CAULDRON_INTERACTIONS);
+      addDefaultInteractions(POTION_CAULDRON_INTERACTIONS);
+      addDefaultInteractions(SUSPICIOUS_STEW_CAULDRON_INTERACTIONS);
 
       // make concrete in a cauldron
       if (Config.cauldronConcrete.getAsBoolean()) {
         for (DyeColor dye : DyeColor.values()) {
-          CauldronInteraction.WATER.map().put(getConcretePowder(dye).asItem(), new DecreaseLayerCauldronInteraction(getConcrete(dye), LayeredCauldronBlock.LEVEL));
+          CauldronInteractions.WATER.put(getConcretePowder(dye).asItem(), new DecreaseLayerCauldronInteraction(getConcrete(dye), LayeredCauldronBlock.LEVEL));
         }
       }
 
       // clean the piston
       if (Config.cauldronCleanStickyPiston.getAsBoolean()) {
-        CauldronInteraction.WATER.map().put(Items.STICKY_PISTON, new DecreaseLayerCauldronInteraction(Items.PISTON, LayeredCauldronBlock.LEVEL, SoundEvents.GENERIC_SPLASH));
+        CauldronInteractions.WATER.put(Items.STICKY_PISTON, new DecreaseLayerCauldronInteraction(Items.PISTON, LayeredCauldronBlock.LEVEL, SoundEvents.GENERIC_SPLASH));
       }
 
       // wet the sponge
       if (Config.cauldronWetSponge.getAsBoolean()) {
         CauldronInteraction spongeWet = new EmptyCauldronInteraction(Blocks.WET_SPONGE, SoundEvents.GRASS_PLACE);
-        CauldronInteraction.WATER.map().put(Items.SPONGE, spongeWet);
-        DYE_CAULDRON_INTERACTIONS.map().put(Items.SPONGE, spongeWet);
+        CauldronInteractions.WATER.put(Items.SPONGE, spongeWet);
+        DYE_CAULDRON_INTERACTIONS.put(Items.SPONGE, spongeWet);
       }
 
       // wash the wool
       if (Config.cauldronWashWool.getAsBoolean()) {
-        addToList(CauldronInteraction.WATER.map(), new DecreaseLayerCauldronInteraction(Blocks.WHITE_WOOL, LayeredCauldronBlock.LEVEL),
+        addToList(CauldronInteractions.WATER, new DecreaseLayerCauldronInteraction(Blocks.WHITE_WOOL, LayeredCauldronBlock.LEVEL),
                   Items.ORANGE_WOOL, Items.MAGENTA_WOOL, Items.LIGHT_BLUE_WOOL, Items.YELLOW_WOOL, Items.LIME_WOOL,
                   Items.PINK_WOOL, Items.GRAY_WOOL, Items.LIGHT_GRAY_WOOL, Items.CYAN_WOOL, Items.PURPLE_WOOL,
                   Items.BLUE_WOOL, Items.BROWN_WOOL, Items.GREEN_WOOL, Items.RED_WOOL, Items.BLACK_WOOL);
         // wash the bed
-        addToList(CauldronInteraction.WATER.map(), new DecreaseLayerCauldronInteraction(Blocks.WHITE_BED, LayeredCauldronBlock.LEVEL),
+        addToList(CauldronInteractions.WATER, new DecreaseLayerCauldronInteraction(Blocks.WHITE_BED, LayeredCauldronBlock.LEVEL),
                   Items.ORANGE_BED, Items.MAGENTA_BED, Items.LIGHT_BLUE_BED, Items.YELLOW_BED, Items.LIME_BED,
                   Items.PINK_BED, Items.GRAY_BED, Items.LIGHT_GRAY_BED, Items.CYAN_BED, Items.PURPLE_BED,
                   Items.BLUE_BED, Items.BROWN_BED, Items.GREEN_BED, Items.RED_BED, Items.BLACK_BED);
         // wash the carpet
-        addToList(CauldronInteraction.WATER.map(), new DecreaseLayerCauldronInteraction(Blocks.WHITE_CARPET, LayeredCauldronBlock.LEVEL),
+        addToList(CauldronInteractions.WATER, new DecreaseLayerCauldronInteraction(Blocks.WHITE_CARPET, LayeredCauldronBlock.LEVEL),
                   Items.ORANGE_CARPET, Items.MAGENTA_CARPET, Items.LIGHT_BLUE_CARPET, Items.YELLOW_CARPET, Items.LIME_CARPET,
                   Items.PINK_CARPET, Items.GRAY_CARPET, Items.LIGHT_GRAY_CARPET, Items.CYAN_CARPET, Items.PURPLE_CARPET,
                   Items.BLUE_CARPET, Items.BROWN_CARPET, Items.GREEN_CARPET, Items.RED_CARPET, Items.BLACK_CARPET);
         // wash the carpeted trapdoor
-        addToList(CauldronInteraction.WATER.map(), new DecreaseLayerCauldronInteraction(InspirationsUtility.carpetedTrapdoors.get(DyeColor.WHITE), LayeredCauldronBlock.LEVEL),
+        addToList(CauldronInteractions.WATER, new DecreaseLayerCauldronInteraction(InspirationsUtility.carpetedTrapdoors.get(DyeColor.WHITE), LayeredCauldronBlock.LEVEL),
                   Arrays.stream(DyeColor.values()).filter(dye -> dye != DyeColor.WHITE).map(color -> InspirationsUtility.carpetedTrapdoors.get(color).asItem()).toArray(Item[]::new));
 
         // wash the compass
-        CauldronInteraction.WATER.map().put(InspirationsTools.dimensionCompass, CauldronInteraction.WATER.map().get(Items.LEATHER_HELMET));
+        CauldronInteractions.WATER.put(InspirationsTools.dimensionCompass, CauldronInteractions::dyedItemIteration);
       }
 
       // milk
       if (Config.enableCauldronMilk.getAsBoolean()) {
         // milk buckets
         addToAll.accept(Items.MILK_BUCKET, new FillCauldronInteraction(milkCauldron));
-        MILK_CAULDRON_INTERACTIONS.map().put(Items.BUCKET, new EmptyCauldronInteraction(Items.MILK_BUCKET, SoundEvents.BUCKET_FILL));
+        MILK_CAULDRON_INTERACTIONS.put(Items.BUCKET, new EmptyCauldronInteraction(Items.MILK_BUCKET, SoundEvents.BUCKET_FILL));
 
         // milk bottles
-        CauldronInteraction.EMPTY.map().put(milkBottle, new FillCauldronInteraction(milkCauldron, 1, Items.GLASS_BOTTLE));
-        MILK_CAULDRON_INTERACTIONS.map().put(milkBottle, IncreaseLayerCauldronInteraction.fourLevel(Items.GLASS_BOTTLE));
-        MILK_CAULDRON_INTERACTIONS.map().put(Items.GLASS_BOTTLE, new DecreaseLayerCauldronInteraction(milkBottle, FourLayerCauldronBlock.LEVEL));
+        CauldronInteractions.EMPTY.put(milkBottle, new FillCauldronInteraction(milkCauldron, 1, Items.GLASS_BOTTLE));
+        MILK_CAULDRON_INTERACTIONS.put(milkBottle, IncreaseLayerCauldronInteraction.fourLevel(Items.GLASS_BOTTLE));
+        MILK_CAULDRON_INTERACTIONS.put(Items.GLASS_BOTTLE, new DecreaseLayerCauldronInteraction(milkBottle, FourLayerCauldronBlock.LEVEL));
       }
 
       // honey
@@ -405,21 +433,21 @@ public class InspirationsCaudrons extends ModuleBase {
         CauldronInteraction fillHoney = new FillCauldronInteraction(honeyCauldron);
         addToAll.accept(honeyBucket, fillHoney);
         CauldronRegistry.register(ALL_CAULDRONS, fluidTag(InspirationsTags.Common.HONEY), fillHoney);
-        HONEY_CAULDRON_INTERACTIONS.map().put(Items.BUCKET, new EmptyCauldronInteraction(honeyBucket, SoundEvents.BUCKET_FILL));
+        HONEY_CAULDRON_INTERACTIONS.put(Items.BUCKET, new EmptyCauldronInteraction(honeyBucket, SoundEvents.BUCKET_FILL));
 
         // honey bottles
-        CauldronInteraction.EMPTY.map().put(Items.HONEY_BOTTLE,   new FillCauldronInteraction(honeyCauldron, 1, Items.GLASS_BOTTLE));
-        HONEY_CAULDRON_INTERACTIONS.map().put(Items.HONEY_BOTTLE, IncreaseLayerCauldronInteraction.fourLevel(Items.GLASS_BOTTLE));
-        HONEY_CAULDRON_INTERACTIONS.map().put(Items.GLASS_BOTTLE, new DecreaseLayerCauldronInteraction(Items.HONEY_BOTTLE, FourLayerCauldronBlock.LEVEL));
+        CauldronInteractions.EMPTY.put(Items.HONEY_BOTTLE,   new FillCauldronInteraction(honeyCauldron, 1, Items.GLASS_BOTTLE));
+        HONEY_CAULDRON_INTERACTIONS.put(Items.HONEY_BOTTLE, IncreaseLayerCauldronInteraction.fourLevel(Items.GLASS_BOTTLE));
+        HONEY_CAULDRON_INTERACTIONS.put(Items.GLASS_BOTTLE, new DecreaseLayerCauldronInteraction(Items.HONEY_BOTTLE, FourLayerCauldronBlock.LEVEL));
 
         // honey blocks
         // not sure if I will bring back solid honey in cauldrons, for now just act like its liquid
         CauldronInteraction honeyToBlock = new EmptyCauldronInteraction(Blocks.HONEY_BLOCK, false, SoundEvents.HONEY_BLOCK_BREAK);
-        CauldronInteraction honeyToSugar = new DecreaseLayerCauldronInteraction(new ItemStack(Items.SUGAR, 3), FourLayerCauldronBlock.LEVEL, false, SoundEvents.HONEY_BLOCK_BREAK);
-        HONEY_CAULDRON_INTERACTIONS.map().put(Items.AIR, new FirstCauldronInteraction(honeyToBlock, honeyToSugar));
-        HONEY_CAULDRON_INTERACTIONS.map().put(Items.HONEY_BLOCK, honeyToBlock);
-        HONEY_CAULDRON_INTERACTIONS.map().put(Items.SUGAR, honeyToSugar);
-        CauldronInteraction.EMPTY.map().put(Items.HONEY_BLOCK, new FillCauldronInteraction(honeyCauldron, 4, Items.AIR, SoundEvents.HONEY_BLOCK_PLACE));
+        CauldronInteraction honeyToSugar = new DecreaseLayerCauldronInteraction(() -> new ItemStack(Items.SUGAR, 3), FourLayerCauldronBlock.LEVEL, false, SoundEvents.HONEY_BLOCK_BREAK);
+        HONEY_CAULDRON_INTERACTIONS.put(Items.AIR, new FirstCauldronInteraction(honeyToBlock, honeyToSugar));
+        HONEY_CAULDRON_INTERACTIONS.put(Items.HONEY_BLOCK, honeyToBlock);
+        HONEY_CAULDRON_INTERACTIONS.put(Items.SUGAR, honeyToSugar);
+        CauldronInteractions.EMPTY.put(Items.HONEY_BLOCK, new FillCauldronInteraction(honeyCauldron, 4, Items.AIR, SoundEvents.HONEY_BLOCK_PLACE));
       }
 
       // soup
@@ -439,53 +467,53 @@ public class InspirationsCaudrons extends ModuleBase {
         addToAll.accept(beetrootSoupBucket, fillBeetrootSoup);
         CauldronRegistry.register(ALL_CAULDRONS, fluidTag(InspirationsTags.Common.BEETROOT_SOUP), fillBeetrootSoup);
         // empty buckets
-        MUSHROOM_STEW_CAULDRON_INTERACTIONS.map().put(Items.BUCKET, new EmptyCauldronInteraction(mushroomStewBucket, SoundEvents.BUCKET_FILL));
-        POTATO_SOUP_CAULDRON_INTERACTIONS.map().put(Items.BUCKET, new EmptyCauldronInteraction(potatoSoupBucket,   SoundEvents.BUCKET_FILL));
-        RABBIT_STEW_CAULDRON_INTERACTIONS.map().put(Items.BUCKET, new EmptyCauldronInteraction(rabbitStewBucket,   SoundEvents.BUCKET_FILL));
-        BEETROOT_SOUP_CAULDRON_INTERACTIONS.map().put(Items.BUCKET, new EmptyCauldronInteraction(beetrootSoupBucket, SoundEvents.BUCKET_FILL));
+        MUSHROOM_STEW_CAULDRON_INTERACTIONS.put(Items.BUCKET, new EmptyCauldronInteraction(mushroomStewBucket, SoundEvents.BUCKET_FILL));
+        POTATO_SOUP_CAULDRON_INTERACTIONS.put(Items.BUCKET, new EmptyCauldronInteraction(potatoSoupBucket,   SoundEvents.BUCKET_FILL));
+        RABBIT_STEW_CAULDRON_INTERACTIONS.put(Items.BUCKET, new EmptyCauldronInteraction(rabbitStewBucket,   SoundEvents.BUCKET_FILL));
+        BEETROOT_SOUP_CAULDRON_INTERACTIONS.put(Items.BUCKET, new EmptyCauldronInteraction(beetrootSoupBucket, SoundEvents.BUCKET_FILL));
 
         // empty bowls
-        CauldronInteraction.EMPTY.map().put(Items.MUSHROOM_STEW, new FillCauldronInteraction(mushroomStewCauldron, 1, Items.BOWL));
-        CauldronInteraction.EMPTY.map().put(potatoSoupItem,      new FillCauldronInteraction(potatoSoupCauldron,   1, Items.BOWL));
-        CauldronInteraction.EMPTY.map().put(Items.RABBIT_STEW,   new FillCauldronInteraction(rabbitStewCauldron,   1, Items.BOWL));
-        CauldronInteraction.EMPTY.map().put(Items.BEETROOT_SOUP, new FillCauldronInteraction(beetrootSoupCauldron, 1, Items.BOWL));
+        CauldronInteractions.EMPTY.put(Items.MUSHROOM_STEW, new FillCauldronInteraction(mushroomStewCauldron, 1, Items.BOWL));
+        CauldronInteractions.EMPTY.put(potatoSoupItem,      new FillCauldronInteraction(potatoSoupCauldron,   1, Items.BOWL));
+        CauldronInteractions.EMPTY.put(Items.RABBIT_STEW,   new FillCauldronInteraction(rabbitStewCauldron,   1, Items.BOWL));
+        CauldronInteractions.EMPTY.put(Items.BEETROOT_SOUP, new FillCauldronInteraction(beetrootSoupCauldron, 1, Items.BOWL));
         IncreaseLayerCauldronInteraction increaseIntoBowl = IncreaseLayerCauldronInteraction.fourLevel(Items.BOWL);
-        MUSHROOM_STEW_CAULDRON_INTERACTIONS.map().put(Items.MUSHROOM_STEW, increaseIntoBowl);
-        POTATO_SOUP_CAULDRON_INTERACTIONS.map().put(potatoSoupItem,      increaseIntoBowl);
-        RABBIT_STEW_CAULDRON_INTERACTIONS.map().put(Items.RABBIT_STEW,   increaseIntoBowl);
-        BEETROOT_SOUP_CAULDRON_INTERACTIONS.map().put(Items.BEETROOT_SOUP, increaseIntoBowl);
+        MUSHROOM_STEW_CAULDRON_INTERACTIONS.put(Items.MUSHROOM_STEW, increaseIntoBowl);
+        POTATO_SOUP_CAULDRON_INTERACTIONS.put(potatoSoupItem,      increaseIntoBowl);
+        RABBIT_STEW_CAULDRON_INTERACTIONS.put(Items.RABBIT_STEW,   increaseIntoBowl);
+        BEETROOT_SOUP_CAULDRON_INTERACTIONS.put(Items.BEETROOT_SOUP, increaseIntoBowl);
 
         // fill bowls
-        MUSHROOM_STEW_CAULDRON_INTERACTIONS.map().put(Items.BOWL, new DecreaseLayerCauldronInteraction(Items.MUSHROOM_STEW, FourLayerCauldronBlock.LEVEL));
-        POTATO_SOUP_CAULDRON_INTERACTIONS.map().put(Items.BOWL, new DecreaseLayerCauldronInteraction(potatoSoupItem,      FourLayerCauldronBlock.LEVEL));
-        RABBIT_STEW_CAULDRON_INTERACTIONS.map().put(Items.BOWL, new DecreaseLayerCauldronInteraction(Items.RABBIT_STEW,   FourLayerCauldronBlock.LEVEL));
-        BEETROOT_SOUP_CAULDRON_INTERACTIONS.map().put(Items.BOWL, new DecreaseLayerCauldronInteraction(Items.BEETROOT_SOUP, FourLayerCauldronBlock.LEVEL));
+        MUSHROOM_STEW_CAULDRON_INTERACTIONS.put(Items.BOWL, new DecreaseLayerCauldronInteraction(Items.MUSHROOM_STEW, FourLayerCauldronBlock.LEVEL));
+        POTATO_SOUP_CAULDRON_INTERACTIONS.put(Items.BOWL, new DecreaseLayerCauldronInteraction(potatoSoupItem,      FourLayerCauldronBlock.LEVEL));
+        RABBIT_STEW_CAULDRON_INTERACTIONS.put(Items.BOWL, new DecreaseLayerCauldronInteraction(Items.RABBIT_STEW,   FourLayerCauldronBlock.LEVEL));
+        BEETROOT_SOUP_CAULDRON_INTERACTIONS.put(Items.BOWL, new DecreaseLayerCauldronInteraction(Items.BEETROOT_SOUP, FourLayerCauldronBlock.LEVEL));
 
         // making the soup
         // mushroom: slight discount (6 mushrooms for 4 bowls) and can use either mushroom (but not both)
         // use water if milk is disabled
         if (Config.enableCauldronMilk.getAsBoolean()) {
           CauldronInteraction mushroomTransform = new TransformCauldronInteraction(true, 2, FourLayerCauldronBlock.LEVEL, mushroomStewCauldron);
-          MILK_CAULDRON_INTERACTIONS.map().put(Items.BROWN_MUSHROOM, mushroomTransform);
-          MILK_CAULDRON_INTERACTIONS.map().put(Items.RED_MUSHROOM, mushroomTransform);
+          MILK_CAULDRON_INTERACTIONS.put(Items.BROWN_MUSHROOM, mushroomTransform);
+          MILK_CAULDRON_INTERACTIONS.put(Items.RED_MUSHROOM, mushroomTransform);
           CauldronRegistry.register(exactBlock(milkCauldron), itemTag(Tags.Items.MUSHROOMS), mushroomTransform);
         } else {
           CauldronInteraction mushroomTransform = new TransformCauldronInteraction(true, 2, LayeredCauldronBlock.LEVEL, mushroomStewCauldron);
-          CauldronInteraction.WATER.map().put(Items.BROWN_MUSHROOM, mushroomTransform);
-          CauldronInteraction.WATER.map().put(Items.RED_MUSHROOM, mushroomTransform);
+          CauldronInteractions.WATER.put(Items.BROWN_MUSHROOM, mushroomTransform);
+          CauldronInteractions.WATER.put(Items.RED_MUSHROOM, mushroomTransform);
           CauldronRegistry.register(exactBlock(Blocks.WATER_CAULDRON), itemTag(Tags.Items.MUSHROOMS), mushroomTransform);
         }
         // potato: slight discount, 4 bowls only costs 6 potatoes instead of 8. Uses 2 more mushrooms
-        MUSHROOM_STEW_CAULDRON_INTERACTIONS.map().put(Items.BAKED_POTATO, new TransformCauldronInteraction(true, 2, FourLayerCauldronBlock.LEVEL, potatoSoupCauldron));
+        MUSHROOM_STEW_CAULDRON_INTERACTIONS.put(Items.BAKED_POTATO, new TransformCauldronInteraction(true, 2, FourLayerCauldronBlock.LEVEL, potatoSoupCauldron));
         // rabbit: slight discount, 4 bowls only costs 3 rabbit instead of 4 and does not need carrot. Uses 2 more mushroom
-        POTATO_SOUP_CAULDRON_INTERACTIONS.map().put(Items.COOKED_RABBIT, new TransformCauldronInteraction(true, 1, FourLayerCauldronBlock.LEVEL, rabbitStewCauldron));
+        POTATO_SOUP_CAULDRON_INTERACTIONS.put(Items.COOKED_RABBIT, new TransformCauldronInteraction(true, 1, FourLayerCauldronBlock.LEVEL, rabbitStewCauldron));
         // rabbit: slight discount, 4 bowls only costs 18 beetroot instead of 24
-        CauldronInteraction.WATER.map().put(Items.BEETROOT, new TransformCauldronInteraction(true, 6, LayeredCauldronBlock.LEVEL, beetrootSoupCauldron));
+        CauldronInteractions.WATER.put(Items.BEETROOT, new TransformCauldronInteraction(true, 6, LayeredCauldronBlock.LEVEL, beetrootSoupCauldron));
 
         // suspicious stew
-        CauldronInteraction.EMPTY.map().put(Items.SUSPICIOUS_STEW, SuspiciousStewIntoEmptyCauldronInteraction.INSTANCE);
-        SUSPICIOUS_STEW_CAULDRON_INTERACTIONS.map().put(Items.BOWL, DecreaseSuspiciousStewCauldronInteraction.INSTANCE);
-        SUSPICIOUS_STEW_CAULDRON_INTERACTIONS.map().put(Items.SUSPICIOUS_STEW, MixSuspiciousStewCauldronInteraction.INSTANCE);
+        CauldronInteractions.EMPTY.put(Items.SUSPICIOUS_STEW, SuspiciousStewIntoEmptyCauldronInteraction.INSTANCE);
+        SUSPICIOUS_STEW_CAULDRON_INTERACTIONS.put(Items.BOWL, DecreaseSuspiciousStewCauldronInteraction.INSTANCE);
+        SUSPICIOUS_STEW_CAULDRON_INTERACTIONS.put(Items.SUSPICIOUS_STEW, MixSuspiciousStewCauldronInteraction.INSTANCE);
         CauldronRegistry.register(exactBlock(mushroomStewCauldron), itemTag(ItemTags.SMALL_FLOWERS), SuspiciousStewingCauldronInteraction.INSTANCE);
       }
 
@@ -512,31 +540,31 @@ public class InspirationsCaudrons extends ModuleBase {
           };
 
           // dyes into cauldrons
-          CauldronInteraction.WATER.map().put(dyeItem, new DyeWaterCauldronInteraction(dye));
-          DYE_CAULDRON_INTERACTIONS.map().put(dyeItem, new MixDyeCauldronInteraction(dye));
+          CauldronInteractions.WATER.put(dyeItem, new DyeWaterCauldronInteraction(dye));
+          DYE_CAULDRON_INTERACTIONS.put(dyeItem, new MixDyeCauldronInteraction(dye));
 
           // dyed bottles into cauldrons
           int color = MiscUtil.getColor(dye);
-          CauldronInteraction.EMPTY.map().put(simpleDyedWaterBottle.get(dye), new DyedBottleIntoEmptyCauldronInteraction(color));
-          CauldronInteraction.WATER.map().put(simpleDyedWaterBottle.get(dye), new DyedBottleIntoWaterCauldronInteraction(color));
-          DYE_CAULDRON_INTERACTIONS.map().put(simpleDyedWaterBottle.get(dye), new DyedBottleIntoDyeCauldronInteraction(color));
+          CauldronInteractions.EMPTY.put(simpleDyedWaterBottle.get(dye), new DyedBottleIntoEmptyCauldronInteraction(color));
+          CauldronInteractions.WATER.put(simpleDyedWaterBottle.get(dye), new DyedBottleIntoWaterCauldronInteraction(color));
+          DYE_CAULDRON_INTERACTIONS.put(simpleDyedWaterBottle.get(dye), new DyedBottleIntoDyeCauldronInteraction(color));
         }
 
         // mixed bottle into cauldrons
-        CauldronInteraction.EMPTY.map().put(mixedDyedWaterBottle, new DyedBottleIntoEmptyCauldronInteraction(null));
-        CauldronInteraction.WATER.map().put(mixedDyedWaterBottle, new DyedBottleIntoWaterCauldronInteraction(null));
-        DYE_CAULDRON_INTERACTIONS.map().put(mixedDyedWaterBottle, new DyedBottleIntoDyeCauldronInteraction(null));
+        CauldronInteractions.EMPTY.put(mixedDyedWaterBottle, new DyedBottleIntoEmptyCauldronInteraction(null));
+        CauldronInteractions.WATER.put(mixedDyedWaterBottle, new DyedBottleIntoWaterCauldronInteraction(null));
+        DYE_CAULDRON_INTERACTIONS.put(mixedDyedWaterBottle, new DyedBottleIntoDyeCauldronInteraction(null));
 
         // water into dyed cauldrons
-        DYE_CAULDRON_INTERACTIONS.map().put(Items.POTION, new WaterBottleIntoDyeCauldronInteraction(Items.GLASS_BOTTLE, 0x808080));
-        DYE_CAULDRON_INTERACTIONS.map().put(Items.SPLASH_POTION, new WaterBottleIntoDyeCauldronInteraction(splashBottle, 0x808080));
-        DYE_CAULDRON_INTERACTIONS.map().put(Items.LINGERING_POTION, new WaterBottleIntoDyeCauldronInteraction(lingeringBottle, 0x808080));
+        DYE_CAULDRON_INTERACTIONS.put(Items.POTION, new WaterBottleIntoDyeCauldronInteraction(Items.GLASS_BOTTLE, 0x808080));
+        DYE_CAULDRON_INTERACTIONS.put(Items.SPLASH_POTION, new WaterBottleIntoDyeCauldronInteraction(splashBottle, 0x808080));
+        DYE_CAULDRON_INTERACTIONS.put(Items.LINGERING_POTION, new WaterBottleIntoDyeCauldronInteraction(lingeringBottle, 0x808080));
 
         // fill the bottle
-        DYE_CAULDRON_INTERACTIONS.map().put(Items.GLASS_BOTTLE, FillDyedBottleCauldronInteraction.INSTANCE);
+        DYE_CAULDRON_INTERACTIONS.put(Items.GLASS_BOTTLE, FillDyedBottleCauldronInteraction.INSTANCE);
 
         // dye the wool
-        addToList(DYE_CAULDRON_INTERACTIONS.map(), new DyeItemCauldronInteraction(color -> switch (color) {
+        addToList(DYE_CAULDRON_INTERACTIONS, new DyeItemCauldronInteraction(color -> switch (color) {
                     case WHITE      -> Items.WHITE_WOOL;
                     case ORANGE     -> Items.ORANGE_WOOL;
                     case MAGENTA    -> Items.MAGENTA_WOOL;
@@ -556,7 +584,7 @@ public class InspirationsCaudrons extends ModuleBase {
                   }), Items.WHITE_WOOL, Items.ORANGE_WOOL, Items.MAGENTA_WOOL, Items.LIGHT_BLUE_WOOL, Items.YELLOW_WOOL, Items.LIME_WOOL, Items.PINK_WOOL, Items.GRAY_WOOL,
                   Items.LIGHT_GRAY_WOOL, Items.CYAN_WOOL, Items.PURPLE_WOOL, Items.BLUE_WOOL, Items.BROWN_WOOL, Items.GREEN_WOOL, Items.RED_WOOL, Items.BLACK_WOOL);
         // dye the bed
-        addToList(DYE_CAULDRON_INTERACTIONS.map(), new DyeItemCauldronInteraction(color -> switch (color) {
+        addToList(DYE_CAULDRON_INTERACTIONS, new DyeItemCauldronInteraction(color -> switch (color) {
                     case WHITE      -> Items.WHITE_BED;
                     case ORANGE     -> Items.ORANGE_BED;
                     case MAGENTA    -> Items.MAGENTA_BED;
@@ -576,7 +604,7 @@ public class InspirationsCaudrons extends ModuleBase {
                   }), Items.WHITE_BED, Items.ORANGE_BED, Items.MAGENTA_BED, Items.LIGHT_BLUE_BED, Items.YELLOW_BED, Items.LIME_BED, Items.PINK_BED, Items.GRAY_BED,
                   Items.LIGHT_GRAY_BED, Items.CYAN_BED, Items.PURPLE_BED, Items.BLUE_BED, Items.BROWN_BED, Items.GREEN_BED, Items.RED_BED, Items.BLACK_BED);
         // dye the carpet
-        addToList(DYE_CAULDRON_INTERACTIONS.map(), new DyeItemCauldronInteraction(color -> switch (color) {
+        addToList(DYE_CAULDRON_INTERACTIONS, new DyeItemCauldronInteraction(color -> switch (color) {
                     case WHITE      -> Items.WHITE_CARPET;
                     case ORANGE     -> Items.ORANGE_CARPET;
                     case MAGENTA    -> Items.MAGENTA_CARPET;
@@ -596,9 +624,9 @@ public class InspirationsCaudrons extends ModuleBase {
                   }), Items.WHITE_CARPET, Items.ORANGE_CARPET, Items.MAGENTA_CARPET, Items.LIGHT_BLUE_CARPET, Items.YELLOW_CARPET, Items.LIME_CARPET, Items.PINK_CARPET, Items.GRAY_CARPET,
                   Items.LIGHT_GRAY_CARPET, Items.CYAN_CARPET, Items.PURPLE_CARPET, Items.BLUE_CARPET, Items.BROWN_CARPET, Items.GREEN_CARPET, Items.RED_CARPET, Items.BLACK_CARPET);
         // dye the carpeted trapdoor
-        addToList(DYE_CAULDRON_INTERACTIONS.map(), new DyeItemCauldronInteraction(dye -> InspirationsUtility.carpetedTrapdoors.get(dye)), InspirationsUtility.carpetedTrapdoors.values().stream().map(ItemLike::asItem).toArray(Item[]::new));
+        addToList(DYE_CAULDRON_INTERACTIONS, new DyeItemCauldronInteraction(dye -> InspirationsUtility.carpetedTrapdoors.get(dye)), InspirationsUtility.carpetedTrapdoors.values().stream().map(ItemLike::asItem).toArray(Item[]::new));
         // dye the shulker box
-        addToList(DYE_CAULDRON_INTERACTIONS.map(), new DyeItemCauldronInteraction(color -> switch (color) {
+        addToList(DYE_CAULDRON_INTERACTIONS, new DyeItemCauldronInteraction(color -> switch (color) {
                     case WHITE      -> Items.WHITE_SHULKER_BOX;
                     case ORANGE     -> Items.ORANGE_SHULKER_BOX;
                     case MAGENTA    -> Items.MAGENTA_SHULKER_BOX;
@@ -617,8 +645,9 @@ public class InspirationsCaudrons extends ModuleBase {
                     case BLACK      -> Items.BLACK_SHULKER_BOX;
                   }, true), Items.WHITE_SHULKER_BOX, Items.ORANGE_SHULKER_BOX, Items.MAGENTA_SHULKER_BOX, Items.LIGHT_BLUE_SHULKER_BOX, Items.YELLOW_SHULKER_BOX, Items.LIME_SHULKER_BOX, Items.PINK_SHULKER_BOX, Items.GRAY_SHULKER_BOX,
                   Items.LIGHT_GRAY_SHULKER_BOX, Items.CYAN_SHULKER_BOX, Items.PURPLE_SHULKER_BOX, Items.BLUE_SHULKER_BOX, Items.BROWN_SHULKER_BOX, Items.GREEN_SHULKER_BOX, Items.RED_SHULKER_BOX, Items.BLACK_SHULKER_BOX);
-        // dye the leather, any item of the dyeable tag (1.20 had a dyeable item interface; tags are not loaded yet here)
-        CauldronRegistry.register(exactBlock(dyeCauldron), itemTag(ItemTags.DYEABLE), DyeLeatherItemCauldronInteraction.INSTANCE);
+        // dye the leather, any item whose dye a cauldron removes (the dyeable tag before 26.1; 1.20 had a dyeable item
+        // interface; tags are not loaded yet here)
+        CauldronRegistry.register(exactBlock(dyeCauldron), itemTag(ItemTags.CAULDRON_CAN_REMOVE_DYE), DyeLeatherItemCauldronInteraction.INSTANCE);
       }
 
       // potion cauldrons
@@ -626,34 +655,34 @@ public class InspirationsCaudrons extends ModuleBase {
         // brewing bottles is registered in registerBrewing, 1.21 builds the brewing recipes in an event
 
         // fill the potion
-        POTION_CAULDRON_INTERACTIONS.map().put(Items.GLASS_BOTTLE, new FillPotionCauldronInteraction(Items.POTION));
+        POTION_CAULDRON_INTERACTIONS.put(Items.GLASS_BOTTLE, new FillPotionCauldronInteraction(Items.POTION));
         // splash
         CauldronInteraction fillSplashPotion = new FillPotionCauldronInteraction(Items.SPLASH_POTION);
-        POTION_CAULDRON_INTERACTIONS.map().put(splashBottle, fillSplashPotion);
+        POTION_CAULDRON_INTERACTIONS.put(splashBottle, fillSplashPotion);
         CauldronRegistry.register(exactBlock(potionCauldron), itemTag(InspirationsTags.Common.SPLASH_BOTTLE), fillSplashPotion);
         // lingering
         CauldronInteraction fillLingeringBottle = new FillPotionCauldronInteraction(Items.LINGERING_POTION);
-        POTION_CAULDRON_INTERACTIONS.map().put(lingeringBottle, fillLingeringBottle);
+        POTION_CAULDRON_INTERACTIONS.put(lingeringBottle, fillLingeringBottle);
         CauldronRegistry.register(exactBlock(potionCauldron), itemTag(InspirationsTags.Common.LINGERING_BOTTLE), fillLingeringBottle);
 
         // drain the potion
-        POTION_CAULDRON_INTERACTIONS.map().put(Items.POTION, new PotionIntoPotionCauldron(Items.GLASS_BOTTLE));
-        POTION_CAULDRON_INTERACTIONS.map().put(Items.SPLASH_POTION, new PotionIntoPotionCauldron(splashBottle));
-        POTION_CAULDRON_INTERACTIONS.map().put(Items.LINGERING_POTION, new PotionIntoPotionCauldron(lingeringBottle));
+        POTION_CAULDRON_INTERACTIONS.put(Items.POTION, new PotionIntoPotionCauldron(Items.GLASS_BOTTLE));
+        POTION_CAULDRON_INTERACTIONS.put(Items.SPLASH_POTION, new PotionIntoPotionCauldron(splashBottle));
+        POTION_CAULDRON_INTERACTIONS.put(Items.LINGERING_POTION, new PotionIntoPotionCauldron(lingeringBottle));
         // drain the potion into empty, note this replaces the vanilla one, but it's okay as we still make water cauldrons
-        CauldronInteraction.EMPTY.map().put(Items.POTION, new PotionIntoEmptyInteraction(Items.GLASS_BOTTLE));
-        CauldronInteraction.EMPTY.map().put(Items.SPLASH_POTION, new PotionIntoEmptyInteraction(splashBottle));
-        CauldronInteraction.EMPTY.map().put(Items.LINGERING_POTION, new PotionIntoEmptyInteraction(lingeringBottle));
+        CauldronInteractions.EMPTY.put(Items.POTION, new PotionIntoEmptyInteraction(Items.GLASS_BOTTLE));
+        CauldronInteractions.EMPTY.put(Items.SPLASH_POTION, new PotionIntoEmptyInteraction(splashBottle));
+        CauldronInteractions.EMPTY.put(Items.LINGERING_POTION, new PotionIntoEmptyInteraction(lingeringBottle));
 
         // water cauldrons work with potions, but not splash or lingering
-        CauldronInteraction.WATER.map().put(Items.SPLASH_POTION, new WaterBottleIntoWaterInteraction(splashBottle));
-        CauldronInteraction.WATER.map().put(Items.LINGERING_POTION, new WaterBottleIntoWaterInteraction(lingeringBottle));
-        CauldronInteraction.WATER.map().put(splashBottle, new DecreaseLayerCauldronInteraction(PotionContents.createItemStack(Items.SPLASH_POTION, Potions.WATER), LayeredCauldronBlock.LEVEL, true, SoundEvents.BOTTLE_FILL));
-        CauldronInteraction.WATER.map().put(lingeringBottle, new DecreaseLayerCauldronInteraction(PotionContents.createItemStack(Items.LINGERING_POTION, Potions.WATER), LayeredCauldronBlock.LEVEL, true, SoundEvents.BOTTLE_FILL));
+        CauldronInteractions.WATER.put(Items.SPLASH_POTION, new WaterBottleIntoWaterInteraction(splashBottle));
+        CauldronInteractions.WATER.put(Items.LINGERING_POTION, new WaterBottleIntoWaterInteraction(lingeringBottle));
+        CauldronInteractions.WATER.put(splashBottle, new DecreaseLayerCauldronInteraction(() -> PotionContents.createItemStack(Items.SPLASH_POTION, Potions.WATER), LayeredCauldronBlock.LEVEL, true, SoundEvents.BOTTLE_FILL));
+        CauldronInteractions.WATER.put(lingeringBottle, new DecreaseLayerCauldronInteraction(() -> PotionContents.createItemStack(Items.LINGERING_POTION, Potions.WATER), LayeredCauldronBlock.LEVEL, true, SoundEvents.BOTTLE_FILL));
 
         // make the tipped arrows, no water arrows tho
         if (Config.cauldronTipArrows.getAsBoolean()) {
-          POTION_CAULDRON_INTERACTIONS.map().put(Items.ARROW, TipArrowCauldronInteraction.INSTANCE);
+          POTION_CAULDRON_INTERACTIONS.put(Items.ARROW, TipArrowCauldronInteraction.INSTANCE);
         }
 
         // potion brewing
@@ -741,13 +770,13 @@ public class InspirationsCaudrons extends ModuleBase {
   }
 
   /** Adds an interaction for both empty and the passed map */
-  private static void addToMapAndCauldron(Map<Item,CauldronInteraction> map, Item item, CauldronInteraction interaction) {
+  private static void addToMapAndCauldron(CauldronInteraction.Dispatcher map, Item item, CauldronInteraction interaction) {
     map.put(item, interaction);
-    CauldronInteraction.EMPTY.map().put(item, interaction);
+    CauldronInteractions.EMPTY.put(item, interaction);
   }
 
   /** Adds an interaction for each item in the list */
-  private static void addToList(Map<Item,CauldronInteraction> map, CauldronInteraction interaction, Item... items) {
+  private static void addToList(CauldronInteraction.Dispatcher map, CauldronInteraction interaction, Item... items) {
     for (Item item : items) {
       map.put(item, interaction);
     }

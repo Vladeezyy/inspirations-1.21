@@ -78,7 +78,7 @@ public class RedstoneArrow extends AbstractArrow {
       }
     }
 
-    level.playSound(null, pos, SoundEvents.FLINTANDSTEEL_USE, SoundSource.BLOCKS, 1.0F, level.random.nextFloat() * 0.4F + 0.8F);
+    level.playSound(null, pos, SoundEvents.FLINTANDSTEEL_USE, SoundSource.BLOCKS, 1.0F, level.getRandom().nextFloat() * 0.4F + 0.8F);
     BlockState state = redstoneCharge.defaultBlockState().setValue(RedstoneChargeBlock.FACING, sideHit.getOpposite());
     level.setBlock(pos, state, Block.UPDATE_ALL_IMMEDIATE);
     redstoneCharge.setPlacedBy(level, pos, state, null, ItemStack.EMPTY);

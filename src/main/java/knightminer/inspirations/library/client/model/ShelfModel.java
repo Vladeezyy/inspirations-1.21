@@ -9,17 +9,17 @@ import dev.vladeezyy.kilnwork.client.model.RetexturedBlockModel;
 import dev.vladeezyy.kilnwork.client.model.RetexturedModelLoader;
 import dev.vladeezyy.kilnwork.client.model.RetexturedQuads;
 import knightminer.inspirations.building.block.entity.ShelfBlockEntity;
-import net.minecraft.client.renderer.block.model.BakedQuad;
-import net.minecraft.client.renderer.block.model.BlockElement;
-import net.minecraft.client.renderer.block.model.BlockModel;
-import net.minecraft.client.renderer.block.model.BlockStateModel;
-import net.minecraft.client.renderer.block.model.SimpleUnbakedGeometry;
-import net.minecraft.client.renderer.block.model.TextureSlots;
+import net.minecraft.client.resources.model.geometry.BakedQuad;
+import net.minecraft.client.resources.model.cuboid.CuboidModelElement;
+import net.minecraft.client.resources.model.cuboid.CuboidModel;
+import net.minecraft.client.renderer.block.dispatch.BlockStateModel;
+import net.minecraft.client.resources.model.cuboid.UnbakedCuboidGeometry;
+import net.minecraft.client.resources.model.sprite.TextureSlots;
 import net.minecraft.client.resources.model.ModelBaker;
 import net.minecraft.client.resources.model.ModelDebugName;
-import net.minecraft.client.resources.model.ModelState;
-import net.minecraft.client.resources.model.QuadCollection;
-import net.minecraft.client.resources.model.UnbakedGeometry;
+import net.minecraft.client.renderer.block.dispatch.ModelState;
+import net.minecraft.client.resources.model.geometry.QuadCollection;
+import net.minecraft.client.resources.model.geometry.UnbakedGeometry;
 import net.minecraft.client.resources.model.UnbakedModel;
 import net.minecraft.core.Direction;
 import net.minecraft.resources.Identifier;
@@ -48,29 +48,29 @@ public final class ShelfModel {
     if (bookArray.isEmpty()) {
       throw new JsonSyntaxException("Must have at least one book element");
     }
-    List<List<BlockElement>> books = new ArrayList<>(bookArray.size());
+    List<List<CuboidModelElement>> books = new ArrayList<>(bookArray.size());
     for (JsonElement book : bookArray) {
-      List<BlockElement> elements = new ArrayList<>();
+      List<CuboidModelElement> elements = new ArrayList<>();
       if (book.isJsonArray()) {
         for (JsonElement element : book.getAsJsonArray()) {
-          elements.add(context.deserialize(element, BlockElement.class));
+          elements.add(context.deserialize(element, CuboidModelElement.class));
         }
       } else {
-        elements.add(context.deserialize(book, BlockElement.class));
+        elements.add(context.deserialize(book, CuboidModelElement.class));
       }
       books.add(elements);
     }
     JsonObject vanilla = json.deepCopy();
     vanilla.remove("books");
-    BlockModel model = RetexturedModelLoader.readVanilla(vanilla, context);
+    CuboidModel model = RetexturedModelLoader.readVanilla(vanilla, context);
     return new RetexturedModelLoader.Wrapped(model, new Geometry(model.geometry(), model.parent(), retextured, books));
   }
 
   /** The shelf with every book, each book in quad group = its slot */
   private static class Geometry extends RetexturedModelLoader.Geometry {
-    private final List<List<BlockElement>> books;
+    private final List<List<CuboidModelElement>> books;
 
-    Geometry(@Nullable UnbakedGeometry own, @Nullable Identifier parent, Set<String> retextured, List<List<BlockElement>> books) {
+    Geometry(@Nullable UnbakedGeometry own, @Nullable Identifier parent, Set<String> retextured, List<List<CuboidModelElement>> books) {
       super(own, parent, retextured);
       this.books = books;
     }
@@ -80,7 +80,7 @@ public final class ShelfModel {
       QuadCollection.Builder builder = new QuadCollection.Builder();
       add(builder, super.bakeQuads(textures, baker, state, name));
       for (int slot = 0; slot < books.size(); slot++) {
-        QuadCollection book = SimpleUnbakedGeometry.bake(books.get(slot), textures, baker, state, name);
+        QuadCollection book = UnbakedCuboidGeometry.bake(books.get(slot), textures, baker, state, name);
         RetexturedQuads.markGroup(book, slot);
         add(builder, book);
       }

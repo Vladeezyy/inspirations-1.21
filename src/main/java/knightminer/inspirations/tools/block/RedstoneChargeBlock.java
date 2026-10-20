@@ -90,7 +90,7 @@ public class RedstoneChargeBlock extends Block {
   public void tick(BlockState state, ServerLevel world, BlockPos pos, RandomSource random) {
     if (!world.isClientSide()) {
       world.removeBlock(pos, false);
-      world.playSound(null, pos, SoundEvents.REDSTONE_TORCH_BURNOUT, SoundSource.BLOCKS, 0.5F, 2.6F + (world.random.nextFloat() - world.random.nextFloat()) * 0.8F);
+      world.playSound(null, pos, SoundEvents.REDSTONE_TORCH_BURNOUT, SoundSource.BLOCKS, 0.5F, 2.6F + (world.getRandom().nextFloat() - world.getRandom().nextFloat()) * 0.8F);
     }
   }
 

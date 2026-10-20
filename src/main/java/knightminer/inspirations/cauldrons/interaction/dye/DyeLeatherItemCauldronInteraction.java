@@ -22,7 +22,7 @@ public class DyeLeatherItemCauldronInteraction extends AbstractDecreaseLayerCaul
 
 	@Override
 	protected ItemStack getResult(BlockState state, Level level, BlockPos pos, ItemStack stack) {
-		if (stack.is(ItemTags.DYEABLE)) {
+		if (stack.is(ItemTags.CAULDRON_CAN_REMOVE_DYE)) {
 			DyeCauldronBlockEntity cauldron = InspirationsCaudrons.dyeCauldronEntity.getBlockEntity(level, pos);
 			if (cauldron != null) {
 				ItemStack result = MiscUtil.setColor(stack.copyWithCount(1), cauldron.getColor());

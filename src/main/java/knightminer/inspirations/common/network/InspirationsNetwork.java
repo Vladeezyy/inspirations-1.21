@@ -73,6 +73,6 @@ public class InspirationsNetwork {
    * @param packet Packet
    */
   public static void sendToClients(ServerLevel world, BlockPos pos, CustomPacketPayload packet) {
-    PacketDistributor.sendToPlayersTrackingChunk(world, new ChunkPos(pos), packet);
+    PacketDistributor.sendToPlayersTrackingChunk(world, ChunkPos.containing(pos), packet);
   }
 }

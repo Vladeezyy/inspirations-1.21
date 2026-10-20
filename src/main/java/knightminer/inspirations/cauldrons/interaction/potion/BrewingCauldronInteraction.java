@@ -70,7 +70,7 @@ public class BrewingCauldronInteraction implements CauldronInteraction {
 					cauldron.setPotion(newPotion);
 
 					// consume items
-					ItemStack container = stack.getCraftingRemainder();
+					ItemStack container = MiscUtil.getCraftingRemainder(stack);
 					MiscUtil.shrinkHeldItem(player, hand, stack, 1);
 					if (!container.isEmpty()) {
 						MiscUtil.givePlayerItem(player, container.copy());

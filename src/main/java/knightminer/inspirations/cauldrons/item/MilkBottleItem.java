@@ -1,5 +1,6 @@
 package knightminer.inspirations.cauldrons.item;
 
+import knightminer.inspirations.library.MiscUtil;
 import net.minecraft.advancements.CriteriaTriggers;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.stats.Stats;
@@ -49,7 +50,7 @@ public class MilkBottleItem extends Item {
 		}
 
 		// shrink the stack and return the container
-		ItemStack container = stack.getCraftingRemainder();
+		ItemStack container = MiscUtil.getCraftingRemainder(stack);
 		if (living instanceof Player player) {
 			return ItemUtils.createFilledResult(stack, player, container);
 		} else {

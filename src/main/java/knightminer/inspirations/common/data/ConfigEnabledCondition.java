@@ -8,7 +8,6 @@ import knightminer.inspirations.common.Config;
 import knightminer.inspirations.common.InspirationsCommons;
 import net.minecraft.world.level.storage.loot.LootContext;
 import net.minecraft.world.level.storage.loot.predicates.LootItemCondition;
-import net.minecraft.world.level.storage.loot.predicates.LootItemConditionType;
 import net.neoforged.neoforge.common.ModConfigSpec.BooleanValue;
 import net.neoforged.neoforge.common.conditions.ICondition;
 
@@ -50,14 +49,10 @@ public class ConfigEnabledCondition implements ICondition, LootItemCondition {
     return supplier.getAsBoolean();
   }
 
+  /** The same codec for both condition kinds (the loot condition type is the codec since 26.1) */
   @Override
-  public MapCodec<? extends ICondition> codec() {
+  public MapCodec<ConfigEnabledCondition> codec() {
     return CODEC;
-  }
-
-  @Override
-  public LootItemConditionType getType() {
-    return InspirationsCommons.lootConfig;
   }
 
   @Override

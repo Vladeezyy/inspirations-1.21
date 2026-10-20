@@ -1,5 +1,7 @@
 package knightminer.inspirations.cauldrons.item;
 
+import net.minecraft.core.component.DataComponents;
+import knightminer.inspirations.library.MiscUtil;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
@@ -18,11 +20,19 @@ public class SimpleDyedBottleItem extends DyeItem {
   /**
    *
    * @param props    Item properties
-   * @param vanilla  Vanilla dye this is based on. Used to correct the dye map and set the color
+   * @param color    Dye color
    */
-  public SimpleDyedBottleItem(Properties props, DyeItem vanilla) {
-    super(vanilla.getDyeColor(), props);
-    ITEM_BY_COLOR.put(vanilla.getDyeColor(), vanilla);
+  private final DyeColor color;
+
+  public SimpleDyedBottleItem(Properties props, DyeColor color) {
+    // the dye color is the dye component since 26.1 (the shared properties get it right before each item is made)
+    super(props.component(DataComponents.DYE, color));
+    this.color = color;
+  }
+
+  /** Color of the dye in the bottle */
+  public DyeColor getDyeColor() {
+    return color;
   }
 
   @Override
@@ -53,7 +63,7 @@ public class SimpleDyedBottleItem extends DyeItem {
    */
   private static void consumeItem(Player player, InteractionHand hand, ItemStack stack) {
     if (!player.isCreative()) {
-      ItemStack bottle = stack.getCraftingRemainder();
+      ItemStack bottle = MiscUtil.getCraftingRemainder(stack);
       if (stack.getCount() == 1) {
         player.setItemInHand(hand, bottle);
       } else {

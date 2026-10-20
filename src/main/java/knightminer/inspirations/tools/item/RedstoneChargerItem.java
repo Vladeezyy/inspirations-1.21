@@ -54,7 +54,7 @@ public class RedstoneChargerItem extends Item {
     // try placing a redstone charge
 
     if (world.getBlockState(pos).canBeReplaced(blockContext)) {
-      world.playSound(context.getPlayer(), pos, SoundEvents.FLINTANDSTEEL_USE, SoundSource.BLOCKS, 1.0F, world.random.nextFloat() * 0.4F + 0.8F);
+      world.playSound(context.getPlayer(), pos, SoundEvents.FLINTANDSTEEL_USE, SoundSource.BLOCKS, 1.0F, world.getRandom().nextFloat() * 0.4F + 0.8F);
       world.setBlock(pos, state, Block.UPDATE_ALL_IMMEDIATE);
       redstoneCharge.setPlacedBy(world, pos, state, null, ItemStack.EMPTY);
     }

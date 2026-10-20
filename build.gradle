@@ -17,7 +17,7 @@ repositories {
     maven { url = 'https://api.modrinth.com/maven'; content { includeGroup 'maven.modrinth' } }
 }
 
-java.toolchain.languageVersion = JavaLanguageVersion.of(21)
+java.toolchain.languageVersion = JavaLanguageVersion.of(25)
 
 sourceSets.main.resources.srcDir 'src/generated/resources'
 
@@ -96,11 +96,11 @@ dependencies {
             prefer kilnwork_version
         }
     }
-    compileOnly "mezz.jei:jei-${minecraft_version}-common-api:${jei_version}"
-    compileOnly "mezz.jei:jei-${minecraft_version}-neoforge-api:${jei_version}"
+    compileOnly "mezz.jei:jei-${jei_minecraft_version}-common-api:${jei_version}"
+    compileOnly "mezz.jei:jei-${jei_minecraft_version}-neoforge-api:${jei_version}"
     // runs without JEI: -Pno_jei
     if (!project.hasProperty('no_jei')) {
-        localRuntime "mezz.jei:jei-${minecraft_version}-neoforge:${jei_version}"
+        localRuntime "mezz.jei:jei-${jei_minecraft_version}-neoforge:${jei_version}"
     }
     if (project.hasProperty('with_compat')) {
         localRuntime "maven.modrinth:sodium:${compat_sodium}"

@@ -116,10 +116,10 @@ public class TweaksEvents {
         // the longer we go, the closer to old blocks we place the block
         if (j >= i / 16) {
           if (world.isEmptyBlock(next)) {
-            if (world.random.nextInt(128) == 0) {
+            if (world.getRandom().nextInt(128) == 0) {
               // mycelium randomly picks between red and brown
               if (isMycelium) {
-                bush = world.random.nextInt(2) == 0 ? Blocks.RED_MUSHROOM : Blocks.BROWN_MUSHROOM;
+                bush = world.getRandom().nextInt(2) == 0 ? Blocks.RED_MUSHROOM : Blocks.BROWN_MUSHROOM;
                 state = bush.defaultBlockState();
               }
               // if it can be planted here, plant it
@@ -133,7 +133,7 @@ public class TweaksEvents {
         }
 
         // randomly offset the position
-        next = next.offset(world.random.nextInt(3) - 1, (world.random.nextInt(3) - 1) * world.random.nextInt(3) / 2, world.random.nextInt(3) - 1);
+        next = next.offset(world.getRandom().nextInt(3) - 1, (world.getRandom().nextInt(3) - 1) * world.getRandom().nextInt(3) / 2, world.getRandom().nextInt(3) - 1);
 
         // if the new position is invalid, this cycle is done
         if (world.getBlockState(next.below()).getBlock() != base || world.getBlockState(next).isRedstoneConductor(world, next)) {
@@ -184,14 +184,14 @@ public class TweaksEvents {
     }
 
     // chance gets higher the more blocks of the type surround
-    if (world.random.nextInt(5) > (Math.max(grass, mycelium) - 1)) {
+    if (world.getRandom().nextInt(5) > (Math.max(grass, mycelium) - 1)) {
       return true;
     }
 
     //  place block based on which has more
     // if there is a tie, randomly choose
     if (grass == mycelium) {
-      if (world.random.nextBoolean()) {
+      if (world.getRandom().nextBoolean()) {
         mycelium++;
       }
     }

@@ -222,7 +222,7 @@ public class ShelfBlock extends InventoryBlock {
   }
 
   @Override
-  public float getEnchantPowerBonus(BlockState state, LevelReader world, BlockPos pos) {
+  public float getEnchantPowerBonus(BlockState state, BlockGetter world, BlockPos pos) {
     if (!Config.bookshelvesBoostEnchanting.getAsBoolean()) {
       return 0;
     }

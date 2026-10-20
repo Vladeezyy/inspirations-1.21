@@ -5,7 +5,6 @@ import knightminer.inspirations.cauldrons.InspirationsCaudrons;
 import knightminer.inspirations.common.CommonsClientEvents;
 import knightminer.inspirations.common.Config;
 import knightminer.inspirations.common.InspirationsCommons;
-import knightminer.inspirations.common.data.GlobalLootProvider;
 import knightminer.inspirations.common.network.InspirationsNetwork;
 import knightminer.inspirations.tools.InspirationsTools;
 import knightminer.inspirations.tweaks.InspirationsTweaks;

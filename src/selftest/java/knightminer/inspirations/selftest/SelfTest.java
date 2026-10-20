@@ -210,7 +210,7 @@ public class SelfTest {
       ItemStack slab = new ItemStack(Items.OAK_SLAB);
       CraftingInput input = CraftingInput.of(3, 3, List.of(slab, slab, slab, ItemStack.EMPTY, slab, ItemStack.EMPTY, slab, slab, slab));
       return server.getRecipeManager().getRecipeFor(RecipeType.CRAFTING, input, level)
-        .map(r -> r.value().assemble(input, level.registryAccess()))
+        .map(r -> r.value().assemble(input))
         .map(result -> result.is(InspirationsBuilding.shelf.get(ShelfType.NORMAL).asItem()) && result.getCount() == 2 && RetexturedHelper.getTexture(result) == Blocks.OAK_SLAB)
         .orElse(false);
     });
@@ -228,15 +228,27 @@ public class SelfTest {
     check("colored book recipe dyes the book", () -> {
       CraftingInput input = CraftingInput.of(2, 1, List.of(new ItemStack(Items.BOOK), new ItemStack(Items.RED_DYE)));
       return server.getRecipeManager().getRecipeFor(RecipeType.CRAFTING, input, level)
-        .map(r -> r.value().assemble(input, level.registryAccess()))
+        .map(r -> r.value().assemble(input))
         .map(result -> result.is(InspirationsBuilding.coloredBook) && MiscUtil.getColor(result) == MiscUtil.getColor(DyeColor.RED)).orElse(false);
+    });
+    // 26.1 dropped the dyeable tag: one crafting_dye recipe per item, washing through cauldron_can_remove_dye
+    check("colored book takes another dye in the crafting grid (crafting_dye)", () -> {
+      CraftingInput input = CraftingInput.of(2, 1, List.of(MiscUtil.setColor(new ItemStack(InspirationsBuilding.coloredBook), MiscUtil.getColor(DyeColor.RED)), new ItemStack(Items.BLUE_DYE)));
+      return server.getRecipeManager().getRecipeFor(RecipeType.CRAFTING, input, level)
+        .map(r -> r.value().assemble(input))
+        .map(result -> result.is(InspirationsBuilding.coloredBook) && MiscUtil.getColor(result) != MiscUtil.getColor(DyeColor.RED)).orElse(false);
+    });
+    check("water cauldrons wash the dye off a dimension compass", () -> {
+      ItemStack compass = MiscUtil.setColor(new ItemStack(InspirationsTools.dimensionCompass), 0x123456);
+      return compass.is(net.minecraft.tags.ItemTags.CAULDRON_CAN_REMOVE_DYE)
+        && net.minecraft.core.cauldron.CauldronInteractions.WATER.get(compass) != net.minecraft.core.cauldron.CauldronInteraction.DEFAULT;
     });
     check("mixing dyed bottles keeps no empty bottles", () -> {
       ItemStack red = new ItemStack(InspirationsCaudrons.simpleDyedWaterBottle.get(DyeColor.RED));
       ItemStack yellow = new ItemStack(InspirationsCaudrons.simpleDyedWaterBottle.get(DyeColor.YELLOW));
       CraftingInput input = CraftingInput.of(2, 1, List.of(red, yellow));
       return server.getRecipeManager().getRecipeFor(RecipeType.CRAFTING, input, level)
-        .map(r -> r.value().assemble(input, level.registryAccess()).is(InspirationsCaudrons.simpleDyedWaterBottle.get(DyeColor.ORANGE).asItem())
+        .map(r -> r.value().assemble(input).is(InspirationsCaudrons.simpleDyedWaterBottle.get(DyeColor.ORANGE).asItem())
           && r.value().getRemainingItems(input).stream().allMatch(ItemStack::isEmpty)).orElse(false);
     });
 
@@ -427,7 +439,7 @@ public class SelfTest {
       use(level, at(14, 0, 0), bottle);
       return player.getMainHandItem().is(InspirationsCaudrons.simpleDyedWaterBottle.get(DyeColor.RED).asItem()) || player.getInventory().contains(new ItemStack(InspirationsCaudrons.simpleDyedWaterBottle.get(DyeColor.RED)));
     });
-    check("leather in a dye cauldron is dyed (dyeable tag)", () -> {
+    check("leather in a dye cauldron is dyed (cauldron_can_remove_dye tag)", () -> {
       BlockPos pos = at(14, 0, 2);
       level.setBlockAndUpdate(pos, InspirationsCaudrons.dyeCauldron.defaultBlockState().setValue(LayeredCauldronBlock.LEVEL, 3));
       ((DyeCauldronBlockEntity) level.getBlockEntity(pos)).setColor(0x123456);
@@ -638,7 +650,7 @@ public class SelfTest {
       player.getInventory().clearContent();
       player.setItemInHand(InteractionHand.MAIN_HAND, ItemStack.EMPTY);
       crouch(true);
-      player.interactOn(pig, InteractionHand.MAIN_HAND);
+      player.interactOn(pig, InteractionHand.MAIN_HAND, pig.getBoundingBox().getCenter());
       crouch(false);
       boolean result = !pig.isSaddled() && player.getInventory().contains(new ItemStack(Items.SADDLE));
       pig.discard();
@@ -659,7 +671,7 @@ public class SelfTest {
       BlockPos sand = at(12, 0, 6);
       level.setBlockAndUpdate(sand, Blocks.SAND.defaultBlockState());
       level.setBlockAndUpdate(sand.above(), Blocks.CACTUS.defaultBlockState().setValue(net.minecraft.world.level.block.CactusBlock.AGE, 15));
-      level.getBlockState(sand.above()).randomTick(level, sand.above(), level.random);
+      level.getBlockState(sand.above()).randomTick(level, sand.above(), level.getRandom());
       return level.getBlockState(sand.above(2)).is(InspirationsTweaks.cactus);
     });
   }

@@ -1,7 +1,7 @@
 package knightminer.inspirations.common.client;
 
 import knightminer.inspirations.Inspirations;
-import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.client.renderer.RenderPipelines;
 import net.minecraft.client.gui.screens.MenuScreens.ScreenConstructor;
 import net.minecraft.client.gui.screens.inventory.AbstractContainerScreen;
@@ -27,10 +27,8 @@ public class BackgroundContainerScreen<T extends AbstractContainerMenu> extends 
    * @param background Container background
    */
   public BackgroundContainerScreen(T container, Inventory inventory, Component name, int height, Identifier background) {
-    super(container, inventory, name);
+    super(container, inventory, name, 176, height);
     this.background = background;
-    this.imageHeight = height;
-    this.inventoryLabelY = this.imageHeight - 94;
   }
 
   @Override
@@ -40,13 +38,8 @@ public class BackgroundContainerScreen<T extends AbstractContainerMenu> extends 
   }
 
   @Override
-  public void render(GuiGraphics graphics, int mouseX, int mouseY, float partialTicks) {
-    super.render(graphics, mouseX, mouseY, partialTicks);
-    this.renderTooltip(graphics, mouseX, mouseY);
-  }
-
-  @Override
-  protected void renderBg(GuiGraphics graphics, float partialTicks, int mouseX, int mouseY) {
+  public void extractBackground(GuiGraphicsExtractor graphics, int mouseX, int mouseY, float partialTicks) {
+    super.extractBackground(graphics, mouseX, mouseY, partialTicks);
     graphics.blit(RenderPipelines.GUI_TEXTURED, this.background, this.leftPos, this.topPos, 0, 0, this.imageWidth, this.imageHeight, 256, 256);
   }
 

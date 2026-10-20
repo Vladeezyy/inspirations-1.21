@@ -65,6 +65,9 @@ public final class NetScene {
     mc.gameMode.useItemOn(mc.player, InteractionHand.MAIN_HAND, new BlockHitResult(hit, Direction.NORTH, pos, false));
   }
 
+  /** Set once the client started joining the test server */
+  private static boolean joining;
+
   @SubscribeEvent
   public static void onTick(ClientTickEvent.Post event) {
     if (!ENABLED) {
@@ -75,6 +78,14 @@ public final class NetScene {
       mc.options.onboardAccessibility = false;
       mc.options.save();
       mc.setScreen(new TitleScreen());
+      return;
+    }
+    // 26.x ignores --quickPlayMultiplayer in the dev run (the client waits on the title screen): join from code
+    if (!joining && mc.screen instanceof TitleScreen && mc.getOverlay() == null) {
+      joining = true;
+      net.minecraft.client.gui.screens.ConnectScreen.startConnecting(mc.screen, mc,
+        net.minecraft.client.multiplayer.resolver.ServerAddress.parseString("localhost:25565"),
+        new net.minecraft.client.multiplayer.ServerData("Test server", "localhost:25565", net.minecraft.client.multiplayer.ServerData.Type.OTHER), false, null);
       return;
     }
     if (mc.player == null || mc.getConnection() == null) {
@@ -148,14 +159,14 @@ public final class NetScene {
       }
       // milk cooldown
       case 220 -> hold(mc, "minecraft:bucket");
-      case 230 -> mc.gameMode.interact(mc.player, cow(mc), InteractionHand.MAIN_HAND);
+      case 230 -> mc.gameMode.interact(mc.player, cow(mc), new net.minecraft.world.phys.EntityHitResult(cow(mc), cow(mc).getBoundingBox().getCenter()), InteractionHand.MAIN_HAND);
       case 245 -> {
         check("cow milked into a bucket", mc.player.getMainHandItem().is(Items.MILK_BUCKET), mc.player.getMainHandItem());
         // the client marks 600 itself when milking, the server's packet sets 100
         check("milk cooldown packet reached the client", cow(mc).getPersistentData().getShortOr(TweaksEvents.TAG_MILKCOOLDOWN, (short) 0) == 100, cow(mc).getPersistentData());
         hold(mc, "minecraft:bucket");
       }
-      case 255 -> mc.gameMode.interact(mc.player, cow(mc), InteractionHand.MAIN_HAND);
+      case 255 -> mc.gameMode.interact(mc.player, cow(mc), new net.minecraft.world.phys.EntityHitResult(cow(mc), cow(mc).getBoundingBox().getCenter()), InteractionHand.MAIN_HAND);
       case 270 -> check("cow on cooldown gives no milk", mc.player.getMainHandItem().is(Items.BUCKET), mc.player.getMainHandItem());
       // dimension compass: a trip to the nether and back
       case 275 -> command(mc, "execute in minecraft:the_nether run tp @s 8.5 100 8.5");

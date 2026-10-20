@@ -1,5 +1,6 @@
 package knightminer.inspirations.tools.client;
 
+import net.minecraft.world.entity.ItemOwner;
 import knightminer.inspirations.tools.capability.DimensionCompass;
 import net.minecraft.client.multiplayer.ClientLevel;
 import knightminer.inspirations.common.client.ItemColorSources;
@@ -29,8 +30,9 @@ public class DimensionCompassPropertyGetter implements ItemColorSources.ItemProp
 	private final Angle randomRotation = new Angle();
 
 	@Override
-	public float get(ItemStack stack, @Nullable ClientLevel clientWorld, @Nullable LivingEntity living, int seed) {
-		Entity entity = living != null ? living : stack.getEntityRepresentation();
+	public float get(ItemStack stack, @Nullable ClientLevel clientWorld, @Nullable ItemOwner owner, int seed) {
+    LivingEntity living = owner == null ? null : owner.asLivingEntity();
+		Entity entity = ItemColorSources.entityOf(owner);
 		if (entity == null) {
 			return 0.0F;
 		}

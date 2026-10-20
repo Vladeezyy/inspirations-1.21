@@ -1,0 +1,16 @@
+{
+  "neoforge:conditions": [
+    {
+      "type": "inspirations:config",
+      "prop": "dimension_compass"
+    }
+  ],
+  "type": "minecraft:crafting_dye",
+  "category": "misc",
+  "dye": "#minecraft:dyes",
+  "group": "inspirations:dyed_dimension_compass",
+  "result": {
+    "id": "inspirations:dimension_compass"
+  },
+  "target": "inspirations:dimension_compass"
+}

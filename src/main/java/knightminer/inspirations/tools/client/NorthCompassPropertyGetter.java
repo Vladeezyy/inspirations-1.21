@@ -1,5 +1,6 @@
 package knightminer.inspirations.tools.client;
 
+import net.minecraft.world.entity.ItemOwner;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.multiplayer.ClientLevel;
 import knightminer.inspirations.common.client.ItemColorSources;
@@ -16,9 +17,9 @@ public class NorthCompassPropertyGetter implements ItemColorSources.ItemProperty
   private final Angle angle = new Angle();
 
   @Override
-  public float get(ItemStack stack, @Nullable ClientLevel clientWorld, @Nullable LivingEntity entity, int seed) {
-    ItemFrame frame = stack.getFrame();
-    if (frame != null) {
+  public float get(ItemStack stack, @Nullable ClientLevel clientWorld, @Nullable ItemOwner owner, int seed) {
+    LivingEntity entity = owner == null ? null : owner.asLivingEntity();
+    if (ItemColorSources.entityOf(owner) instanceof ItemFrame frame) {
       Direction facing = frame.getDirection();
       if (facing == Direction.DOWN) {
         return frame.getRotation() / 8f;

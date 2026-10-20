@@ -10,6 +10,7 @@ import com.mojang.serialization.codecs.RecordCodecBuilder;
 
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.cauldron.CauldronInteraction;
+import net.minecraft.core.cauldron.CauldronInteractions;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.AbstractCauldronBlock;
@@ -27,10 +28,10 @@ public class FourLayerCauldronBlock extends AbstractCauldronBlock {
 
 	public static final MapCodec<FourLayerCauldronBlock> CODEC = RecordCodecBuilder.mapCodec(inst -> inst.group(
 		propertiesCodec(),
-		CauldronInteraction.CODEC.fieldOf("interactions").forGetter(block -> block.interactions)
+		CauldronInteractions.CODEC.fieldOf("interactions").forGetter(block -> block.interactions)
 	).apply(inst, FourLayerCauldronBlock::new));
 
-	public FourLayerCauldronBlock(Properties pProperties, CauldronInteraction.InteractionMap pInteractions) {
+	public FourLayerCauldronBlock(Properties pProperties, CauldronInteraction.Dispatcher pInteractions) {
 		super(pProperties, pInteractions);
 		this.registerDefaultState(this.stateDefinition.any().setValue(LEVEL, 1));
 	}

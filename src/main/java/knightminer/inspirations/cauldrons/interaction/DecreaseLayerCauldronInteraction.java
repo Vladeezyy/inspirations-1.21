@@ -9,16 +9,21 @@ import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.properties.IntegerProperty;
 
-/** Decreases the cauldron by one layer, returning the given result */
+import java.util.function.Supplier;
+
+/**
+ * Decreases the cauldron by one layer, returning the given result. The result is made on use: since 26.1 item stacks
+ * can not be made before the components are bound, after common setup.
+ */
 public class DecreaseLayerCauldronInteraction extends AbstractDecreaseLayerCauldronInteraction {
-	private final ItemStack result;
-	public DecreaseLayerCauldronInteraction(ItemStack result, IntegerProperty prop, boolean consumeInput, SoundEvent sound) {
+	private final Supplier<ItemStack> result;
+	public DecreaseLayerCauldronInteraction(Supplier<ItemStack> result, IntegerProperty prop, boolean consumeInput, SoundEvent sound) {
 		super(prop, consumeInput, sound);
 		this.result = result;
 	}
 
 	public DecreaseLayerCauldronInteraction(ItemLike result, IntegerProperty prop, SoundEvent sound) {
-		this(new ItemStack(result), prop, true, sound);
+		this(() -> new ItemStack(result), prop, true, sound);
 	}
 
 	public DecreaseLayerCauldronInteraction(ItemLike result, IntegerProperty prop) {
@@ -27,6 +32,6 @@ public class DecreaseLayerCauldronInteraction extends AbstractDecreaseLayerCauld
 
 	@Override
 	protected ItemStack getResult(BlockState state, Level level, BlockPos pos, ItemStack stack) {
-		return result.copy();
+		return result.get();
 	}
 }

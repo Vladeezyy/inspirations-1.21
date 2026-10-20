@@ -10,7 +10,7 @@ import net.minecraft.client.renderer.blockentity.BlockEntityRendererProvider;
 import net.minecraft.client.renderer.blockentity.state.BlockEntityRenderState;
 import net.minecraft.client.renderer.feature.ModelFeatureRenderer;
 import net.minecraft.client.renderer.item.ItemStackRenderState;
-import net.minecraft.client.renderer.state.CameraRenderState;
+import net.minecraft.client.renderer.state.level.CameraRenderState;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.Vec3;
 
@@ -27,6 +27,8 @@ public class ShelfBlockEntityRenderer implements BlockEntityRenderer<ShelfBlockE
 	 */
 	public static class State extends BlockEntityRenderState {
 		List<RenderItem> renderItems = List.of();
+		/** The block state, private in the base state since 26.1 */
+		BlockState block;
 		@Nullable
 		ItemStackRenderState[] items;
 	}
@@ -46,7 +48,8 @@ public class ShelfBlockEntityRenderer implements BlockEntityRenderer<ShelfBlockE
 	public void extractRenderState(ShelfBlockEntity shelf, State state, float partialTicks, Vec3 camera, @Nullable ModelFeatureRenderer.CrumblingOverlay crumbling) {
 		BlockEntityRenderer.super.extractRenderState(shelf, state, partialTicks, camera, crumbling);
 		// first, find the model for item display locations
-		state.renderItems = RenderItem.ITEM_LISTS.get(state.blockState, List.of());
+		state.block = shelf.getBlockState();
+		state.renderItems = RenderItem.ITEM_LISTS.get(state.block, List.of());
 		ShelfInventory inventory = shelf.getInventory();
 		// only render non-books, books are rendered in the model
 		int mask = inventory.getItemMask() & ((1 << Math.min(state.renderItems.size(), ShelfInventory.MAX_ITEMS)) - 1);
@@ -68,7 +71,7 @@ public class ShelfBlockEntityRenderer implements BlockEntityRenderer<ShelfBlockE
 			return;
 		}
 		// if the block is rotatable, rotate item display
-		BlockState block = state.blockState;
+		BlockState block = state.block;
 		boolean isRotated = RenderItem.applyRotation(matrices, block);
 		for (int i = 0; i < state.renderItems.size() && i < state.items.length; i++) {
 			if (state.items[i] != null) {

@@ -19,7 +19,8 @@ import net.minecraft.world.inventory.InventoryMenu;
 import net.minecraft.world.item.BlockItem;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
-import net.minecraft.world.level.BlockAndTintGetter;
+import net.minecraft.client.renderer.block.BlockAndTintGetter;
+import net.minecraft.client.color.block.BlockTintSource;
 import net.minecraft.world.level.block.state.BlockState;
 import net.neoforged.neoforge.model.data.ModelData;
 import org.apache.commons.lang3.math.NumberUtils;
@@ -56,7 +57,8 @@ public final class ClientUtil {
   private static final Function<Item,Integer> GET_ITEM_COLOR = key -> {
     ItemStackRenderState state = new ItemStackRenderState();
     mc.getItemModelResolver().updateForTopItem(state, new ItemStack(key), ItemDisplayContext.GUI, null, null, 0);
-    TextureAtlasSprite sprite = state.pickParticleIcon(RandomSource.create(42));
+    var material = state.pickParticleMaterial(RandomSource.create(42));
+    TextureAtlasSprite sprite = material == null ? null : material.sprite();
     //noinspection ConstantValue  eh, its better to be safe
     if (sprite == null || sprite.contents().name() == MissingTextureAtlasSprite.getLocation()) {
       return -1;
@@ -156,7 +158,11 @@ public final class ClientUtil {
       return -1;
     }
     BlockState state = item.getBlock().defaultBlockState();
-    return mc.getBlockColors().getColor(state, world, pos, index);
+    BlockTintSource source = mc.getBlockColors().getTintSource(state, index);
+    if (source == null) {
+      return -1;
+    }
+    return world != null && pos != null ? source.colorInWorld(state, world, pos) : source.color(state);
   }
 
   /** Reload listener for client utils */

@@ -23,7 +23,6 @@ import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.ItemLike;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.Blocks;
-import net.minecraft.world.level.storage.loot.predicates.LootItemConditionType;
 import net.neoforged.neoforge.registries.NeoForgeRegistries;
 import net.neoforged.neoforge.event.BuildCreativeModeTabContentsEvent;
 import net.neoforged.bus.api.SubscribeEvent;
@@ -37,8 +36,6 @@ import java.util.function.Predicate;
  * Base module for common code between the modules
  */
 public class InspirationsCommons extends ModuleBase {
-  public static ShapelessNoContainerRecipe.Serializer shapelessNoContainer;
-  public static LootItemConditionType lootConfig;
 
   /**
    * Enum object for vanilla carpet blocks to aid in registration/lookups
@@ -66,15 +63,14 @@ public class InspirationsCommons extends ModuleBase {
   void register(RegisterEvent event) {
     // recipe serializers
     event.register(Registries.RECIPE_SERIALIZER, helper -> {
-      shapelessNoContainer = new ShapelessNoContainerRecipe.Serializer();
-      helper.register(Inspirations.getResource("shapeless_no_container"), shapelessNoContainer);
+      helper.register(Inspirations.getResource("shapeless_no_container"), ShapelessNoContainerRecipe.SERIALIZER);
     });
     // config condition, for recipes and loot tables
     event.register(NeoForgeRegistries.Keys.CONDITION_CODECS, helper -> helper.register(Inspirations.getResource("config"), ConfigEnabledCondition.CODEC));
     event.register(NeoForgeRegistries.Keys.GLOBAL_LOOT_MODIFIER_SERIALIZERS, helper -> helper.register(Inspirations.getResource("replace_item"), ReplaceItemLootModifier.CODEC));
     event.register(Registries.LOOT_CONDITION_TYPE, helper -> {
-      lootConfig = new LootItemConditionType(ConfigEnabledCondition.CODEC);
-      helper.register(Inspirations.getResource("config"), lootConfig);
+      // the loot condition registry holds the codecs since 26.1
+      helper.register(Inspirations.getResource("config"), ConfigEnabledCondition.CODEC);
     });
   }
 

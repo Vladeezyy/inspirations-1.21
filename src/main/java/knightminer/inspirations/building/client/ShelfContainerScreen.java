@@ -6,7 +6,8 @@ import knightminer.inspirations.building.block.entity.ShelfInventory;
 import knightminer.inspirations.building.block.menu.ShelfContainerMenu;
 import knightminer.inspirations.common.client.BackgroundContainerScreen;
 import knightminer.inspirations.library.InspirationsRegistry;
-import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.gui.GuiGraphicsExtractor;
+import net.minecraft.client.renderer.RenderPipelines;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.Identifier;
 import net.minecraft.world.entity.player.Inventory;
@@ -18,8 +19,8 @@ public class ShelfContainerScreen extends BackgroundContainerScreen<ShelfContain
 	private static final Identifier BACKGROUND = Inspirations.getResource("textures/gui/shelf.png");
 	/** Part of the background texture: x, y, width, height */
 	private record Element(int u, int v, int width, int height) {
-		void draw(GuiGraphics graphics, int x, int y) {
-			graphics.blit(BACKGROUND, x, y, u, v, width, height, 256, 256);
+		void draw(GuiGraphicsExtractor graphics, int x, int y) {
+			graphics.blit(RenderPipelines.GUI_TEXTURED, BACKGROUND, x, y, u, v, width, height, 256, 256);
 		}
 	}
 	private static final Element SLOT_COVER = new Element(176, 0, 18, 18);
@@ -36,7 +37,7 @@ public class ShelfContainerScreen extends BackgroundContainerScreen<ShelfContain
 	}
 
 	/** Checks if a slot should be covered, drawing the cover if needed */
-	private void checkBookIcon(GuiGraphics graphics, ShelfInventory inventory, int index) {
+	private void checkBookIcon(GuiGraphicsExtractor graphics, ShelfInventory inventory, int index) {
 		// draw icon if the slot is empty and the next is filled, means books only
 		if (inventory.getStackInSlot(index).isEmpty() && ((index % 8 == 7) || !inventory.getStackInSlot(index + 1).isEmpty())) {
 			Slot slot = getMenu().getSlot(index);
@@ -45,8 +46,8 @@ public class ShelfContainerScreen extends BackgroundContainerScreen<ShelfContain
 	}
 
 	@Override
-	protected void renderBg(GuiGraphics graphics, float partialTicks, int mouseX, int mouseY) {
-		super.renderBg(graphics, partialTicks, mouseX, mouseY);
+	public void extractBackground(GuiGraphicsExtractor graphics, int mouseX, int mouseY, float partialTicks) {
+		super.extractBackground(graphics, mouseX, mouseY, partialTicks);
 		// draw book icon in slots that can only hold a book
 		ShelfBlockEntity shelf = getMenu().getTile();
 		if (shelf != null) {
@@ -58,7 +59,7 @@ public class ShelfContainerScreen extends BackgroundContainerScreen<ShelfContain
 	}
 
 	/** Checks if a slot should be covered, drawing the cover if needed */
-	private void checkCoverSlot(GuiGraphics graphics, ShelfInventory inventory, int index) {
+	private void checkCoverSlot(GuiGraphicsExtractor graphics, ShelfInventory inventory, int index) {
 		// draw cover if the slot is empty and the previous is filled with a non-book
 		if (inventory.getStackInSlot(index).isEmpty()) {
 			ItemStack previous = inventory.getStackInSlot(index - 1);
@@ -70,8 +71,8 @@ public class ShelfContainerScreen extends BackgroundContainerScreen<ShelfContain
 	}
 
 	@Override
-	protected void renderLabels(GuiGraphics graphics, int x, int y) {
-		super.renderLabels(graphics, x, y);
+	protected void extractLabels(GuiGraphicsExtractor graphics, int x, int y) {
+		super.extractLabels(graphics, x, y);
 		// draw cover to block invalid slots, drawn in foreground to cover the slot highlight
 		ShelfBlockEntity shelf = getMenu().getTile();
 		if (shelf != null) {

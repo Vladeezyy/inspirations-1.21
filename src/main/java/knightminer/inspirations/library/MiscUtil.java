@@ -74,6 +74,12 @@ public class MiscUtil {
   }
 
   /** RGB of an ARGB color, the format of 1.21 colors */
+  /** The crafting remainder of the stack as a new stack, empty if none; a template since 26.1 */
+  public static ItemStack getCraftingRemainder(ItemStack stack) {
+    net.minecraft.world.item.ItemStackTemplate remainder = stack.getCraftingRemainder();
+    return remainder == null ? ItemStack.EMPTY : remainder.create();
+  }
+
   public static int rgb(int argb) {
     return argb & 0xFFFFFF;
   }

@@ -1,0 +1,16 @@
+{
+  "neoforge:conditions": [
+    {
+      "type": "inspirations:config",
+      "prop": "colored_books"
+    }
+  ],
+  "type": "minecraft:crafting_dye",
+  "category": "misc",
+  "dye": "#minecraft:dyes",
+  "group": "inspirations:dyed_colored_book",
+  "result": {
+    "id": "inspirations:colored_book"
+  },
+  "target": "inspirations:colored_book"
+}
