@@ -411,9 +411,12 @@ public final class ClientScene {
     set(level, at(20, 1, 6), InspirationsUtility.carpetedPressurePlates.get(DyeColor.ORANGE).defaultBlockState());
     set(level, at(21, 1, 6), InspirationsTools.redstoneCharge.defaultBlockState());
     set(level, at(16, 1, 8), InspirationsTweaks.cactus.defaultBlockState().setValue(knightminer.inspirations.tweaks.block.BlockCropBlock.LARGE_AGE, 8));
-    set(level, at(17, 1, 8), Blocks.SAND.defaultBlockState());
-    set(level, at(18, 1, 8), Blocks.WATER.defaultBlockState());
-    set(level, at(17, 2, 8), InspirationsTweaks.sugarCane.defaultBlockState().setValue(knightminer.inspirations.tweaks.block.BlockCropBlock.LARGE_AGE, 10));
+    // a cactus breaks next to a solid block: the sugar cane sand one block away
+    set(level, at(18, 1, 8), Blocks.SAND.defaultBlockState());
+    set(level, at(19, 1, 8), Blocks.WATER.defaultBlockState());
+    set(level, at(18, 2, 8), InspirationsTweaks.sugarCane.defaultBlockState().setValue(knightminer.inspirations.tweaks.block.BlockCropBlock.LARGE_AGE, 10));
+    // the floor is one block thick: the sand of the cactus would fall
+    set(level, at(16, -1, 8), Blocks.STONE.defaultBlockState());
     set(level, at(16, 0, 8), Blocks.SAND.defaultBlockState());
 
     // row 3, z=12: fitted carpets on every stair shape
@@ -676,6 +679,9 @@ public final class ClientScene {
       check("sprite " + sprite + " is in the block atlas", !atlas.getSprite(id).contents().name().equals(MissingTextureAtlasSprite.getLocation()), id);
     }
     // the client asked the server for the lectern book, the tinted renderer needs it
+    // the showcase blocks stay where they were placed (a broken crop drops an item the player picks up)
+    check("cactus and sugar cane crops stay on their sand", mc.level.getBlockState(at(16, 1, 8)).is(InspirationsTweaks.cactus) && mc.level.getBlockState(at(18, 2, 8)).is(InspirationsTweaks.sugarCane),
+      mc.level.getBlockState(at(16, 1, 8)) + " " + mc.level.getBlockState(at(18, 2, 8)) + " on " + mc.level.getBlockState(at(16, 0, 8)));
     check("lectern book reached the client", mc.level.getBlockEntity(at(13, 1, 12)) instanceof LecternBlockEntity lectern && lectern.getBook().is(InspirationsBuilding.coloredBook),
       mc.level.getBlockEntity(at(13, 1, 12)) instanceof LecternBlockEntity lectern ? lectern.getBook() : null);
     // client copies of block entity data

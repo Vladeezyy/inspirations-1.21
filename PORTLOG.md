@@ -164,6 +164,9 @@ Verification on 26.1.2: selftest 57/57 (two new checks for the dye changes), cli
 1.21.11), net test 11/11. Stress: empty floor 244 FPS, vanilla baseline 250 FPS, 1024 shelves 236 FPS at 3.2 MSPT,
 plus 96 cauldrons 226 FPS at 3.1 MSPT, 200 ticks of changes 183 FPS at 4.3 MSPT — 10/10.
 
+The client scene checks that its cactus and sugar cane crops stay (the cactus sand sat in the one block thick floor and
+fell, in every version; now 42 checks), the stress scene measures the vanilla campfires apart from the cauldrons.
+
 ## License
 
 Code: LGPL-3.0-only (`LICENSE`, GPL text in `licenses/COPYING`); the original is MIT (`licenses/LICENSE-MIT`).
