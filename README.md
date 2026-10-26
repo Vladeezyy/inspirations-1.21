@@ -32,13 +32,10 @@ An unofficial port of **[Inspirations](https://www.curseforge.com/minecraft/mc-m
 
 Releases: [GitHub releases](../../releases).
 
-## Installation
+## Requirements
 
-- **Singleplayer:** put the jar into `mods/` of a NeoForge 1.21.1 instance.
-- **Server:** put the same jar into `mods/` of the server **and** of every client.
-- **Nothing else to install.** The original needs the library Mantle by SlimeKnights, which has no release for
-  Minecraft 1.21. This port uses [Kilnwork](https://github.com/Vladeezyy/kilnwork) instead, a library built from the
-  parts of Mantle that Inspirations needs, and it ships inside the jar.
+- NeoForge 1.21.1, on the server **and** on every client.
+- **No other mods needed.** The original needs the library Mantle by SlimeKnights, which has no release for Minecraft 1.21. This port uses [Kilnwork](https://github.com/Vladeezyy/kilnwork) instead, a library built from the parts of Mantle that Inspirations needs, and it ships inside the jar.
 - [JEI](https://www.curseforge.com/minecraft/mc-mods/jei) is optional: it shows every texture of shelves and bushes.
 
 ## Features
@@ -122,13 +119,10 @@ CC BY-NC-SA 4.0 ([licenses/TEXTURE_LICENSE.md](licenses/TEXTURE_LICENSE.md)). Al
 
 Релизы: [GitHub releases](../../releases).
 
-## Установка
+## Требования
 
-- **Одиночная игра:** положите jar в `mods/` сборки NeoForge 1.21.1.
-- **Сервер:** тот же jar — в `mods/` сервера **и** каждого клиента.
-- **Больше ничего не нужно.** Оригиналу нужна библиотека Mantle от SlimeKnights, у которой нет версии для Minecraft
-  1.21. Порт использует [Kilnwork](https://github.com/Vladeezyy/kilnwork) — библиотеку из тех частей Mantle, что нужны
-  Inspirations, и она уже внутри jar.
+- NeoForge 1.21.1, на сервере **и** у каждого клиента.
+- **Других модов не нужно.** Оригиналу нужна библиотека Mantle от SlimeKnights, у которой нет версии для Minecraft 1.21. Порт использует [Kilnwork](https://github.com/Vladeezyy/kilnwork) — библиотеку из тех частей Mantle, что нужны Inspirations, и она уже внутри jar.
 - [JEI](https://www.curseforge.com/minecraft/mc-mods/jei) по желанию: показывает все текстуры полок и кустов.
 
 ## Возможности
